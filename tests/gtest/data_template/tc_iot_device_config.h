@@ -193,7 +193,6 @@
 /* 客户端私钥路径*/
 #define TC_IOT_CONFIG_CLIENT_KEY NULL
 
-#define TC_IOT_TROUBLE_SHOOTING_URL "https://git.io/vN9le"
 /*-----------------COMMON end----------------------*/
 
 /**********************************选填项区域 end ********************************/

@@ -37,7 +37,8 @@ int tc_iot_prepare_network(tc_iot_network_t * p_network, bool over_tls, const ch
 
 
 int tc_iot_ota_download(const char* api_url, int partial_start, tc_iot_http_download_callback download_callback, const void * context) {
-    tc_iot_network_t network;
+#if 0
+ 
     tc_iot_http_request request;
     unsigned char http_buffer[TC_IOT_HTTP_OTA_REQUEST_LEN];
     int max_http_resp_len = sizeof(http_buffer) - 1;
@@ -207,10 +208,12 @@ parse_url:
 
     }
 
+#endif
     return TC_IOT_ERROR_HTTP_REQUEST_FAILED;
 }
 
 int tc_iot_ota_request_content_length(const char* api_url) {
+#if 0
     tc_iot_network_t network;
     tc_iot_http_request request;
     unsigned char http_buffer[TC_IOT_HTTP_OTA_REQUEST_LEN];
@@ -337,6 +340,7 @@ parse_url:
         }
     }
 
+#endif
     return TC_IOT_ERROR_HTTP_REQUEST_FAILED;
 }
 
