@@ -62,13 +62,11 @@ typedef struct _tc_iot_url_parse_result_t {
  * 解析服务器地址、端口、请求路径等信息。
  *
  * @param input_url 待解析的 url 地址
- * @param input_url_len 待解析的地址长度
  * @param result 解析结果
  *
  * @return >=0 编码结果长度，<0 失败错误码
  * @see tc_iot_sys_code_e
  */
-int tc_iot_url_parse(const char* input_url, int input_url_len,
-                     tc_iot_url_parse_result_t* result);
+int tc_iot_url_parse(const char* input_url, tc_iot_url_parse_result_t* result);
 
 #endif /* end of include guard */

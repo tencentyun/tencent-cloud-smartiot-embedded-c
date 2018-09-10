@@ -425,7 +425,7 @@ int tc_iot_ota_request_content_length(const char* api_url);
  *  @return 结果返回码
  * @see tc_iot_sys_code_e
  */
-int tc_iot_ota_download(const char* api_url, int partial_start, tc_iot_http_download_callback download_callback, const void * context);
+int tc_iot_ota_download(const char* api_url, int partial_start, tc_iot_http_response_callback download_callback, const void * context);
 
 #endif
 

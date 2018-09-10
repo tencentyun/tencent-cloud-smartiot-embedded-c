@@ -111,11 +111,11 @@ int tc_iot_url_decode(const char *input, int input_len, char *output,
 /*  we only support currently: */
 /*  http(s)://host[:port][/path][?query][#fragment] */
 /* */
-int tc_iot_url_parse(const char *input_url, int input_url_len,
-                     tc_iot_url_parse_result_t *result) {
+int tc_iot_url_parse(const char *input_url, tc_iot_url_parse_result_t *result) {
     int pos = 0;
     int prefix_len;
     int split_len;
+    int input_url_len = strlen(input_url);
 
     /* at least should be http://x */
     if (input_url_len <= URL_LEAST_LEN) {

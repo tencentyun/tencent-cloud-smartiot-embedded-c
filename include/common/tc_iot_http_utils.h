@@ -31,9 +31,6 @@
 #define HTTPS_PREFIX "https"
 #define HTTPS_PREFIX_LEN (sizeof(HTTPS_PREFIX) - 1)
 
-#define HTTP_DEFAULT_PORT     80
-#define HTTPS_DEFAULT_PORT    443
-
 #define TC_IOT_HTTP_MAX_URL_LENGTH     128
 #define TC_IOT_HTTP_MAX_HOST_LENGTH    128
 
@@ -126,6 +123,8 @@ int tc_iot_create_active_device_form(char* form, int max_form_len,
  */
 int tc_iot_parse_http_response_code(const char * http_resp);
 
+typedef int (*tc_iot_http_response_callback)(const void * context, const char * data, int data_len, int offset, int total);
+
 typedef enum _tc_iot_http_response_parse_state {
     _PARSER_START,
     _PARSER_VERSION,
@@ -168,8 +167,13 @@ int tc_iot_http_client_set_extra_headers(tc_iot_http_client * c, const char * ex
 int tc_iot_http_client_set_body(tc_iot_http_client * c, const char * body);
 
 int tc_iot_http_client_format_buffer(char * buffer, int buffer_len, tc_iot_http_client * c);
+int tc_iot_http_client_internal_perform(char * buffer, int buffer_used, int buffer_len,
+                                        tc_iot_network_t * p_network,tc_iot_http_response_parser * p_parser,
+                                        const char * host, uint16_t port,
+                                        bool secured, int timeout_ms, tc_iot_http_response_callback resp_callback, const void * callback_context);
 int tc_iot_http_client_perform(char * buffer, int buffer_used, int buffer_len,
                                const char * host, uint16_t port,
                                bool secured, int timeout_ms);
+
 
 #endif /* end of include guard */

@@ -385,6 +385,8 @@ int tc_iot_http_client_format_buffer(char * buffer, int buffer_len, tc_iot_http_
 
     if (c->body) {
         content_length = strlen(c->body);
+    } else {
+        c->body = "";
     }
 
     ret = tc_iot_hal_snprintf(buffer, buffer_len,
@@ -408,24 +410,28 @@ int tc_iot_http_client_format_buffer(char * buffer, int buffer_len, tc_iot_http_
 
 
 int tc_iot_http_client_internal_perform(char * buffer, int buffer_used, int buffer_len,
-                                       tc_iot_network_t * p_network,
-                                       const char * host, uint16_t port,
-                                       bool secured, int timeout_ms) {
+                                        tc_iot_network_t * p_network, tc_iot_http_response_parser * p_parser,
+                                        const char * host, uint16_t port, 
+                                        bool secured, int timeout_ms,
+                                        tc_iot_http_response_callback resp_callback, const void * callback_context) {
+    bool head_only = false;
     const int timer_tick = 100;
     int ret = 0;
     int write_ret = 0;
     int read_ret  = 0;
     int parse_ret = 0;
+    int callback_ret = 0;
     tc_iot_timer timer;
     int parse_left = 0;
     int content_length = 0;
     int received_bytes = 0;
-    tc_iot_http_response_parser parser;
 
     ret = tc_iot_network_prepare(p_network, TC_IOT_SOCK_STREAM, TC_IOT_PROTO_HTTP, secured);
     if (ret < 0) {
         return ret;
     }
+
+    head_only = tc_iot_str4equal(buffer, 'H', 'E', 'A', 'D');
 
     tc_iot_hal_timer_init(&timer);
     tc_iot_hal_timer_countdown_ms(&timer,timeout_ms);
@@ -436,7 +442,7 @@ int tc_iot_http_client_internal_perform(char * buffer, int buffer_used, int buff
         return TC_IOT_SEND_PACK_FAILED;
     }
 
-    tc_iot_http_parser_init(&parser);
+    tc_iot_http_parser_init(p_parser);
     do {
         read_ret = p_network->do_read(p_network, (unsigned char *)buffer+parse_left, buffer_len-parse_left, timer_tick);
         if (read_ret > 0) {
@@ -447,7 +453,7 @@ int tc_iot_http_client_internal_perform(char * buffer, int buffer_used, int buff
                 buffer[read_ret] = '0';
             }
 
-            parse_ret = tc_iot_http_parser_analysis(&parser, buffer, read_ret);
+            parse_ret = tc_iot_http_parser_analysis(p_parser, buffer, read_ret);
             if (parse_ret < 0) {
                 TC_IOT_LOG_ERROR("read from request host=%s:%d failed, ret=%d", host, port, ret);
                 p_network->do_disconnect(p_network);
@@ -466,15 +472,65 @@ int tc_iot_http_client_internal_perform(char * buffer, int buffer_used, int buff
                 buffer[parse_left] = '\0';
             }
 
-            if (_PARSER_END == parser.state) {
-                content_length = parser.content_length;
+            if (p_parser->status_code != 200 && p_parser->status_code != 206) {
+                TC_IOT_LOG_ERROR("http resoponse parser.status_code = %d", p_parser->status_code);
+                p_network->do_disconnect(p_network);
+                return TC_IOT_ERROR_HTTP_REQUEST_FAILED;
+            }
+
+            if (_PARSER_END == p_parser->state) {
+                if (head_only) {
+                    TC_IOT_LOG_TRACE("this is a head request, quit body parsing.");
+                    return TC_IOT_SUCCESS;
+                }
+                content_length = p_parser->content_length;
                 received_bytes = parse_left;
                 TC_IOT_LOG_TRACE("ver=1.%d, code=%d,content_length=%d, received_bytes=%d",
-                                 parser.version, parser.status_code, parser.content_length, received_bytes);
+                                 p_parser->version, p_parser->status_code, p_parser->content_length, received_bytes);
                 if (content_length > buffer_len) {
-                    TC_IOT_LOG_ERROR("buffer not enough: content_length=%d, buffer_len=%d", content_length, buffer_len);
-                    p_network->do_disconnect(p_network);
-                    return TC_IOT_BUFFER_OVERFLOW;
+                    if (resp_callback == NULL) {
+                        TC_IOT_LOG_ERROR("buffer not enough: content_length=%d, buffer_len=%d", content_length, buffer_len);
+                        p_network->do_disconnect(p_network);
+                        return TC_IOT_BUFFER_OVERFLOW;
+                    } else {
+
+                        callback_ret = resp_callback(callback_context, (const char *)buffer, parse_left, received_bytes , content_length);
+                        if (callback_ret != TC_IOT_SUCCESS) {
+                            TC_IOT_LOG_ERROR("callback failed ret=%d, abort.", callback_ret);
+                            return TC_IOT_FAILURE;
+                        }
+
+                        while (received_bytes < content_length) {
+                            // buffer_len-1 是为了预留一个字节，用来添加字符串结束符 '\0' 。
+                            read_ret = p_network->do_read(p_network, (unsigned char *)buffer, buffer_len-1, timer_tick);
+                            if (read_ret > 0) {
+                                received_bytes += read_ret;
+                                TC_IOT_LOG_TRACE("read=%d,total_read=%d, total=%d", read_ret, received_bytes, content_length);
+
+                                buffer[read_ret] = '\0';
+                                callback_ret = resp_callback(callback_context, (const char *)buffer, read_ret, received_bytes , content_length);
+                                if (callback_ret != TC_IOT_SUCCESS) {
+                                    TC_IOT_LOG_ERROR("callback failed ret=%d, abort.", callback_ret);
+                                    return TC_IOT_FAILURE;
+                                }
+                                received_bytes += ret;
+
+                                if (received_bytes >= content_length) {
+                                    TC_IOT_LOG_TRACE("%s=%d, received_bytes=%d", HTTP_HEADER_CONTENT_LENGTH, content_length, received_bytes);
+                                    p_network->do_disconnect(p_network);
+                                    return TC_IOT_SUCCESS;
+                                }
+                            } else if (read_ret == TC_IOT_NET_NOTHING_READ) {
+                                continue;
+                            } else {
+                                TC_IOT_LOG_ERROR("read buffer error:%d", read_ret);
+                                p_network->do_disconnect(p_network);
+                                return read_ret;
+                            }
+                        }
+                        p_network->do_disconnect(p_network);
+                        return received_bytes;
+                    }
                 }
 
                 while (received_bytes < content_length) {
@@ -522,6 +578,9 @@ int tc_iot_http_client_perform(char * buffer, int buffer_used, int buffer_len,
                             const char * host, uint16_t port,
                             bool secured, int timeout_ms) {
     tc_iot_network_t network;
+    tc_iot_http_response_parser parser;
     return tc_iot_http_client_internal_perform(buffer, buffer_used, buffer_len,
-                                               &network, host, port, secured, timeout_ms);
+                                               &network, &parser,  host, port,
+                                               secured, timeout_ms, NULL, NULL);
 }
+

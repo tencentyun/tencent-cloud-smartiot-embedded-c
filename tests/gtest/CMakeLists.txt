@@ -1,7 +1,7 @@
 
 add_executable(test_http gtest.cpp tc_iot_http_test.cpp)
 # Standard linking to gtest stuff.
-target_link_libraries(test_http stdc++ pthread gtest gtest_main tc_iot_common )
+target_link_libraries(test_http tc_iot_ota stdc++ pthread gtest gtest_main tc_iot_common )
 add_test(NAME test_http COMMAND test_http)
 
 add_executable(test_shadow gtest.cpp data_template/tc_iot_shadow_test.cpp)

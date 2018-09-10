@@ -21,5 +21,5 @@ void tc_iot_hal_timer_countdown_second(tc_iot_timer* timer,
 
 int tc_iot_hal_timer_left_ms(tc_iot_timer* timer) {
     TC_IOT_LOG_ERROR("not implemented");  
-    return TC_IOT_FUCTION_NOT_IMPLEMENTED;
+    return TC_IOT_FUNCTION_NOT_IMPLEMENTED;
 }

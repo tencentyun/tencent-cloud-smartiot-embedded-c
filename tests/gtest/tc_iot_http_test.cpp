@@ -59,3 +59,9 @@ TEST(tc_iot_http_utils_testcases, tc_iot_calc_sign)
 }
 
 
+TEST(tc_iot_http_utils_testcases, tc_iot_ota_content_len)
+{
+    const char * url = "http://iot-1251416838.cos.ap-guangzhou.myqcloud.com/firmware/linux/ubuntu-x64-v1.0-light";
+    int content_length = tc_iot_ota_request_content_length(url);
+    ASSERT_GT(content_length, 0);
+}
