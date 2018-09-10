@@ -1,41 +1,5 @@
 #include "tc_iot_inc.h"
 
-
-int tc_iot_prepare_network(tc_iot_network_t * p_network, bool over_tls, const char * certs) {
-    tc_iot_net_context_init_t netcontext;
-#ifdef ENABLE_TLS
-    tc_iot_tls_config_t* config;
-#endif
-
-    IF_NULL_RETURN(p_network, TC_IOT_NULL_POINTER);
-
-    if (over_tls) {
-#ifdef ENABLE_TLS
-        netcontext.fd = -1;
-        netcontext.use_tls = 1;
-
-        config = &(netcontext.tls_config);
-        config->root_ca_in_mem = certs;
-        config->timeout_ms = 2000; // Default TLS read timeout
-        if (netcontext.use_tls) {
-            config->verify_server = 1;
-        }
-
-        tc_iot_hal_tls_init(p_network, &netcontext);
-        TC_IOT_LOG_TRACE("tls network intialized.");
-#else
-        TC_IOT_LOG_FATAL("tls network not supported.");
-        return TC_IOT_TLS_NOT_SUPPORTED;
-#endif
-    } else {
-        netcontext.use_tls = 0;
-        tc_iot_hal_net_init(p_network, &netcontext);
-        TC_IOT_LOG_TRACE("dirtect tcp network intialized.");
-    }
-    return TC_IOT_SUCCESS;
-}
-
-
 int tc_iot_ota_download(const char* api_url, int partial_start, tc_iot_http_response_callback download_callback, const void * context) {
     tc_iot_network_t network;
     char http_buffer[TC_IOT_HTTP_OTA_REQUEST_LEN];

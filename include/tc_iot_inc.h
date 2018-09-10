@@ -12,7 +12,6 @@
 #if defined(ENABLE_SNTP_CLIENT)
 #include "common/tc_iot_sntp.h"
 #endif
-#include "common/tc_iot_nkv.h"
 #include "common/tc_iot_bit.h"
 #include "common/tc_iot_safety_check.h"
 #include "common/tc_iot_string_utils.h"
@@ -28,6 +27,7 @@
 #include "common/tc_iot_url.h"
 #include "common/tc_iot_sign_utils.h"
 #include "common/tc_iot_http_utils.h"
+#include "common/tc_iot_http_client.h"
 
 #include "common/tc_iot_certs.h"
 
