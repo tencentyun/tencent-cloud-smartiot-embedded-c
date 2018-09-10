@@ -36,8 +36,8 @@ int tc_iot_calc_active_device_sign(char* sign_out, int max_sign_len,
                             const char* product_secret,
                             const char* device_name,  
                             const char* product_id,
-                            long nonce, 
-                            long timestamp);
+                            unsigned int nonce, 
+                            unsigned int timestamp);
 
 
 /**
@@ -56,9 +56,9 @@ int tc_iot_calc_active_device_sign(char* sign_out, int max_sign_len,
  * @return 
  */
 int tc_iot_calc_auth_sign(char* sign_out, int max_sign_len, const char* secret, const char* client_id, const char* device_name,
-                          long expire, long nonce,
+                          unsigned int expire, unsigned int nonce,
                           const char* product_id,
-                          long timestamp);
+                          unsigned int timestamp);
 
 /**
  * @brief tc_iot_calc_mqtt_dynamic_sign 计算鉴权签名
@@ -77,8 +77,8 @@ int tc_iot_calc_auth_sign(char* sign_out, int max_sign_len, const char* secret, 
  */
 int tc_iot_calc_mqtt_dynamic_sign(char* sign_out, int max_sign_len, 
         const char* secret, const char* client_id, const char* device_name,
-        long nonce,
+        unsigned int nonce,
         const char* product_id,
-        long timestamp);
+        unsigned int timestamp);
 
 #endif /* end of include guard */

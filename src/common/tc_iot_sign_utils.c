@@ -140,8 +140,8 @@ int tc_iot_calc_active_device_sign(char* sign_out, int max_sign_len,
                             const char* product_secret,
                             const char* device_name,  
                             const char* product_id,
-                            long nonce, 
-                            long timestamp    ) {
+                            unsigned int nonce, 
+                            unsigned int timestamp    ) {
     unsigned char sha256_digest[TC_IOT_SHA256_DIGEST_SIZE];
     int ret;
     char b64_buf[TC_IOT_BASE64_ENCODE_OUT_LEN(TC_IOT_SHA256_DIGEST_SIZE)];
@@ -156,9 +156,9 @@ int tc_iot_calc_active_device_sign(char* sign_out, int max_sign_len,
     ret = tc_iot_calc_sign(
         sha256_digest, sizeof(sha256_digest),
         product_secret,
-        "deviceName=%s&nonce=%d&productId=%s&timestamp=%d",
-        device_name, (int)nonce,
-        product_id, (int)timestamp);
+        "deviceName=%s&nonce=%u&productId=%s&timestamp=%u",
+        device_name, nonce,
+        product_id, timestamp);
 
     ret = tc_iot_base64_encode((unsigned char *)sha256_digest, sizeof(sha256_digest), b64_buf,
                                sizeof(b64_buf));
@@ -171,15 +171,15 @@ int tc_iot_calc_active_device_sign(char* sign_out, int max_sign_len,
     if (url_ret < max_sign_len) {
         sign_out[url_ret] = '\0';
     }
-    TC_IOT_LOG_DEBUG(" tc_iot_calc_active_device_sign deviceName=%s&nonce=%d&productId=%s&timestamp=%d sign:%s", 
-            device_name, (int)nonce,product_id, (int)timestamp , sign_out);
+    TC_IOT_LOG_DEBUG(" tc_iot_calc_active_device_sign deviceName=%s&nonce=%u&productId=%s&timestamp=%u sign:%s", 
+            device_name, nonce,product_id, timestamp , sign_out);
     return url_ret;
 }
 
 int tc_iot_calc_auth_sign(char* sign_out, int max_sign_len, const char* secret, const char* client_id, const char* device_name,
-                          long expire, long nonce,
+                          unsigned int expire, unsigned int nonce,
                           const char* product_id,
-                          long timestamp) {
+                          unsigned int timestamp) {
     unsigned char sha256_digest[TC_IOT_SHA256_DIGEST_SIZE];
     int ret;
     char b64_buf[TC_IOT_BASE64_ENCODE_OUT_LEN(TC_IOT_SHA256_DIGEST_SIZE)];
@@ -195,9 +195,9 @@ int tc_iot_calc_auth_sign(char* sign_out, int max_sign_len, const char* secret, 
     ret = tc_iot_calc_sign(
         sha256_digest, sizeof(sha256_digest),
         secret,
-        "clientId=%s&deviceName=%s&expire=%d&nonce=%d&productId=%s&timestamp=%d",
-        client_id, device_name, (int)expire, (int)nonce,
-        product_id, (int)timestamp);
+        "clientId=%s&deviceName=%s&expire=%u&nonce=%u&productId=%s&timestamp=%u",
+        client_id, device_name, expire, nonce,
+        product_id, timestamp);
 
     ret = tc_iot_base64_encode((unsigned char *)sha256_digest, sizeof(sha256_digest), b64_buf,
                                sizeof(b64_buf));
@@ -218,9 +218,9 @@ int tc_iot_calc_auth_sign(char* sign_out, int max_sign_len, const char* secret, 
 
 int tc_iot_calc_mqtt_dynamic_sign(char* sign_out, int max_sign_len, 
         const char* secret, const char* client_id, const char* device_name,
-        long nonce,
+        unsigned int nonce,
         const char* product_id,
-        long timestamp) {
+        unsigned int timestamp) {
 
     unsigned char sha256_digest[TC_IOT_SHA256_DIGEST_SIZE];
     int ret;
@@ -235,7 +235,7 @@ int tc_iot_calc_mqtt_dynamic_sign(char* sign_out, int max_sign_len,
     ret = tc_iot_calc_sign(
         sha256_digest, sizeof(sha256_digest),
         secret,
-        "clientId=%s&deviceName=%s&nonce=%d&productId=%s&timestamp=%d",
+        "clientId=%s&deviceName=%s&nonce=%u&productId=%s&timestamp=%u",
         client_id, device_name, nonce,
         product_id, timestamp);
 

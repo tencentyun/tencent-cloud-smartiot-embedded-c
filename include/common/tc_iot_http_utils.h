@@ -23,9 +23,9 @@
 int tc_iot_calc_auth_sign(char* sign_out, int max_sign_len, const char* secret,
                           const char* client_id,
                           const char* device_name,
-                          long expire, long nonce,
+                          unsigned int expire, unsigned int nonce,
                           const char* product_id, 
-                          long timestamp);
+                          unsigned int timestamp);
 
 
 /**
@@ -48,10 +48,10 @@ int tc_iot_create_auth_request_form(char* form,  int max_form_len,
                                     const char* secret, 
                                     const char* client_id, 
                                     const char* device_name,
-                                    long expire,
-                                    long nonce,
+                                    unsigned int expire,
+                                    unsigned int nonce,
                                     const char* product_id,
-                                    long timestamp);
+                                    unsigned int timestamp);
 
 /**
  * @brief tc_iot_create_active_device_form 构造 get device 设备激活 HTTP 签名请求 form
@@ -67,9 +67,9 @@ int tc_iot_create_auth_request_form(char* form,  int max_form_len,
  * @see tc_iot_sys_code_e
  */
 int tc_iot_create_active_device_form(char* form, int max_form_len,
-									const char* product_secret, 
-                                    const char* device_name,  
-									const char* product_id,
-                                    long nonce, long timestamp);
+                                     const char* product_secret, 
+                                     const char* device_name,  
+                                     const char* product_id,
+                                     unsigned int nonce, unsigned int timestamp);
 
 #endif /* end of include guard */
