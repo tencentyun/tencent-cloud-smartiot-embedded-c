@@ -1,0 +1,7 @@
+
+list(APPEND TC_IOT_MQTT_TOKEN_SRCS tc_iot_token.c tc_iot_active_device.c)
+
+add_library(tc_iot_token STATIC ${TC_IOT_MQTT_TOKEN_SRCS})
+target_link_libraries(tc_iot_token tc_iot_common tc_iot_hal)
+
+
