@@ -39,7 +39,7 @@ TEST(MQTT, custom_topic)
             "device_secret", "iot-product-id",
             "device_name", "product_key@device_name",
             "", "", 0,
-            TC_IOT_CONFIG_AUTH_MODE, TC_IOT_CONFIG_REGION, TC_IOT_CONFIG_AUTH_API_URL,
+            TC_IOT_CONFIG_AUTH_MODE, TC_IOT_CONFIG_REGION, TC_IOT_CONFIG_API_HOST,
             TC_IOT_CONFIG_MQ_SERVER_HOST,
             TC_IOT_CONFIG_MQ_SERVER_PORT,
         },

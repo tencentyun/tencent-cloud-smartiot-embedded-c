@@ -38,7 +38,6 @@
 #define HTTP_RESPONSE_STATE_PREFIX_LEN (sizeof(HTTP_RESPONSE_STATE_PREFIX)-1)
 
 
-#define HTTP_BODY_FMT "\r\n%s"
 typedef int (*tc_iot_http_response_callback)(const void * context, const char * data, int data_len, int offset, int total);
 
 typedef enum _tc_iot_http_response_parse_state {

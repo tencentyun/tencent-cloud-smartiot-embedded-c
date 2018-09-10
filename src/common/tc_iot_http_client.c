@@ -1,5 +1,13 @@
 #include "tc_iot_inc.h"
 
+/**
+ * @brief    判断当前位置开始之后的字符串，是否有回车符，即剩余待处理数据是否包含完整的 HTTP Header。
+ *
+ * @param    str 待判断的字符串
+ *
+ * @return   bool true 表示有回车符；false 表示无回车符
+ */
+
 static bool tc_iot_http_has_line_ended(const char * str) {
     while (*str) {
         if (*str == '\r') {
@@ -10,6 +18,15 @@ static bool tc_iot_http_has_line_ended(const char * str) {
     return false;
 }
 
+/**
+ * @brief    初始化 HTTP 响应解析结构体。
+ *
+ * @details  置初始状态。
+ *
+ * @param    parser 待初始化的结构体指针。
+ *
+ * @return   无
+ */
 void tc_iot_http_parser_init(tc_iot_http_response_parser * parser) {
     if (parser) {
         parser->state = _PARSER_START;
@@ -17,10 +34,26 @@ void tc_iot_http_parser_init(tc_iot_http_response_parser * parser) {
         parser->status_code = 0;
         parser->content_length = 0;
         parser->location = NULL;
-        /* parser->body = NULL; */
     }
 }
 
+/**
+ * @brief    解析已接收的 HTTP 响应数据。
+ *
+ * @details  根据接收的数据，进行数据解析，主要解析 HTTP 头部信息，将相关数据保存到
+ *           version、status_code、content_length 等信息，其他 HTTP 头部信息，默认忽略。
+ *
+ * @param    parser 解析器指针
+ * @param    buffer 待解析的 HTTP 数据。
+ *
+ * @return   已处理的长度：
+ *              1.当接收的包是完整的包时，返回值一般等于 buffer_len，表示全部都已解析处理;
+ *              2.当接收的包不是完整的包时，返回值为已处理部分的长度，一般小于 buffer_len，
+ *                表示已处理部分的长度，剩余部分未处理数据，需要接收更多数据后，合并后再次调用本函数解析；
+ *              3.数据不满足解析要求，无法解析，需要继续接收更多内容时，返回值为 0，调用端处理逻辑同 2；
+ *              4.出现异常，无法处理时，返回错误码，取值 < 0。
+ * @see tc_iot_sys_code_e
+ */
 int tc_iot_http_parser_analysis(tc_iot_http_response_parser * parser, const char * buffer, int buffer_len) {
     bool header_complete = false;
     const char * pos = NULL;
@@ -172,6 +205,18 @@ start:
 }
 
 
+/**
+ * @brief    HTTP Client 初始化
+ *
+ * @details  初始化 HTTP Client，指定请求的 HTTP Method及默认的版本号，格式等。
+ *
+ * @param    c 待初始化的 HTTP Client 结构
+ * @param    method HTTP 请求方法：HEAD、GET、POST ...
+ *
+ *  @return 结果返回码
+ * @see tc_iot_sys_code_e
+ */
+
 int tc_iot_http_client_init(tc_iot_http_client * c, const char * method) {
     IF_NULL_RETURN(c, TC_IOT_NULL_POINTER);
     IF_NULL_RETURN(method, TC_IOT_NULL_POINTER);
@@ -190,42 +235,129 @@ int tc_iot_http_client_init(tc_iot_http_client * c, const char * method) {
     return TC_IOT_SUCCESS;
 }
 
+
+/**
+ * @brief    设置 HTTP 请求版本号
+ *
+ * @details  设置 HTTP 请求时，携带的版本号，一般为 1.0、1.1 等。
+ *
+ * @param    c HTTP Client 结构指针
+ * @param    version 待设定的版本号：1.0，1.1
+ *
+ *  @return 结果返回码
+ * @see tc_iot_sys_code_e
+ */
 int tc_iot_http_client_set_version(tc_iot_http_client * c, const char * version) {
     IF_NULL_RETURN(c, TC_IOT_NULL_POINTER);
     c->version = version;
     return TC_IOT_SUCCESS;
 }
 
+/**
+ * @brief    设置 HTTP 请求 Host
+ *
+ * @details  设置 HTTP 请求时，头部携带的 Host 参数。
+ *
+ * @param    c HTTP Client 结构指针
+ * @param    host 服务端域名或IP
+ *
+ *  @return 结果返回码
+ * @see tc_iot_sys_code_e
+ */
 int tc_iot_http_client_set_host(tc_iot_http_client * c, const char * host) {
     IF_NULL_RETURN(c, TC_IOT_NULL_POINTER);
     c->host = host;
     return TC_IOT_SUCCESS;
 }
 
+/**
+ * @brief    设置请求路径
+ *
+ * @details  设置请求路径地址，例如，/root/some/path
+ *
+ * @param    c HTTP Client 结构指针
+ * @param    abs_path 请求路径
+ *
+ *  @return 结果返回码
+ * @see tc_iot_sys_code_e
+ *
+ */
 int tc_iot_http_client_set_abs_path(tc_iot_http_client * c, const char * abs_path) {
     IF_NULL_RETURN(c, TC_IOT_NULL_POINTER);
     c->abs_path = abs_path;
     return TC_IOT_SUCCESS;
 }
 
+
+/**
+ * @brief    设置请求格式
+ *
+ * @details  设置请求格式
+ *
+ * @param    c HTTP Client 结构指针
+ * @param    content_type 请求格式，例如： application/json, application/x-www-form-urlencoded
+ *
+ *  @return 结果返回码
+ * @see tc_iot_sys_code_e
+ *
+ */
 int tc_iot_http_client_set_content_type(tc_iot_http_client * c, const char * content_type) {
     IF_NULL_RETURN(c, TC_IOT_NULL_POINTER);
     c->content_type = content_type;
     return TC_IOT_SUCCESS;
 }
 
+/**
+ * @brief    设置其他自定义 HTTP Header 参数。
+ *
+ * @details  设置除 Host、Content Type、Content Length、User Agent、Accept、Accept-Encoding外的，其他自定义 HTTP Header 参数，多次调用时，以最后一次为有效。
+ *
+ * @param    c HTTP Client 结构指针
+ * @param    extra_headers 待指定的 HTTP Header，每个Header要固定以 \r\n 作为行结束符，格式为：
+ "Header1: Value1\r\nHeader2: Value2\r\n...HeaderN:ValueN\r\n"
+ *
+ *  @return 结果返回码
+ * @see tc_iot_sys_code_e
+ *
+ */
 int tc_iot_http_client_set_extra_headers(tc_iot_http_client * c, const char * extra_headers) {
     IF_NULL_RETURN(c, TC_IOT_NULL_POINTER);
     c->extra_headers = extra_headers;
     return TC_IOT_SUCCESS;
 }
 
+/**
+ * @brief    设置请求 Body
+ *
+ * @details  设置请求 Body
+ *
+ * @param    c HTTP Client 结构指针
+ * @param    body 请求内容，例如，Json文档或者URL Encode的表格数据等。
+ *
+ *  @return 结果返回码
+ * @see tc_iot_sys_code_e
+ *
+ */
 int tc_iot_http_client_set_body(tc_iot_http_client * c, const char * body) {
     IF_NULL_RETURN(c, TC_IOT_NULL_POINTER);
     c->body = body;
     return TC_IOT_SUCCESS;
 }
 
+
+/**
+ * @brief    格式化请求数据，写入到 buffer 中。
+ *
+ * @details  格式化请求数据，写入到 buffer 中。
+ *
+ * @param    buffer 结果写入到改指针指向区域
+ * @param    buffer_len 缓存区最大大小
+ * @param    c HTTP Client 结构指针
+ *
+ *  @return 结果返回码 大于 0 时，表示有效数据长度，小于 0 时，则表示处理出错。
+ * @see tc_iot_sys_code_e
+ *
+ */
 int tc_iot_http_client_format_buffer(char * buffer, int buffer_len, tc_iot_http_client * c) {
     int ret = 0;
     int content_length = 0;
@@ -260,6 +392,27 @@ int tc_iot_http_client_format_buffer(char * buffer, int buffer_len, tc_iot_http_
 
 
 
+/**
+ * @brief    处理将准备好的 HTTP 请求数据发送出去，并接受响应，对于超大数据，通过回调函数通知给调用方。
+ *
+ * @details  将 buffer 中指定的数据（buffer_used 表示有效长度），通过网络发送给服务端，
+ *           并复用 buffer 接收响应数据。最终返回时，buffer 仅包含响应中的 body 部分数据。
+ *
+ * @param    buffer 待发送数据
+ * @param    buffer_used 待发送数据的有效长度
+ * @param    buffer_len buffer 区域最大可用长度，用来接收响应数据时判断
+ * @param    p_network 网络接口
+ * @param    p_parser HTTP 响应解析结构体
+ * @param    host 服务器IP或域名地址
+ * @param    port 服务器端口
+ * @param    secured  是否采用 HTTPS
+ * @param    timeout_ms 请求最大等待时延，单位为毫秒
+ * @param    resp_callback 请求响应回调，当接收缓存区太小，无法一次性收完时，通过指定回调，可分批接收数据（OTA 场景）。默认填 NULL。
+ * @param    callback_context 和 resp_callback 配合使用，用来指定 resp_callback 回调时，回传的 context 参数。默认填 NULL。
+ *
+ * @return   return > 0 时，表示已有效接收的 body 长度， < 0 时，表示出错。
+ * @see tc_iot_sys_code_e
+ */
 int tc_iot_http_client_internal_perform(char * buffer, int buffer_used, int buffer_len,
                                         tc_iot_network_t * p_network, tc_iot_http_response_parser * p_parser,
                                         const char * host, uint16_t port,
@@ -425,6 +578,23 @@ int tc_iot_http_client_internal_perform(char * buffer, int buffer_used, int buff
     }
 }
 
+/**
+ * @brief    处理将准备好的 HTTP 请求数据发送出去，并接受响应，对于超大数据，通过回调函数通知给调用方。
+ *
+ * @details  将 buffer 中指定的数据（buffer_used 表示有效长度），通过网络发送给服务端，
+ *           并复用 buffer 接收响应数据。最终返回时，buffer 仅包含响应中的 body 部分数据。
+ *
+ * @param    buffer 待发送数据
+ * @param    buffer_used 待发送数据的有效长度
+ * @param    buffer_len buffer 区域最大可用长度，用来接收响应数据时判断
+ * @param    host 服务器IP或域名地址
+ * @param    port 服务器端口
+ * @param    secured  是否采用 HTTPS
+ * @param    timeout_ms 请求最大等待时延，单位为毫秒
+ *
+ * @return   return > 0 时，表示已有效接收的 body 长度， < 0 时，表示出错。
+ * @see tc_iot_sys_code_e
+ */
 int tc_iot_http_client_perform(char * buffer, int buffer_used, int buffer_len,
                             const char * host, uint16_t port,
                             bool secured, int timeout_ms) {

@@ -42,4 +42,6 @@
 #include "ota/tc_iot_ota_download.h"
 #endif
 
+#include "tc_iot_export.h"
+
 #endif /* end of include guard */
