@@ -30,7 +30,7 @@ int tc_iot_network_prepare(tc_iot_network_t * p_network, tc_iot_network_type typ
     memset(p_network, 0, sizeof(* p_network));
 
     if (over_tls) {
-#if defined(ENABLE_TLS) || defined(ENABLE_DTLS)
+#if defined(ENABLE_TLS)
         netcontext.fd = -1;
         netcontext.use_tls = 1;
 
@@ -44,22 +44,19 @@ int tc_iot_network_prepare(tc_iot_network_t * p_network, tc_iot_network_type typ
         }
 
         if (TC_IOT_SOCK_STREAM == type) {
-#if defined(ENABLE_TLS)
             tc_iot_hal_tls_init(p_network, &netcontext);
-#endif
+            TC_IOT_LOG_TRACE("tls network intialized.");
         } else {
-#if defined(ENABLE_DTLS)
-            tc_iot_hal_dtls_init(p_network, &netcontext);
-#endif
+            TC_IOT_LOG_FATAL("tls network not supported type=%d.", type);
         }
         /* init network end*/
-        TC_IOT_LOG_TRACE("tls network intialized.");
 #else
         TC_IOT_LOG_FATAL("tls network not supported.");
         return TC_IOT_TLS_NOT_SUPPORTED;
 #endif
     } else {
-        memset(&netcontext, 0, sizeof(netcontext));
+        netcontext.fd = -1;
+        netcontext.use_tls = 0;
         tc_iot_hal_net_init(p_network, &netcontext);
         TC_IOT_LOG_TRACE("dirtect tcp network intialized.");
     }

@@ -426,134 +426,6 @@ int tc_iot_http_head(tc_iot_network_t* network,
     }
 }
 
-static int http_post_data(tc_iot_network_t* network,
-                         tc_iot_http_request* request, const char* url,
-                         const char* encoded_body, char* resp, int resp_max_len,
-                         int timeout_ms, const char * content_type) {
-    tc_iot_url_parse_result_t result;
-    char temp_host[TC_IOT_HTTP_MAX_HOST_LENGTH];
-    int read_len;
-    int written_len;
-    int ret = tc_iot_url_parse(url, strlen(url), &result);
-
-    if (ret < 0) {
-        return ret;
-    }
-
-    if (result.path_len) {
-        ret = tc_iot_create_post_request(
-            request, url + result.path_start, result.path_len,
-            url + result.host_start, result.host_len, encoded_body, content_type);
-    } else {
-        ret =
-            tc_iot_create_post_request(request, "/", 1, url + result.host_start,
-                                       result.host_len, encoded_body, content_type);
-    }
-
-    if (result.host_len >= sizeof(temp_host)) {
-        TC_IOT_LOG_ERROR("host address too long.");
-        return -1;
-    }
-
-    if (result.over_tls != network->net_context.use_tls) {
-        TC_IOT_LOG_WARN("network type not match: url tls=%d, context tls=%d",
-                 (int)result.over_tls, (int)network->net_context.use_tls);
-        return -1;
-    }
-
-    strncpy(temp_host, url + result.host_start, result.host_len);
-    temp_host[result.host_len] = '\0';
-    tc_iot_mem_usage_log("temp_host[TC_IOT_HTTP_MAX_HOST_LENGTH]", sizeof(temp_host), result.host_len);
-
-    TC_IOT_LOG_TRACE("remote=%s:%d", temp_host, result.port);
-
-    network->do_connect(network, temp_host, result.port);
-    written_len = network->do_write(network, (unsigned char *)request->buf.data,
-                                    request->buf.pos, timeout_ms);
-
-    TC_IOT_LOG_TRACE("request with,len=%d:\n%s", written_len, request->buf.data);
-    read_len = network->do_read(network, (unsigned char *)resp, resp_max_len, timeout_ms);
-    if (resp_max_len > read_len) {
-        resp[read_len] = '\0';
-        TC_IOT_LOG_TRACE("response with:\n%s", resp);
-    } else {
-        resp[resp_max_len-1] = '\0';
-        TC_IOT_LOG_ERROR("response with(max=%d > read=%d):\n%s...", resp_max_len, read_len, resp);
-        return TC_IOT_BUFFER_OVERFLOW;
-    }
-
-    network->do_disconnect(network);
-
-    return read_len;
-}
-
-int http_post_urlencoded(tc_iot_network_t* network,
-                         tc_iot_http_request* request, const char* url,
-                         const char* encoded_body, char* resp, int resp_max_len,
-                         int timeout_ms) {
-    return http_post_data(network, request, url, encoded_body, resp, resp_max_len, timeout_ms, HTTP_CONTENT_FORM_URLENCODED);
-}
-
-int http_post_json(tc_iot_network_t* network,
-                         tc_iot_http_request* request, const char* url,
-                         const char* json_body, char* resp, int resp_max_len,
-                         int timeout_ms) {
-    return http_post_data(network, request, url, json_body, resp, resp_max_len, timeout_ms, HTTP_CONTENT_JSON);
-}
-
-
-int tc_iot_create_mqapi_rpc_json(char* form, int max_form_len,
-                                    const char* secret,
-                                    const char* device_name,
-                                    const char* message,
-                                    long nonce,
-                                    const char* product_id,
-                                    long timestamp
-                                    ) {
-    unsigned char sha256_digest[TC_IOT_SHA256_DIGEST_SIZE];
-    int ret;
-    char b64_buf[TC_IOT_BASE64_ENCODE_OUT_LEN(TC_IOT_SHA256_DIGEST_SIZE)];
-    tc_iot_json_writer writer;
-    tc_iot_json_writer * w = &writer;
-
-    IF_NULL_RETURN(form, TC_IOT_NULL_POINTER);
-    IF_NULL_RETURN(secret, TC_IOT_NULL_POINTER);
-    IF_NULL_RETURN(message, TC_IOT_NULL_POINTER);
-    IF_NULL_RETURN(device_name, TC_IOT_NULL_POINTER);
-    IF_NULL_RETURN(product_id, TC_IOT_NULL_POINTER);
-
-    ret = tc_iot_calc_sign(
-            sha256_digest, sizeof(sha256_digest),
-            secret,
-            "deviceName=%s&message=%s&nonce=%d&productId=%s&timestamp=%d",
-             device_name,message,nonce,product_id,timestamp
-        );
-
-    ret = tc_iot_base64_encode((unsigned char *)sha256_digest, sizeof(sha256_digest), b64_buf,
-                               sizeof(b64_buf));
-    if (ret < sizeof(b64_buf) && ret > 0) {
-       b64_buf[ret] = '\0'; 
-       tc_iot_mem_usage_log("b64_buf", sizeof(b64_buf), ret);
-    } else {
-        TC_IOT_LOG_ERROR("b64_buf for sha256 digest overflow, ret=%d.", ret);
-        if (ret < 0) {
-            return ret;
-        } else {
-            return TC_IOT_BUFFER_OVERFLOW;
-        }
-    }
-
-    tc_iot_json_writer_open(w, form, max_form_len);
-    tc_iot_json_writer_string(w ,"productId", product_id);
-    tc_iot_json_writer_string(w ,"deviceName", device_name);
-    tc_iot_json_writer_int(w ,"nonce", nonce);
-    tc_iot_json_writer_int(w ,"timestamp", timestamp);
-    tc_iot_json_writer_string(w ,"message", message);
-    tc_iot_json_writer_string(w ,"signature", b64_buf);
-    ret = tc_iot_json_writer_close(w);
-
-    return ret;
-}
 
 bool tc_iot_http_has_line_ended(const char * str) {
     while (*str) {
@@ -734,6 +606,8 @@ int tc_iot_http_client_init(tc_iot_http_client * c, const char * method) {
     memset(c, 0, sizeof(*c));
     if (!method) {
         c->method = HTTP_POST;
+    } else {
+        c->method = method;
     }
     c->version = HTTP_VERSION_1_1;
     c->abs_path = "/";
@@ -832,6 +706,7 @@ int tc_iot_http_client_perform(char * buffer, int buffer_used, int buffer_len,
 
     tc_iot_hal_timer_init(&timer);
     tc_iot_hal_timer_countdown_ms(&timer,timeout_ms);
+    ret = network.do_connect(&network, host, port);
     write_ret = network.do_write(&network, (unsigned char *)buffer, buffer_used, timeout_ms);
     if (write_ret != buffer_used) {
         TC_IOT_LOG_ERROR("send packet failed: expect len=%d, write return=%d", buffer_used, write_ret)
@@ -869,30 +744,37 @@ int tc_iot_http_client_perform(char * buffer, int buffer_used, int buffer_len,
             }
 
             if (_PARSER_END == parser.state) {
-                TC_IOT_LOG_TRACE("ver=1.%d, code=%d,content_length=%d", parser.version, parser.status_code, parser.content_length);
                 content_length = parser.content_length;
                 received_bytes = parse_left;
+                TC_IOT_LOG_TRACE("ver=1.%d, code=%d,content_length=%d, received_bytes=%d",
+                                 parser.version, parser.status_code, parser.content_length, received_bytes);
                 if (content_length > buffer_len) {
                     TC_IOT_LOG_ERROR("buffer not enough: content_length=%d, buffer_len=%d", content_length, buffer_len);
+                    network.do_disconnect(&network);
                     return TC_IOT_BUFFER_OVERFLOW;
                 }
 
                 while (received_bytes < content_length) {
                     read_ret = network.do_read(&network, (unsigned char *)buffer+parse_left, buffer_len-parse_left, timer_tick);
                     if (read_ret > 0) {
-                        received_bytes += content_length;
+                        received_bytes += read_ret;
+                        TC_IOT_LOG_TRACE("read=%d,total_read=%d, total=%d", read_ret, received_bytes, content_length);
                     } else if (read_ret == TC_IOT_NET_NOTHING_READ) {
                         continue;
                     } else {
                         TC_IOT_LOG_ERROR("read buffer error:%d", read_ret);
+                        network.do_disconnect(&network);
                         return read_ret;
                     }
                 }
+                network.do_disconnect(&network);
+                return received_bytes;
             }
         } else if (read_ret == TC_IOT_NET_NOTHING_READ) {
             continue;
         } else {
             TC_IOT_LOG_ERROR("read buffer error:%d", read_ret);
+            network.do_disconnect(&network);
             return read_ret;
         }
 
@@ -903,6 +785,8 @@ int tc_iot_http_client_perform(char * buffer, int buffer_used, int buffer_len,
         }
 
     } while(!tc_iot_hal_timer_is_expired(&timer) && (received_bytes < buffer_len));
+
+    network.do_disconnect(&network);
 
     if (received_bytes > 0) {
         return received_bytes;

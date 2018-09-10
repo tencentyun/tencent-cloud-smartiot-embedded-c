@@ -116,4 +116,10 @@
 #define TC_IOT_TLS_ERROR_STR_LEN            64
 #define TC_IOT_TLS_INFO_LEN                 64
 
+#define TC_IOT_API_TIMEOUT_MS               6000
+#define TC_IOT_API_TOKEN_PATH               "/token"
+#define TC_IOT_API_ACTIVE_PATH              "/secret"
+
+#define TC_IOT_TROUBLE_SHOOTING_URL         "https://invalid/"
+
 #endif /* end of include guard */

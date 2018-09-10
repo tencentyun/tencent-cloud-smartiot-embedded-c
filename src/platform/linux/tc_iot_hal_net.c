@@ -23,8 +23,8 @@ int tc_iot_hal_net_read(tc_iot_network_t* network, unsigned char* buffer,
         if (rc == -1) {
             if (errno != EAGAIN && errno != EWOULDBLOCK) {
                 bytes = -1;
+                /* TC_IOT_LOG_TRACE("recv rc=%d, errno=%d,str=%s,timeout=%d",rc, errno, strerror(errno), timeout_ms); */
             }
-            /* TC_IOT_LOG_TRACE("recv rc=%d, errno=%d,str=%s,timeout=%d,ts=%d",rc, errno, strerror(errno), timeout_ms, time(NULL)); */
             break;
         } else if (rc == 0) {
             if (bytes > 0) {

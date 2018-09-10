@@ -88,18 +88,12 @@
 #endif
 
 // begin: DEBUG use only 
-#define TC_IOT_CONFIG_ACTIVE_API_URL_DEBUG   "http://" TC_IOT_SERVER_REGION ".auth.iot.cloud.tencent.com/secret"
-#define TC_IOT_CONFIG_AUTH_API_URL_DEBUG	 "http://" TC_IOT_SERVER_REGION ".auth.iot.cloud.tencent.com/token"
+#define TC_IOT_CONFIG_ACTIVE_API_URL_DEBUG   "http://" TC_IOT_CONFIG_REGION ".auth.iot.cloud.tencent.com/secret"
+#define TC_IOT_CONFIG_AUTH_API_URL_DEBUG	 "http://" TC_IOT_CONFIG_REGION ".auth.iot.cloud.tencent.com/token"
 // end: DEBUG use only 
 
 // API 服务域名根地址
-#define TC_IOT_CONFIG_API_DOMAIN_ROOT TC_IOT_CONFIG_API_HTTP_PROTOCOL "://" TC_IOT_CONFIG_REGION ".auth-device-iot.tencentcloudapi.com"
-
-// 设备动态激活请求地址
-#define TC_IOT_CONFIG_ACTIVE_API_URL  TC_IOT_CONFIG_API_DOMAIN_ROOT "/secret"
-
-// 设备动态令牌请求地址
-#define TC_IOT_CONFIG_AUTH_API_URL    TC_IOT_CONFIG_API_DOMAIN_ROOT "/token"
+#define TC_IOT_CONFIG_API_HOST TC_IOT_CONFIG_REGION ".auth-device-iot.tencentcloudapi.com"
 
 /* connect、publish、subscribe、unsubscribe */
 /* 等命令执行超时时长，单位是毫秒*/
@@ -112,19 +106,6 @@
 #define TC_IOT_CONFIG_AUTO_RECONNECT 1
 
 #define TC_IOT_CONFIG_CLEAN_SESSION 1
-
-/* 自定义协议时，建议下行消息topic，mq服务端的响应和下行推送，*/
-/* 都会发布到 "<product id>/<device name>/cmd" 这个topic，此 Topic
- * 需要用户使用前，自行在“Topic 类管理”中创建*/
-/* 客户端只需要订阅这个topic即可*/
-#define TC_IOT_MQTT_SUB_TOPIC_FMT "%s/%s/cmd"
-#define TC_IOT_MQTT_SUB_TOPIC_DEF TC_IOT_CONFIG_DEVICE_PRODUCT_ID "/" TC_IOT_CONFIG_DEVICE_NAME "/cmd"
-
-/* 自定义协议时，建议上行消息topic，客户端请求服务端的消息，发到到这个topic即可*/
-/* topic格式"<product id>/<device name>/update" 这个topic，此 Topic
- * 需要用户使用前，自行在“Topic 类管理”中创建*/
-#define TC_IOT_MQTT_PUB_TOPIC_FMT "%s/%s/update"
-#define TC_IOT_MQTT_PUB_TOPIC_DEF TC_IOT_CONFIG_DEVICE_PRODUCT_ID "/" TC_IOT_CONFIG_DEVICE_NAME "/update"
 
 /* shadow下行消息topic，mq服务端的响应和下行推送，*/
 /* 都会发布到 "shadow/get/<product id>/<device name>" 这个topic*/
@@ -141,49 +122,6 @@
 
 /*------------------MQTT end---------------------*/
 
-
-/*------------------COAP begin---------------------*/
-
-// COAP 上报地址，tp= 为固定参数名称前缀，/xxxx/yyyy/update 为实际 Topic
-#define  TC_IOT_COAP_PUB_TOPIC_PARM_FMT   "tp=/%s/%s/update"
-
-// COAP RPC 订阅下行地址，st= 为固定参数名称前缀，shadow/get/xxx 为实际 Topic
-#define  TC_IOT_COAP_RPC_SUB_TOPIC_PARM_FMT   "st=shadow/get/%s/%s"
-
-// COAP RPC 发送请求的上行地址，pt= 为固定参数名称前缀，shadow/get/xxx 为实际 Topic
-#define  TC_IOT_COAP_RPC_PUB_TOPIC_PARM_FMT   "pt=shadow/update/%s/%s"
-
-#define TC_IOT_COAP_DTLS_PSK "secretPSK"
-#define TC_IOT_COAP_DTLS_PSK_ID TC_IOT_CONFIG_DEVICE_NAME
-
-
-#define TC_IOT_CONFIG_COAP_SERVER_HOST TC_IOT_CONFIG_REGION ".coap.tencentcloudapi.com"
-
-#ifdef ENABLE_DTLS
-/* 是否启用DTLS用于CoAP请求*/
-#define TC_IOT_CONFIG_USE_DTLS 1
-#else
-#define TC_IOT_CONFIG_USE_DTLS 0
-#endif
-
-
-/* TLS 握手执行超时时长，单位是毫秒*/
-#define TC_IOT_CONFIG_DTLS_HANDSHAKE_TIMEOUT_MS  10000
-
-#if TC_IOT_CONFIG_USE_DTLS
-/* CoAP服务的DTLS端口一般为5684*/
-#define TC_IOT_CONFIG_COAP_SERVER_PORT 5684
-#else
-/* MQ服务的默认端口一般为5683*/
-#define TC_IOT_CONFIG_COAP_SERVER_PORT 5683
-#endif
-
-/*------------------COAP end---------------------*/
-
-/*------------------HTTP begin---------------------*/
-#define TC_IOT_CONFIG_RPC_API_URL  TC_IOT_CONFIG_API_DOMAIN_ROOT "/rpc"
-/*------------------HTTP end---------------------*/
-
 /*-----------------COMMON begin----------------------*/
 /* tls 相关配置*/
 /* 根证书路径*/
@@ -193,7 +131,6 @@
 /* 客户端私钥路径*/
 #define TC_IOT_CONFIG_CLIENT_KEY NULL
 
-#define TC_IOT_TROUBLE_SHOOTING_URL "https://git.io/vN9le"
 /*-----------------COMMON end----------------------*/
 
 /**********************************选填项区域 end ********************************/

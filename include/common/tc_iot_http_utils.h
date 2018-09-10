@@ -31,6 +31,9 @@
 #define HTTPS_PREFIX "https"
 #define HTTPS_PREFIX_LEN (sizeof(HTTPS_PREFIX) - 1)
 
+#define HTTP_DEFAULT_PORT     80
+#define HTTPS_DEFAULT_PORT    443
+
 #define TC_IOT_HTTP_MAX_URL_LENGTH     128
 #define TC_IOT_HTTP_MAX_HOST_LENGTH    128
 

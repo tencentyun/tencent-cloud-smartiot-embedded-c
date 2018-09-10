@@ -7,7 +7,7 @@
 
 /* #undef ENABLE_COAP */
 
-#define ENABLE_TLS
+/* #undef ENABLE_TLS */
 /* #undef ENABLE_DTLS */
 /* #undef ENABLE_SNTP_CLIENT */
 
