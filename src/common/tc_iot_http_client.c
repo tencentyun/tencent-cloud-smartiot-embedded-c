@@ -7,7 +7,6 @@
  *
  * @return   bool true 表示有回车符；false 表示无回车符
  */
-
 static bool tc_iot_http_has_line_ended(const char * str) {
     while (*str) {
         if (*str == '\r') {
@@ -471,6 +470,7 @@ int tc_iot_http_client_internal_perform(char * buffer, int buffer_used, int buff
             }
 
             parse_left = read_ret - parse_ret;
+            // 将未解析的数据前移，继续接收数据并解析
             if (parse_left > 0) {
                 memmove(buffer, buffer+parse_ret, parse_left);
                 buffer[parse_left] = '\0';
@@ -482,12 +482,15 @@ int tc_iot_http_client_internal_perform(char * buffer, int buffer_used, int buff
                 return TC_IOT_ERROR_HTTP_REQUEST_FAILED;
             }
 
+            // HTTP Header 全部解析完成
             if (_PARSER_END == p_parser->state) {
                 if (head_only) {
+                    // HEAD 请求无包体，可直接返回
                     TC_IOT_LOG_TRACE("this is a head request, quit body parsing.");
                     return TC_IOT_SUCCESS;
                 }
                 content_length = p_parser->content_length;
+                // 至此，未解析的数据都是响应包体
                 received_bytes = parse_left;
                 TC_IOT_LOG_TRACE("ver=1.%d, code=%d,content_length=%d, received_bytes=%d",
                                  p_parser->version, p_parser->status_code, p_parser->content_length, received_bytes);
@@ -498,6 +501,7 @@ int tc_iot_http_client_internal_perform(char * buffer, int buffer_used, int buff
                         return TC_IOT_BUFFER_OVERFLOW;
                     } else {
 
+                        // 回调通知接收数据
                         callback_ret = resp_callback(callback_context, (const char *)buffer, parse_left, received_bytes , content_length);
                         if (callback_ret != TC_IOT_SUCCESS) {
                             TC_IOT_LOG_ERROR("callback failed ret=%d, abort.", callback_ret);

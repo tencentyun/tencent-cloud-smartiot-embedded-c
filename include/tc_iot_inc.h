@@ -24,6 +24,7 @@
 #include "common/tc_iot_ya_buffer.h"
 #include "common/tc_iot_base64.h"
 #include "common/tc_iot_json.h"
+#include "common/tc_iot_json_writer.h"
 #include "common/tc_iot_url.h"
 #include "common/tc_iot_sign_utils.h"
 #include "common/tc_iot_http_utils.h"
