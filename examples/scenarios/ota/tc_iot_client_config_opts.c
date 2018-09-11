@@ -143,7 +143,7 @@ void parse_command(tc_iot_mqtt_client_config * config, int argc, char ** argv) {
                 break;
             case 's':
                 if (optarg) {
-                    strncpy(config->device_info.secret, optarg, TC_IOT_MAX_SECRET_LEN);
+                    strncpy(config->device_info.device_secret, optarg, sizeof(config->device_info.device_secret));
                     tc_iot_hal_printf ("secret=%s\n", optarg);
                 }
                 break;

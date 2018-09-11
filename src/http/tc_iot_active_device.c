@@ -91,8 +91,8 @@ int tc_iot_get_device_secret(const char* api_url, char* root_ca_path, long times
         }
         */
         password_index = tc_iot_json_find_token(rsp_body, t, r, "data.device_secret",
-                                                p_device_info->secret,
-                                                TC_IOT_MAX_SECRET_LEN);
+                                                p_device_info->device_secret,
+                                                sizeof(p_device_info->device_secret));
         if (password_index <= 0) {
             TC_IOT_LOG_TRACE("data.device_secret not found in response.");
             return TC_IOT_REFRESH_TOKEN_FAILED;

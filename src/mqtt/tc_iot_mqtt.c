@@ -1264,7 +1264,7 @@ int tc_iot_mqtt_refresh_dynamic_sign(long timestamp, long nonce, tc_iot_device_i
     char * password = p_device_info->password;
     char * product_id = p_device_info->product_id;
     char * client_id = p_device_info->client_id;
-    char * secret = p_device_info->secret;
+    char * secret = p_device_info->device_secret;
     char * device_name = p_device_info->device_name;
 
     int password_len = 0;

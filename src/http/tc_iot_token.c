@@ -31,7 +31,7 @@ int tc_iot_refresh_auth_token(long timestamp, long nonce, tc_iot_device_info* p_
 
 
     sign_len = tc_iot_create_auth_request_form(
-        sign_out, sizeof(sign_out), p_device_info->secret,
+        sign_out, sizeof(sign_out), p_device_info->device_secret,
          p_device_info->client_id,
          p_device_info->device_name,
          expire, nonce,

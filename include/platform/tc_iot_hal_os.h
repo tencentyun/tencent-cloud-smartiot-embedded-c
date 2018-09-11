@@ -105,6 +105,13 @@ typedef enum _tc_iot_device_config_id_def {
     TC_IOT_DCFG_COAP_HOST,
 } tc_iot_device_config_id_def;
 
+typedef struct _tc_iot_device_config_data {
+    char product_id[TC_IOT_MAX_PRODUCT_ID_LEN];
+    char product_key[TC_IOT_MAX_PRODUCT_KEY_LEN];
+    char device_name[TC_IOT_MAX_DEVICE_NAME_LEN];
+    char device_secret[TC_IOT_MAX_DEVICE_SECRET_LEN];
+}tc_iot_device_config_data;
+
 
 /**
  * @brief tc_iot_hal_set_value 持久化保存一个 id - value 值, 比如保存在文件系统或者 flash 里面

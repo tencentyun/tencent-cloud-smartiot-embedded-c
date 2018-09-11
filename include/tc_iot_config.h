@@ -79,7 +79,7 @@
 /* 密码长度 */
 #define TC_IOT_MAX_PASSWORD_LEN 128
 /* 签名秘钥长度 */
-#define TC_IOT_MAX_SECRET_LEN 64
+#define TC_IOT_MAX_DEVICE_SECRET_LEN 64
 /* product id 长度 */
 #define TC_IOT_MAX_PRODUCT_ID_LEN 20
 /* product key 长度 */

@@ -130,7 +130,7 @@ typedef enum _tc_iot_device_auth_mode_e {
  * @brief 设备信息
  */
 typedef struct _tc_iot_device_info {
-    char secret[TC_IOT_MAX_SECRET_LEN];  /**< 设备签名秘钥*/
+    char device_secret[TC_IOT_MAX_DEVICE_SECRET_LEN];  /**< 设备签名秘钥*/
     char product_id[TC_IOT_MAX_PRODUCT_ID_LEN]; /**< 设备 Product Id*/
     char device_name[TC_IOT_MAX_DEVICE_NAME_LEN];  /**< 设备 Device Name*/
     char client_id[TC_IOT_MAX_CLIENT_ID_LEN]; /**< 设备 Client Id*/

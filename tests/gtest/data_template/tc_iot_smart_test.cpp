@@ -47,7 +47,7 @@ TEST(IOTSUITE, data_template)
 
     strcpy(p_client_config->device_info.product_id, product_id);
     strcpy(p_client_config->device_info.device_name, device_name);
-    strcpy(p_client_config->device_info.secret, device_secret);
+    strcpy(p_client_config->device_info.device_secret, device_secret);
     sprintf(p_client_config->device_info.client_id, "%s@%s", product_key, device_name);
 
     /* 根据 product id 和device name 定义，生成发布和订阅的 Topic 名称。 */

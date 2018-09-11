@@ -79,7 +79,7 @@ TEST(MQTT, custom_topic)
 
     strcpy(p_client_config->device_info.product_id, product_id);
     strcpy(p_client_config->device_info.device_name, device_name);
-    strcpy(p_client_config->device_info.secret, device_secret);
+    strcpy(p_client_config->device_info.device_secret, device_secret);
     sprintf(p_client_config->device_info.client_id, "%s@%s", product_key, device_name);
 
 
