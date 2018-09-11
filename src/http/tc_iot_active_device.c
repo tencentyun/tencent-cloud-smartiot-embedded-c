@@ -42,7 +42,7 @@ int tc_iot_get_device_secret(const char* api_url, char* root_ca_path, long times
     p_http_client = &http_client;
     tc_iot_http_client_init(p_http_client, HTTP_POST);
     tc_iot_http_client_set_body(p_http_client, sign_out);
-    tc_iot_http_client_set_host(p_http_client, p_device_info->http_host);
+    tc_iot_http_client_set_host(p_http_client, p_device_info->api_host);
     tc_iot_http_client_set_abs_path(p_http_client, TC_IOT_API_TOKEN_PATH);
     tc_iot_http_client_set_content_type(p_http_client, HTTP_CONTENT_FORM_URLENCODED);
 
@@ -50,7 +50,7 @@ int tc_iot_get_device_secret(const char* api_url, char* root_ca_path, long times
 
     TC_IOT_LOG_TRACE("http_buffer=%s", http_buffer);
     ret = tc_iot_http_client_perform(http_buffer,strlen(http_buffer), sizeof(http_buffer),
-                                     p_device_info->http_host, port, secured, timeout_ms);
+                                     p_device_info->api_host, port, secured, timeout_ms);
     tc_iot_mem_usage_log("http_buffer[TC_IOT_HTTP_TOKEN_RESPONSE_LEN]", sizeof(http_buffer), strlen(http_buffer));
 
     if (ret < 0) {

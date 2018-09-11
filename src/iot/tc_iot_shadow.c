@@ -77,6 +77,11 @@ int tc_iot_shadow_construct(tc_iot_shadow_client *c,
         return rc;
     }
 
+    rc = tc_iot_mqtt_client_connect(p_mqtt_client);
+    if (rc != TC_IOT_SUCCESS) {
+        return rc;
+    }
+
     rc = tc_iot_mqtt_client_subscribe(p_mqtt_client, p_cfg->sub_topic, TC_IOT_QOS1,
                                           _tc_iot_shadow_on_message_received, c);
     if (TC_IOT_SUCCESS == rc) {

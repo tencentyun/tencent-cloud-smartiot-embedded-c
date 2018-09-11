@@ -16,12 +16,12 @@ int run_mqtt(tc_iot_mqtt_client_config* p_client_config);
 tc_iot_mqtt_client_config g_client_config = {
     {
         /* device info*/
-        TC_IOT_CONFIG_DEVICE_SECRET, TC_IOT_CONFIG_DEVICE_PRODUCT_ID,
+        TC_IOT_CONFIG_DEVICE_SECRET, TC_IOT_CONFIG_PRODUCT_ID, TC_IOT_CONFIG_PRODUCT_KEY,
         TC_IOT_CONFIG_DEVICE_NAME, TC_IOT_CONFIG_DEVICE_CLIENT_ID,
         TC_IOT_CONFIG_DEVICE_USER_NAME, TC_IOT_CONFIG_DEVICE_PASSWORD, 0,
         TC_IOT_CONFIG_AUTH_MODE, TC_IOT_CONFIG_REGION, TC_IOT_CONFIG_API_HOST,
-        TC_IOT_CONFIG_MQ_SERVER_HOST,
-        TC_IOT_CONFIG_MQ_SERVER_PORT,
+        TC_IOT_CONFIG_MQTT_HOST,
+        TC_IOT_CONFIG_MQTT_PORT,
     },
     TC_IOT_CONFIG_COMMAND_TIMEOUT_MS,
     TC_IOT_CONFIG_TLS_HANDSHAKE_TIMEOUT_MS,
@@ -125,6 +125,12 @@ int run_mqtt(tc_iot_mqtt_client_config* p_client_config) {
 
     // 初始化 MQTT Client 用于发送和订阅 OTA 消息。
     ret = tc_iot_mqtt_client_construct(p_client, p_client_config);
+    if (ret != TC_IOT_SUCCESS) {
+        tc_iot_hal_printf("construct MQTT server failed, trouble shooting guide: " "%s#%d\n", TC_IOT_TROUBLE_SHOOTING_URL, ret);
+        return TC_IOT_FAILURE;
+    }
+
+    ret = tc_iot_mqtt_client_connect(p_client);
     if (ret != TC_IOT_SUCCESS) {
         tc_iot_hal_printf("connect MQTT server failed, trouble shooting guide: " "%s#%d\n", TC_IOT_TROUBLE_SHOOTING_URL, ret);
         return TC_IOT_FAILURE;

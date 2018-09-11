@@ -132,7 +132,9 @@ typedef enum _tc_iot_device_auth_mode_e {
 typedef struct _tc_iot_device_info {
     char device_secret[TC_IOT_MAX_DEVICE_SECRET_LEN];  /**< 设备签名秘钥*/
     char product_id[TC_IOT_MAX_PRODUCT_ID_LEN]; /**< 设备 Product Id*/
+    char product_key[TC_IOT_MAX_PRODUCT_KEY_LEN]; /**< 设备 Product KEY*/
     char device_name[TC_IOT_MAX_DEVICE_NAME_LEN];  /**< 设备 Device Name*/
+
     char client_id[TC_IOT_MAX_CLIENT_ID_LEN]; /**< 设备 Client Id*/
 
     char username[TC_IOT_MAX_USER_NAME_LEN]; /**< 连接 MQ 服务端的 Username*/
@@ -141,7 +143,7 @@ typedef struct _tc_iot_device_info {
 
     char auth_mode;   /** MQ 服务鉴权类型，参见 tc_iot_device_auth_mode_e */
     const char * region; /** 区域标识 */
-    char http_host[TC_IOT_HTTP_MAX_HOST_LENGTH]; /** 动态令牌模式服务端接口地址 */
+    char api_host[TC_IOT_HTTP_MAX_HOST_LENGTH]; /** 动态令牌模式服务端接口地址 */
     char mqtt_host[TC_IOT_HTTP_MAX_HOST_LENGTH]; /**< MQ 服务地址*/
     uint16_t mqtt_port; /**< MQ 服务端口*/
 } tc_iot_device_info;
@@ -216,8 +218,7 @@ struct _tc_iot_mqtt_client {
 int tc_iot_mqtt_client_construct(tc_iot_mqtt_client* p_mqtt_client,
                                  tc_iot_mqtt_client_config* p_client_config);
 
-int tc_iot_mqtt_client_connect(tc_iot_mqtt_client* c,
-                               tc_iot_mqtt_client_config* p_client_config);
+int tc_iot_mqtt_client_connect(tc_iot_mqtt_client* c);
 int tc_iot_mqtt_client_subscribe(tc_iot_mqtt_client* client, const char* topicFilter,
                                  tc_iot_mqtt_qos_e, message_handler, void * context);
 int tc_iot_mqtt_client_publish(tc_iot_mqtt_client* client, const char*,
@@ -233,9 +234,6 @@ int tc_iot_mqtt_client_disconnect(tc_iot_mqtt_client* client);
 int tc_iot_mqtt_client_yield(tc_iot_mqtt_client* client, int time);
 int tc_iot_mqtt_client_is_connected(tc_iot_mqtt_client* client);
 void tc_iot_mqtt_client_destroy(tc_iot_mqtt_client* c);
-
-int tc_iot_mqtt_init(tc_iot_mqtt_client* c,
-                     tc_iot_mqtt_client_config* p_client_config);
 
 int tc_iot_mqtt_connect_with_results(tc_iot_mqtt_client* client,
                                      MQTTPacket_connectData* options,

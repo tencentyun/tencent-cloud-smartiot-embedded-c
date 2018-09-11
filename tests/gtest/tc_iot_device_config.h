@@ -15,13 +15,13 @@
 
 /* 以下配置需要先在官网创建产品和设备，然后获取相关信息更新*/
 /* MQ服务地址，可以在产品“基本信息”->“mqtt链接地址”位置找到。*/
-#define TC_IOT_CONFIG_MQ_SERVER_HOST "mqtt-1doou8fjk.ap-guangzhou.mqtt.tencentcloudmq.com"
+#define TC_IOT_CONFIG_MQTT_HOST "mqtt-1doou8fjk.ap-guangzhou.mqtt.tencentcloudmq.com"
 
 /* 产品id，可以在产品“基本信息”->“产品id”位置找到*/
-#define TC_IOT_CONFIG_DEVICE_PRODUCT_ID "iot-9fi4gnz8"
+#define TC_IOT_CONFIG_PRODUCT_ID "iot-9fi4gnz8"
 
 /* 产品id，可以在产品“基本信息”->“产品key”位置找到*/
-#define TC_IOT_CONFIG_DEVICE_PRODUCT_KEY "mqtt-1doou8fjk"
+#define TC_IOT_CONFIG_PRODUCT_KEY "mqtt-1doou8fjk"
 
 /* 设备密钥，可以在产品“设备管理”->“设备证书”->“Device Secret”位置找到*/
 #define TC_IOT_CONFIG_DEVICE_SECRET "00000000000000000000000000000000"
@@ -51,7 +51,7 @@
 // MQ 服务的 MQTT 是否通过 TLS 协议通讯，1 为使用，0 表示不使用
 #define TC_IOT_CONFIG_USE_TLS 1 
 /* MQ服务的TLS端口一般为8883*/
-#define TC_IOT_CONFIG_MQ_SERVER_PORT 8883
+#define TC_IOT_CONFIG_MQTT_PORT 8883
 
 #else
 // 请求 API 时使用的协议，https 或者 http
@@ -60,11 +60,11 @@
 // MQ 服务的 MQTT 是否通过 TLS 协议通讯，1 为使用，0 表示不使用
 #define TC_IOT_CONFIG_USE_TLS 0
 /* MQ服务的默认端口一般为1883*/
-#define TC_IOT_CONFIG_MQ_SERVER_PORT 1883
+#define TC_IOT_CONFIG_MQTT_PORT 1883
 #endif
 
 /* client id 由两部分组成，组成形式为“ProductKey@DeviceName” */
-#define TC_IOT_CONFIG_DEVICE_CLIENT_ID TC_IOT_CONFIG_DEVICE_PRODUCT_KEY "@" TC_IOT_CONFIG_DEVICE_NAME
+#define TC_IOT_CONFIG_DEVICE_CLIENT_ID TC_IOT_CONFIG_PRODUCT_KEY "@" TC_IOT_CONFIG_DEVICE_NAME
 
 
 /* 关于username和password：*/
@@ -112,13 +112,13 @@
 /* 客户端只需要订阅这个topic即可*/
 #define TC_IOT_SHADOW_SUB_TOPIC_PREFIX "shadow/get/"
 #define TC_IOT_SHADOW_SUB_TOPIC_FMT TC_IOT_SHADOW_SUB_TOPIC_PREFIX "%s/%s"
-#define TC_IOT_SHADOW_SUB_TOPIC_DEF TC_IOT_SHADOW_SUB_TOPIC_PREFIX TC_IOT_CONFIG_DEVICE_PRODUCT_ID "/" TC_IOT_CONFIG_DEVICE_NAME
+#define TC_IOT_SHADOW_SUB_TOPIC_DEF TC_IOT_SHADOW_SUB_TOPIC_PREFIX TC_IOT_CONFIG_PRODUCT_ID "/" TC_IOT_CONFIG_DEVICE_NAME
 
 /* shadow上行消息topic，客户端请求服务端的消息，发到到这个topic即可*/
 /* topic格式"shadow/update/<product id>/<device name>"*/
 #define TC_IOT_SHADOW_PUB_TOPIC_PREFIX "shadow/update/"
 #define TC_IOT_SHADOW_PUB_TOPIC_FMT TC_IOT_SHADOW_PUB_TOPIC_PREFIX "%s/%s"
-#define TC_IOT_SHADOW_PUB_TOPIC_DEF TC_IOT_SHADOW_PUB_TOPIC_PREFIX TC_IOT_CONFIG_DEVICE_PRODUCT_ID "/" TC_IOT_CONFIG_DEVICE_NAME
+#define TC_IOT_SHADOW_PUB_TOPIC_DEF TC_IOT_SHADOW_PUB_TOPIC_PREFIX TC_IOT_CONFIG_PRODUCT_ID "/" TC_IOT_CONFIG_DEVICE_NAME
 
 /*------------------MQTT end---------------------*/
 

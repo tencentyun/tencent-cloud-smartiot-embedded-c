@@ -93,7 +93,7 @@ typedef enum _tc_iot_device_config_id_def {
     TC_IOT_DCFG_DEVICE_NAME,
     TC_IOT_DCFG_DEVICE_SECRET,
     TC_IOT_DCFG_MQTT_HOST,
-    TC_IOT_DCFG_HTTP_HOST,
+    TC_IOT_DCFG_API_HOST,
     TC_IOT_DCFG_REGION,
 
     // Optional
@@ -102,7 +102,6 @@ typedef enum _tc_iot_device_config_id_def {
     TC_IOT_DCFG_MQTT_TLS_CLIENT_KEY,
     TC_IOT_DCFG_MQTT_TLS_CLIENT_CERT,
     TC_IOT_DCFG_HTTPS_CA_CERT,
-    TC_IOT_DCFG_COAP_HOST,
 } tc_iot_device_config_id_def;
 
 typedef struct _tc_iot_device_config_data {
@@ -110,6 +109,9 @@ typedef struct _tc_iot_device_config_data {
     char product_key[TC_IOT_MAX_PRODUCT_KEY_LEN];
     char device_name[TC_IOT_MAX_DEVICE_NAME_LEN];
     char device_secret[TC_IOT_MAX_DEVICE_SECRET_LEN];
+    char mqtt_host[128];
+    char api_host[128];
+    char region[16];
 }tc_iot_device_config_data;
 
 

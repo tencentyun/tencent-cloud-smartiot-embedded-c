@@ -36,12 +36,12 @@ TEST(MQTT, custom_topic)
     tc_iot_mqtt_client_config _client_config = {
         {
             /* device info*/
-            "device_secret", "iot-product-id",
+            "device_secret", "iot-product-id","",
             "device_name", "product_key@device_name",
             "", "", 0,
             TC_IOT_CONFIG_AUTH_MODE, TC_IOT_CONFIG_REGION, TC_IOT_CONFIG_API_HOST,
-            TC_IOT_CONFIG_MQ_SERVER_HOST,
-            TC_IOT_CONFIG_MQ_SERVER_PORT,
+            TC_IOT_CONFIG_MQTT_HOST,
+            TC_IOT_CONFIG_MQTT_PORT,
         },
         TC_IOT_CONFIG_COMMAND_TIMEOUT_MS,
         TC_IOT_CONFIG_TLS_HANDSHAKE_TIMEOUT_MS,
@@ -93,6 +93,8 @@ TEST(MQTT, custom_topic)
     ASSERT_EQ(ret, TC_IOT_SUCCESS);
 
     ret = tc_iot_mqtt_client_construct(p_client, p_client_config);
+    ASSERT_EQ(ret, TC_IOT_SUCCESS);
+    ret = tc_iot_mqtt_client_connect(p_client);
     ASSERT_EQ(ret, TC_IOT_SUCCESS);
     ret = tc_iot_mqtt_client_subscribe(p_client, sub_topic, TC_IOT_QOS1,
                                            _on_message_received, _resp_data);

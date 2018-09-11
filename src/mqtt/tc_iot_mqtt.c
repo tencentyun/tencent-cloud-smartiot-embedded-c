@@ -2,25 +2,83 @@
 
 int tc_iot_mqtt_client_construct(tc_iot_mqtt_client* c,
                                  tc_iot_mqtt_client_config* p_client_config) {
-    int rc;
+    int i;
+    int ret;
+    tc_iot_network_t* p_network;
+    tc_iot_net_context_init_t netcontext;
+
+#ifdef ENABLE_TLS
+    tc_iot_tls_config_t* p_tls_config;
+#endif
 
     IF_NULL_RETURN(c, TC_IOT_NULL_POINTER);
     IF_NULL_RETURN(p_client_config, TC_IOT_NULL_POINTER);
 
+    p_network = &(c->ipstack);
+    memset(p_network, 0, sizeof(tc_iot_network_t));
 
-    rc = tc_iot_mqtt_init(c, p_client_config);
-    if (rc != TC_IOT_SUCCESS) {
-        return rc;
+    netcontext.fd = -1;
+    netcontext.use_tls = p_client_config->use_tls;
+    netcontext.host = p_client_config->device_info.mqtt_host;
+    netcontext.port = p_client_config->device_info.mqtt_port;
+    if (netcontext.use_tls) {
+#ifdef ENABLE_TLS
+        p_tls_config = &(netcontext.tls_config);
+        if (netcontext.use_tls) {
+            p_tls_config->verify_server = 0;
+            p_tls_config->timeout_ms = p_client_config->tls_handshake_timeout_ms;
+            p_tls_config->root_ca_in_mem = g_tc_iot_mqtt_root_ca_certs;
+            p_tls_config->root_ca_location = p_client_config->p_root_ca;
+            p_tls_config->device_cert_location = p_client_config->p_client_crt;
+            p_tls_config->device_private_key_location =
+                p_client_config->p_client_key;
+        }
+
+        tc_iot_hal_tls_init(p_network, &netcontext);
+#else
+        TC_IOT_LOG_FATAL("tls network not supported.");
+        return TC_IOT_TLS_NOT_SUPPORTED;
+#endif
+    } else {
+        tc_iot_hal_net_init(p_network, &netcontext);
     }
 
-    rc = tc_iot_mqtt_client_connect(c, p_client_config);
-    return rc;
+    for (i = 0; i < TC_IOT_MAX_MESSAGE_HANDLERS; ++i) {
+        c->message_handlers[i].topicFilter = 0;
+    }
+
+    c->command_timeout_ms = p_client_config->command_timeout_ms;
+    c->buf_size = TC_IOT_CLIENT_SEND_BUF_SIZE;
+    c->readbuf_size = TC_IOT_CLIENT_READ_BUF_SIZE;
+    TC_IOT_LOG_TRACE("mqtt client buf_size=%d,readbuf_size=%d", (int)c->buf_size,
+                     (int)c->readbuf_size);
+    c->auto_reconnect = p_client_config->auto_reconnect;
+    c->clean_session = p_client_config->clean_session;
+    c->default_msg_handler = p_client_config->default_msg_handler;
+    c->on_event = p_client_config->on_event;
+    c->ping_outstanding = 0;
+    c->next_packetid = 1;
+    c->reconnect_timeout_ms = 0;
+    tc_iot_hal_timer_init(&c->last_sent);
+    tc_iot_hal_timer_init(&c->last_received);
+    tc_iot_hal_timer_init(&c->ping_timer);
+    tc_iot_hal_timer_init(&c->reconnect_timer);
+
+    c->client_init_time = tc_iot_hal_timestamp(NULL);
+    c->p_client_config = p_client_config;
+
+    tc_iot_mqtt_set_state(c, CLIENT_INTIALIAZED);
+    ret = c->ipstack.do_connect(&(c->ipstack), NULL, 0);
+    if (TC_IOT_SUCCESS == ret) {
+        tc_iot_mqtt_set_state(c, CLIENT_NETWORK_READY);
+    }
+    return ret;
 }
 
-int tc_iot_mqtt_client_connect(tc_iot_mqtt_client* c,
-                               tc_iot_mqtt_client_config* p_client_config) {
+int tc_iot_mqtt_client_connect(tc_iot_mqtt_client* c) {
     int rc;
     MQTTPacket_connectData* data;
+    tc_iot_mqtt_client_config* p_client_config = c->p_client_config;
 
     IF_NULL_RETURN(c, TC_IOT_NULL_POINTER);
     IF_NULL_RETURN(p_client_config, TC_IOT_NULL_POINTER);
@@ -221,81 +279,6 @@ static int _send_packet(tc_iot_mqtt_client* c, int length,
     return rc;
 }
 
-int tc_iot_mqtt_init(tc_iot_mqtt_client* c,
-                     tc_iot_mqtt_client_config* p_client_config) {
-
-    int i;
-    int ret;
-    tc_iot_network_t* p_network;
-    tc_iot_net_context_init_t netcontext;
-
-#ifdef ENABLE_TLS
-    tc_iot_tls_config_t* p_tls_config;
-#endif
-
-    IF_NULL_RETURN(c, TC_IOT_NULL_POINTER);
-    IF_NULL_RETURN(p_client_config, TC_IOT_NULL_POINTER);
-
-    p_network = &(c->ipstack);
-    memset(p_network, 0, sizeof(tc_iot_network_t));
-
-    netcontext.fd = -1;
-    netcontext.use_tls = p_client_config->use_tls;
-    netcontext.host = p_client_config->device_info.mqtt_host;
-    netcontext.port = p_client_config->device_info.mqtt_port;
-    if (netcontext.use_tls) {
-#ifdef ENABLE_TLS
-        p_tls_config = &(netcontext.tls_config);
-        if (netcontext.use_tls) {
-            p_tls_config->verify_server = 0;
-            p_tls_config->timeout_ms = p_client_config->tls_handshake_timeout_ms;
-            p_tls_config->root_ca_in_mem = g_tc_iot_mqtt_root_ca_certs;
-            p_tls_config->root_ca_location = p_client_config->p_root_ca;
-            p_tls_config->device_cert_location = p_client_config->p_client_crt;
-            p_tls_config->device_private_key_location =
-                p_client_config->p_client_key;
-        }
-
-        tc_iot_hal_tls_init(p_network, &netcontext);
-#else
-        TC_IOT_LOG_FATAL("tls network not supported.");
-        return TC_IOT_TLS_NOT_SUPPORTED;
-#endif
-    } else {
-        tc_iot_hal_net_init(p_network, &netcontext);
-    }
-
-    for (i = 0; i < TC_IOT_MAX_MESSAGE_HANDLERS; ++i) {
-        c->message_handlers[i].topicFilter = 0;
-    }
-
-    c->command_timeout_ms = p_client_config->command_timeout_ms;
-    c->buf_size = TC_IOT_CLIENT_SEND_BUF_SIZE;
-    c->readbuf_size = TC_IOT_CLIENT_READ_BUF_SIZE;
-    TC_IOT_LOG_TRACE("mqtt client buf_size=%d,readbuf_size=%d", (int)c->buf_size,
-                     (int)c->readbuf_size);
-    c->auto_reconnect = p_client_config->auto_reconnect;
-    c->clean_session = p_client_config->clean_session;
-    c->default_msg_handler = p_client_config->default_msg_handler;
-    c->on_event = p_client_config->on_event;
-    c->ping_outstanding = 0;
-    c->next_packetid = 1;
-    c->reconnect_timeout_ms = 0;
-    tc_iot_hal_timer_init(&c->last_sent);
-    tc_iot_hal_timer_init(&c->last_received);
-    tc_iot_hal_timer_init(&c->ping_timer);
-    tc_iot_hal_timer_init(&c->reconnect_timer);
-
-    c->client_init_time = tc_iot_hal_timestamp(NULL);
-    c->p_client_config = p_client_config;
-
-    tc_iot_mqtt_set_state(c, CLIENT_INTIALIAZED);
-    ret = c->ipstack.do_connect(&(c->ipstack), NULL, 0);
-    if (TC_IOT_SUCCESS == ret) {
-        tc_iot_mqtt_set_state(c, CLIENT_NETWORK_READY);
-    }
-    return ret;
-}
 
 static int decodePacket(tc_iot_mqtt_client* c, int* value, int timeout) {
     unsigned char i;
