@@ -116,17 +116,17 @@ typedef struct _tc_iot_device_config_data {
 
 
 /**
- * @brief tc_iot_hal_set_value 持久化保存一个 id - value 值, 比如保存在文件系统或者 flash 里面
+ * @brief 持久化保存一个 id - value 值, 比如保存在文件系统或者 flash 里面
  *
  * @param  id		输入参数, 保存的 id
  * @param  value    输入参数, 保存的value
  *
  * @return  <0  表示失败,  成功返回 0
  */
-int tc_iot_hal_set_value(tc_iot_device_config_id_def id,  const char* value );
+int tc_iot_hal_set_config(tc_iot_device_config_id_def id,  const char* value );
 
 /**
- * @brief tc_iot_hal_get_value 读取保存的 id - value 值
+ * @brief 读取保存的 id - value 值
  *
  * @param  id		输入参数, 保存的 id
  * @param  value    输出参数, value
@@ -136,6 +136,6 @@ int tc_iot_hal_set_value(tc_iot_device_config_id_def id,  const char* value );
  *
  * @return  value 指针地址
  */
-char * tc_iot_hal_get_value(tc_iot_device_config_id_def id, char* value , int len, const char * default_var);
+char * tc_iot_hal_get_config(tc_iot_device_config_id_def id, char* value , int len, const char * default_var);
 
 #endif /* end of include guard */

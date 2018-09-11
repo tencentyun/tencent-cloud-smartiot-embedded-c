@@ -25,6 +25,9 @@
 #define TC_IOT_MAX_MESSAGE_HANDLERS 5
 
 
+typedef enum _tc_iot_mqtt_disconnect_reason_e {
+    TC_IOT_USER_DISCONNECT = 1,
+} tc_iot_mqtt_disconnect_reason_e;
 
 /**
  * @brief 消息订阅回包，SUBACK 返回码
@@ -234,6 +237,7 @@ int tc_iot_mqtt_client_disconnect(tc_iot_mqtt_client* client);
 int tc_iot_mqtt_client_yield(tc_iot_mqtt_client* client, int time);
 int tc_iot_mqtt_client_is_connected(tc_iot_mqtt_client* client);
 void tc_iot_mqtt_client_destroy(tc_iot_mqtt_client* c);
+int tc_iot_mqtt_client_internal_disconnect(tc_iot_mqtt_client* c, int r);
 
 int tc_iot_mqtt_connect_with_results(tc_iot_mqtt_client* client,
                                      MQTTPacket_connectData* options,

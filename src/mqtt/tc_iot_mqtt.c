@@ -657,7 +657,7 @@ exit:
     else {
         if (tc_iot_mqtt_client_is_connected(c)) {
             TC_IOT_LOG_TRACE("disconnecting for rc=%d.", rc);
-            tc_iot_mqtt_client_disconnect(c);
+            tc_iot_mqtt_client_internal_disconnect(c, rc);
         }
         _close_session(c);
     }
@@ -811,7 +811,7 @@ exit:
     } else if (rc == TC_IOT_SEND_PACK_FAILED ||
                rc == TC_IOT_MQTT_WAIT_ACT_TIMEOUT) {
         TC_IOT_LOG_TRACE("disconnecting for rc=%d.", rc);
-        tc_iot_mqtt_client_disconnect(c);
+        tc_iot_mqtt_client_internal_disconnect(c, rc);
     }
 
     return rc;
@@ -897,7 +897,7 @@ exit:
     } else if (rc == TC_IOT_SEND_PACK_FAILED ||
                rc == TC_IOT_MQTT_WAIT_ACT_TIMEOUT) {
         TC_IOT_LOG_TRACE("disconnecting for rc=%d.", rc);
-        tc_iot_mqtt_client_disconnect(c);
+        tc_iot_mqtt_client_internal_disconnect(c, rc);
     }
 
     return rc;
@@ -1024,7 +1024,7 @@ exit:
                rc == TC_IOT_MQTT_WAIT_ACT_TIMEOUT) {
         if (tc_iot_mqtt_client_is_connected(c)) {
             TC_IOT_LOG_TRACE("disconnecting for rc=%d.", rc);
-            tc_iot_mqtt_client_disconnect(c);
+            tc_iot_mqtt_client_internal_disconnect(c, rc);
         }
         _handle_reconnect(c);
     }
@@ -1092,7 +1092,7 @@ exit:
                rc == TC_IOT_MQTT_WAIT_ACT_TIMEOUT) {
         if (tc_iot_mqtt_client_is_connected(c)) {
             TC_IOT_LOG_TRACE("disconnecting for rc=%d.", rc);
-            tc_iot_mqtt_client_disconnect(c);
+            tc_iot_mqtt_client_internal_disconnect(c, rc);
         }
         _handle_reconnect(c);
     }
@@ -1171,7 +1171,7 @@ exit:
                rc == TC_IOT_MQTT_WAIT_ACT_TIMEOUT) {
         if (tc_iot_mqtt_client_is_connected(c)) {
             TC_IOT_LOG_TRACE("disconnecting for rc=%d.", rc);
-            tc_iot_mqtt_client_disconnect(c);
+            tc_iot_mqtt_client_internal_disconnect(c, rc);
         }
         _handle_reconnect(c);
     }
@@ -1206,7 +1206,7 @@ int tc_iot_mqtt_set_auto_reconnect(tc_iot_mqtt_client* c, char auto_reconnect) {
     return TC_IOT_SUCCESS;
 }
 
-int tc_iot_mqtt_client_disconnect(tc_iot_mqtt_client* c) {
+int tc_iot_mqtt_client_internal_disconnect(tc_iot_mqtt_client* c, int r) {
     int rc = TC_IOT_FAILURE;
     tc_iot_timer timer;
     int len = 0;
@@ -1229,9 +1229,13 @@ int tc_iot_mqtt_client_disconnect(tc_iot_mqtt_client* c) {
     rc = c->ipstack.do_disconnect(&(c->ipstack));
     tc_iot_mqtt_set_state(c, CLIENT_INTIALIAZED);
     if (c->on_event) {
-        c->on_event(c, TC_IOT_MQTT_EVENT_DISCONNECT,NULL);
+        c->on_event(c, TC_IOT_MQTT_EVENT_DISCONNECT, &r);
     }
     return rc;
+}
+
+int tc_iot_mqtt_client_disconnect(tc_iot_mqtt_client* c) {
+    return tc_iot_mqtt_client_internal_disconnect(c, TC_IOT_MQTT_USER_DISCONNECT);
 }
 
 void tc_iot_mqtt_client_destroy(tc_iot_mqtt_client* c) {

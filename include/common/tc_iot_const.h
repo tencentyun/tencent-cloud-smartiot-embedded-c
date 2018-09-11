@@ -39,6 +39,7 @@ typedef enum _tc_iot_sys_code_e {
     TC_IOT_MQTT_CONNACK_BAD_USER_OR_PASSWORD = -164,  /**< 连接失败，用户名或密码校验不通过*/
     TC_IOT_MQTT_CONNACK_NOT_AUTHORIZED = -165,  /**< 连接失败，用户访问未授权*/
     TC_IOT_MQTT_SUBACK_FAILED = -170,  /**< 订阅失败，有可能 Topic 不存在，或者无权限等*/
+    TC_IOT_MQTT_USER_DISCONNECT = -171, /**< 设备端用户主动断开 */
 
     TC_IOT_MBED_TLS_ERROR_BASE = -200, /**< TLS 错误*/
     TC_IOT_CTR_DRBG_SEED_FAILED = -201, /**< TLS 初始化失败*/

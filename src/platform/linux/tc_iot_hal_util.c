@@ -65,3 +65,4 @@ int tc_iot_network_prepare(tc_iot_network_t * p_network, tc_iot_network_type typ
 
 }
 
+
