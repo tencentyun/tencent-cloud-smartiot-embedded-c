@@ -20,6 +20,12 @@ int tc_iot_refresh_auth_token(long timestamp, long nonce, tc_iot_device_info* p_
     int r;
     int username_index;
     const int timeout_ms = TC_IOT_API_TIMEOUT_MS;
+    bool secured = false;
+    uint16_t port = HTTP_DEFAULT_PORT;
+#if defined(ENABLE_TLS)
+    secured = true;
+    port = HTTPS_DEFAULT_PORT;
+#endif
 
 
     if (expire > TC_IOT_TOKEN_MAX_EXPIRE_SECOND) {
@@ -52,13 +58,8 @@ int tc_iot_refresh_auth_token(long timestamp, long nonce, tc_iot_device_info* p_
     tc_iot_http_client_format_buffer(http_buffer, sizeof(http_buffer), p_http_client);
 
     TC_IOT_LOG_TRACE("http_buffer=%s", http_buffer);
-#if defined(ENABLE_TLS)
     ret = tc_iot_http_client_perform(http_buffer,strlen(http_buffer), sizeof(http_buffer),
-                                     p_device_info->http_host, HTTPS_DEFAULT_PORT, true, timeout_ms);
-#else
-    ret = tc_iot_http_client_perform(http_buffer,strlen(http_buffer), sizeof(http_buffer),
-                                     p_device_info->http_host, HTTP_DEFAULT_PORT, false, timeout_ms);
-#endif
+                                     p_device_info->http_host, port, secured, timeout_ms);
     tc_iot_mem_usage_log("http_buffer[TC_IOT_HTTP_TOKEN_RESPONSE_LEN]", sizeof(http_buffer), strlen(http_buffer));
 
     if (ret < 0) {
