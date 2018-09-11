@@ -98,12 +98,12 @@ int main(int argc, char** argv) {
     tc_iot_hal_get_config(TC_IOT_DCFG_DEVICE_NAME,
                          p_client_config->device_info.device_name,
                          sizeof(p_client_config->device_info.device_name),
-                         NULL);
+                         TC_IOT_CONFIG_DEVICE_NAME);
 
     tc_iot_hal_get_config(TC_IOT_DCFG_DEVICE_SECRET,
                          p_client_config->device_info.device_secret,
                          sizeof(p_client_config->device_info.device_secret),
-                         NULL);
+                         TC_IOT_CONFIG_DEVICE_SECRET);
 
     /* 根据 product id 和device name 定义，生成发布和订阅的 Topic 名称。 */
     snprintf(g_tc_iot_shadow_config.sub_topic,TC_IOT_MAX_MQTT_TOPIC_LEN, TC_IOT_SHADOW_SUB_TOPIC_FMT,
