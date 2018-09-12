@@ -76,7 +76,7 @@ typedef struct _tc_iot_message_data {
     MQTTString* topicName; /**< 所属 Topic*/
     void * mqtt_client;
     void * context;
-    int    error_code;
+    /* int    error_code; */
 } tc_iot_message_data;
 
 
@@ -120,7 +120,7 @@ typedef struct _tc_iot_mqtt_client tc_iot_mqtt_client;
  * @param p_mqtt_client MQTT client 对象
  *
  */
-typedef void (*tc_iot_mqtt_event_handler)(tc_iot_mqtt_client*, int event_type, void*);
+typedef int (*tc_iot_mqtt_event_handler)(tc_iot_mqtt_client* c, int event_type, void* context);
 
 
 typedef enum _tc_iot_device_auth_mode_e {
@@ -134,6 +134,8 @@ typedef enum _tc_iot_mqtt_option_id_e {
     OPT_CLEAN_SESSION  = 1,
     OPT_AUTO_RECONNECT = 2,
     OPT_KEEP_ALIVE_INTERVAL = 3,
+
+    OPT_EVENT_HANDLER = 4,
 } tc_iot_mqtt_option_id_e;
 
 /**
@@ -240,6 +242,9 @@ void tc_iot_mqtt_client_destroy(tc_iot_mqtt_client* c);
 int tc_iot_mqtt_client_internal_disconnect(tc_iot_mqtt_client* c, int r);
 int tc_iot_mqtt_client_set_num_option(tc_iot_mqtt_client * c, tc_iot_mqtt_option_id_e option_id, int value);
 int tc_iot_mqtt_client_get_num_option(tc_iot_mqtt_client * c, tc_iot_mqtt_option_id_e option_id);
+
+int tc_iot_mqtt_client_set_ptr_option(tc_iot_mqtt_client * c, tc_iot_mqtt_option_id_e option_id, void * value);
+void * tc_iot_mqtt_client_get_ptr_option(tc_iot_mqtt_client * c, tc_iot_mqtt_option_id_e option_id);
 
 int tc_iot_mqtt_connect_with_results(tc_iot_mqtt_client* client,
                                      MQTTPacket_connectData* options,

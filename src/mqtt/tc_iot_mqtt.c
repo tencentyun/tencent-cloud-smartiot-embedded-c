@@ -79,9 +79,15 @@ int tc_iot_mqtt_client_connect(tc_iot_mqtt_client* c) {
     if (TC_IOT_SUCCESS == rc) {
         TC_IOT_LOG_TRACE("mqtt client connect %s:%d success", p_client_config->device_info.mqtt_host,
                          p_client_config->device_info.mqtt_port);
+        if (c->on_event) {
+            c->on_event(c, TC_IOT_MQTT_EVENT_CONNECT_SUCCESS, &rc);
+        }
     } else {
         TC_IOT_LOG_ERROR("mqtt cllient connect %s:%d failed retcode %d",
                          p_client_config->device_info.mqtt_host, p_client_config->device_info.mqtt_port, rc);
+        if (c->on_event) {
+            c->on_event(c, TC_IOT_MQTT_EVENT_CONNECT_FAILED, &rc);
+        }
     }
     return rc;
 }
@@ -107,7 +113,7 @@ void tc_iot_mqtt_init_conn_data(MQTTPacket_connectData * conn_data)
 }
 
 static void _on_new_message_data(tc_iot_message_data* md, MQTTString* topic,
-                                 tc_iot_mqtt_message* message, void * context, void * mqtt_client, int error) {
+                                 tc_iot_mqtt_message* message, void * context, void * mqtt_client) {
     if (!md) {
         TC_IOT_LOG_ERROR("md is null");
         return;
@@ -127,7 +133,6 @@ static void _on_new_message_data(tc_iot_message_data* md, MQTTString* topic,
     md->message = message;
     md->context = context;
     md->mqtt_client = mqtt_client;
-    md->error_code = error;
 }
 
 static int _handle_reconnect(tc_iot_mqtt_client* c) {
@@ -447,6 +452,10 @@ int deliverMessage(tc_iot_mqtt_client* c, MQTTString* topicName,
     if (left > 0) {
         TC_IOT_LOG_ERROR("%d size overflowed", left);
         error_code = TC_IOT_MQTT_OVERSIZE_PACKET_RECEIVED;
+        if (c->on_event) {
+            c->on_event(c, TC_IOT_MQTT_EVENT_SERVER_PUB_TOO_BIG, &error_code);
+        }
+        return error_code;
     }
 
     /* we have to find the right message handler - indexed by topic */
@@ -457,7 +466,7 @@ int deliverMessage(tc_iot_mqtt_client* c, MQTTString* topicName,
              isTopicMatched((char*)c->message_handlers[i].topicFilter,
                             topicName))) {
             if (c->message_handlers[i].fp != NULL) {
-                _on_new_message_data(&md, topicName, message, c->message_handlers[i].context, c, error_code);
+                _on_new_message_data(&md, topicName, message, c->message_handlers[i].context, c);
                 c->message_handlers[i].fp(&md);
                 rc = TC_IOT_SUCCESS;
             }
@@ -465,7 +474,7 @@ int deliverMessage(tc_iot_mqtt_client* c, MQTTString* topicName,
     }
 
     if (rc == TC_IOT_FAILURE && c->default_msg_handler != NULL) {
-        _on_new_message_data(&md, topicName, message, NULL, c, error_code);
+        _on_new_message_data(&md, topicName, message, NULL, c);
         c->default_msg_handler(&md);
         rc = TC_IOT_SUCCESS;
     }
@@ -791,6 +800,13 @@ exit:
         tc_iot_mqtt_client_internal_disconnect(c, rc);
     }
 
+    if (c->on_event) {
+        if (rc == TC_IOT_SUCCESS) {
+            c->on_event(c, TC_IOT_MQTT_EVENT_RECONNECT_SUCCESS, &rc);
+        } else {
+            c->on_event(c, TC_IOT_MQTT_EVENT_RECONNECT_FAILED, &rc);
+        }
+    }
     return rc;
 }
 
@@ -1006,6 +1022,13 @@ exit:
         _handle_reconnect(c);
     }
 
+    if (c->on_event) {
+        if (rc == TC_IOT_SUCCESS) {
+            c->on_event(c, TC_IOT_MQTT_EVENT_SUB_SUCCESS, &rc);
+        } else {
+            c->on_event(c, TC_IOT_MQTT_EVENT_SUB_FAILED, &rc);
+        }
+    }
     return rc;
 }
 
@@ -1072,6 +1095,14 @@ exit:
             tc_iot_mqtt_client_internal_disconnect(c, rc);
         }
         _handle_reconnect(c);
+    }
+
+    if (c->on_event) {
+        if (rc == TC_IOT_SUCCESS) {
+            c->on_event(c, TC_IOT_MQTT_EVENT_UNSUB_SUCCESS, &rc);
+        } else {
+            c->on_event(c, TC_IOT_MQTT_EVENT_UNSUB_FAILED, &rc);
+        }
     }
     return rc;
 }
@@ -1152,6 +1183,14 @@ exit:
         }
         _handle_reconnect(c);
     }
+
+    if (c->on_event) {
+        if (rc == TC_IOT_SUCCESS) {
+            c->on_event(c, TC_IOT_MQTT_EVENT_PUB_SUCCESS, &rc);
+        } else {
+            c->on_event(c, TC_IOT_MQTT_EVENT_PUB_FAILED, &rc);
+        }
+    }
     return rc;
 }
 
@@ -1206,7 +1245,7 @@ int tc_iot_mqtt_client_internal_disconnect(tc_iot_mqtt_client* c, int r) {
     rc = c->ipstack.do_disconnect(&(c->ipstack));
     tc_iot_mqtt_set_state(c, CLIENT_INTIALIAZED);
     if (c->on_event) {
-        c->on_event(c, TC_IOT_MQTT_EVENT_DISCONNECT, &r);
+        c->on_event(c, TC_IOT_MQTT_EVENT_DISCONNECTED, &r);
     }
     return rc;
 }
@@ -1251,6 +1290,33 @@ int tc_iot_mqtt_client_get_num_option(tc_iot_mqtt_client * c, tc_iot_mqtt_option
     default:
         TC_IOT_LOG_ERROR("option_id=%d invalid.", option_id);
         return 0;
+    }
+}
+
+int tc_iot_mqtt_client_set_ptr_option(tc_iot_mqtt_client * c, tc_iot_mqtt_option_id_e option_id, void * value) {
+    IF_NULL_RETURN(c, TC_IOT_NULL_POINTER);
+    switch(option_id) {
+    case OPT_EVENT_HANDLER:
+        c->on_event = value;
+        break;
+    default:
+        TC_IOT_LOG_ERROR("option_id=%d invalid.", option_id);
+        return TC_IOT_INVALID_PARAMETER;
+    }
+    return TC_IOT_SUCCESS;
+}
+
+void * tc_iot_mqtt_client_get_ptr_option(tc_iot_mqtt_client * c, tc_iot_mqtt_option_id_e option_id) {
+    if (!c) {
+        TC_IOT_LOG_ERROR("c is null");
+        return NULL;
+    }
+    switch(option_id) {
+    case OPT_EVENT_HANDLER:
+        return c->on_event;
+    default:
+        TC_IOT_LOG_ERROR("option_id=%d invalid.", option_id);
+        return NULL;
     }
 }
 
