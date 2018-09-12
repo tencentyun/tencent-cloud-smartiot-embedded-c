@@ -129,6 +129,13 @@ typedef enum _tc_iot_device_auth_mode_e {
     TC_IOT_MQTT_AUTH_DYNAMIC_SIGN = 2, // 动态签名
 } tc_iot_device_auth_mode_e;
 
+typedef enum _tc_iot_mqtt_option_id_e {
+    OPT_COMMAND_TIMEOUT_MS = 0,
+    OPT_CLEAN_SESSION  = 1,
+    OPT_AUTO_RECONNECT = 2,
+    OPT_KEEP_ALIVE_INTERVAL = 3,
+} tc_iot_mqtt_option_id_e;
+
 /**
  * @brief 设备信息
  */
@@ -157,15 +164,7 @@ typedef struct _tc_iot_device_info {
  */
 typedef struct _tc_iot_mqtt_client_config {
     tc_iot_device_info device_info;  /**< 设备信息*/
-    int command_timeout_ms; /**< MQTT 指令超时时延，单位毫秒*/
-    int tls_handshake_timeout_ms; /**< TLS 握手时延，单位毫秒*/
-    int keep_alive_interval; /**< 心跳保持间隔，单位秒 */
-    char clean_session; /**< Clean Session 标志*/
     char use_tls; /**< 是否通过 TLS 连接服务*/
-    char auto_reconnect; /**< 是否自动重连 */
-    const char* p_root_ca; /**< 根证书*/
-    const char* p_client_crt; /**< 客户端证书*/
-    const char* p_client_key; /**< 客户端私钥*/
 
     tc_iot_mqtt_event_handler on_event; /**< MQTT 事件通知 */
     message_handler   default_msg_handler; /**< 默认消息处理回调*/
@@ -180,7 +179,7 @@ typedef struct _tc_iot_mqtt_client_config {
  */
 struct _tc_iot_mqtt_client {
     tc_iot_mqtt_client_config *p_client_config;
-    unsigned int command_timeout_ms;  /**< MQTT 指令超时配置，根据客户端设备工作环境，实际网络情况进行合理配置。
+    int command_timeout_ms;  /**< MQTT 指令超时配置，根据客户端设备工作环境，实际网络情况进行合理配置。
                                         1) 对于客户端网络不稳定情况下，适当延长时延，可以避免无效重连、重试；
                                         2) 对于客户端网络较为稳定的情况下，可以设置较短的时延，确保当网络或服务异常时，
                                         能及时被超时机制发现，及时重连恢复服务。*/
@@ -190,10 +189,11 @@ struct _tc_iot_mqtt_client {
                                                       合理设定 TC_IOT_CLIENT_READ_BUF_SIZE 的值 */
     unsigned char readbuf[TC_IOT_CLIENT_READ_BUF_SIZE];  /**< 接收缓存区的大小，根据服务端下发订阅消息最大包大小，
                                                            合理设定 TC_IOT_CLIENT_READ_BUF_SIZE 的值 */
-    unsigned int keep_alive_interval;  /**< 客户端与服务端心跳包发送间隔，单位是秒 */
+    int keep_alive_interval;  /**< 客户端与服务端心跳包发送间隔，单位是秒 */
     char auto_reconnect; /**< 当检测到超时或网络异常时，是否自动重连 */
-    unsigned int reconnect_timeout_ms; /**< 自动重连当前等待时延*/
-    int clean_session;  /**< [CleanSession](http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Toc398718030) 状态*/
+    int reconnect_timeout_ms; /**< 自动重连当前等待时延*/
+    char clean_session;  /**< [CleanSession](http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Toc398718030) 状态*/
+
     unsigned int next_packetid;  /**< 下一个可用的消息 ID*/
     char ping_outstanding; /**< 是否正在进行心跳 PING 操作*/
     tc_iot_mqtt_client_state_e state; /**< 连接状态*/
@@ -238,6 +238,8 @@ int tc_iot_mqtt_client_yield(tc_iot_mqtt_client* client, int time);
 int tc_iot_mqtt_client_is_connected(tc_iot_mqtt_client* client);
 void tc_iot_mqtt_client_destroy(tc_iot_mqtt_client* c);
 int tc_iot_mqtt_client_internal_disconnect(tc_iot_mqtt_client* c, int r);
+int tc_iot_mqtt_client_set_num_option(tc_iot_mqtt_client * c, tc_iot_mqtt_option_id_e option_id, int value);
+int tc_iot_mqtt_client_get_num_option(tc_iot_mqtt_client * c, tc_iot_mqtt_option_id_e option_id);
 
 int tc_iot_mqtt_connect_with_results(tc_iot_mqtt_client* client,
                                      MQTTPacket_connectData* options,

@@ -1,9 +1,9 @@
 extern "C" {
 #include "tc_iot_export.h"
 #include "tc_iot_device_config.h"
+#include "tc_iot_device_logic.h"
 }
 
-#include "tc_iot_device_logic.h"
 #include "gtest/gtest.h"
 
 

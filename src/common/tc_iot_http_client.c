@@ -429,7 +429,7 @@ int tc_iot_http_client_internal_perform(char * buffer, int buffer_used, int buff
     int content_length = 0;
     int received_bytes = 0;
 
-    ret = tc_iot_network_prepare(p_network, TC_IOT_SOCK_STREAM, TC_IOT_PROTO_HTTP, secured);
+    ret = tc_iot_network_prepare(p_network, TC_IOT_SOCK_STREAM, TC_IOT_PROTO_HTTP, secured, NULL);
     if (ret < 0) {
         return ret;
     }

@@ -1,4 +1,3 @@
-
 #include "tc_iot_inc.h"
 
 static tc_iot_device_config_data _g_tc_iot_device_config_data = {};

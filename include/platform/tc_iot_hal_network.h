@@ -474,10 +474,11 @@ int tc_iot_hal_udp_destroy(tc_iot_network_t* network);
  * @param    type 连接类型 TCP or UDP
  * @param    proto 应用协议 HTTP,MQTT, or CoAP
  * @param    over_tls 是否 TLS/DTLS 加密传输
+ * @param    extra_options 其他参数信息，保留字段。
  *
  * @return   return type
  */
 
-int tc_iot_network_prepare(tc_iot_network_t * p_network, tc_iot_network_type type, tc_iot_network_protocol proto, bool over_tls);
+int tc_iot_network_prepare(tc_iot_network_t * p_network, tc_iot_network_type type, tc_iot_network_protocol proto, bool over_tls, void * extra_options);
 
 #endif /* end of include guard */

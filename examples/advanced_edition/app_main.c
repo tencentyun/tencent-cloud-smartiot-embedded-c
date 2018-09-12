@@ -85,26 +85,6 @@ int main(int argc, char** argv) {
     /* 解析命令行参数 */
     parse_command(p_client_config, argc, argv);
 
-    tc_iot_hal_get_config(TC_IOT_DCFG_PRODUCT_ID,
-                         p_client_config->device_info.product_id,
-                         sizeof(p_client_config->device_info.product_id),
-                         TC_IOT_CONFIG_PRODUCT_ID);
-
-    tc_iot_hal_get_config(TC_IOT_DCFG_PRODUCT_KEY,
-                         p_client_config->device_info.product_key,
-                         sizeof(p_client_config->device_info.product_key),
-                         TC_IOT_CONFIG_PRODUCT_KEY);
-
-    tc_iot_hal_get_config(TC_IOT_DCFG_DEVICE_NAME,
-                         p_client_config->device_info.device_name,
-                         sizeof(p_client_config->device_info.device_name),
-                         TC_IOT_CONFIG_DEVICE_NAME);
-
-    tc_iot_hal_get_config(TC_IOT_DCFG_DEVICE_SECRET,
-                         p_client_config->device_info.device_secret,
-                         sizeof(p_client_config->device_info.device_secret),
-                         TC_IOT_CONFIG_DEVICE_SECRET);
-
     /* 根据 product id 和device name 定义，生成发布和订阅的 Topic 名称。 */
     snprintf(g_tc_iot_shadow_config.sub_topic,TC_IOT_MAX_MQTT_TOPIC_LEN, TC_IOT_SHADOW_SUB_TOPIC_FMT,
             p_client_config->device_info.product_id,p_client_config->device_info.device_name);

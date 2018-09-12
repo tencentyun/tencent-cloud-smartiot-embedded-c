@@ -88,6 +88,12 @@
 /* TLS 握手超时时长 */
 #define TC_IOT_DEFAULT_TLS_HANSHAKE_TIMEOUT_MS  10000
 
+/* MQTT 指令超时时延，单位毫秒 */
+#define TC_IOT_DEFAULT_COMMAND_TIMEOUT_MS  10000
+
+/* MQTT 心跳时长 */
+#define TC_IOT_DEFAULT_KEEP_ALIVE_INTERVAL_SEC  60
+
 // HTTPS 请求时，是否严格检查服务端证书
 #define TC_IOT_HTTPS_CERT_STRICT_CHECK       0
 

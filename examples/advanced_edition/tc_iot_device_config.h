@@ -95,18 +95,6 @@
 // API 服务域名根地址
 #define TC_IOT_CONFIG_API_HOST TC_IOT_CONFIG_REGION ".auth-device-iot.tencentcloudapi.com"
 
-/* connect、publish、subscribe、unsubscribe */
-/* 等命令执行超时时长，单位是毫秒*/
-#define TC_IOT_CONFIG_COMMAND_TIMEOUT_MS  10000
-/* TLS 握手执行超时时长，单位是毫秒*/
-#define TC_IOT_CONFIG_TLS_HANDSHAKE_TIMEOUT_MS  10000
-/* keep alive 间隔时长，单位是秒*/
-#define TC_IOT_CONFIG_KEEP_ALIVE_INTERVAL_SEC  60
-/* 网络故障或服务端超时，是否自动重连*/
-#define TC_IOT_CONFIG_AUTO_RECONNECT 1
-
-#define TC_IOT_CONFIG_CLEAN_SESSION 1
-
 /* shadow下行消息topic，mq服务端的响应和下行推送，*/
 /* 都会发布到 "shadow/get/<product id>/<device name>" 这个topic*/
 /* 客户端只需要订阅这个topic即可*/
@@ -121,17 +109,6 @@
 #define TC_IOT_SHADOW_PUB_TOPIC_DEF TC_IOT_SHADOW_PUB_TOPIC_PREFIX TC_IOT_CONFIG_PRODUCT_ID "/" TC_IOT_CONFIG_DEVICE_NAME
 
 /*------------------MQTT end---------------------*/
-
-/*-----------------COMMON begin----------------------*/
-/* tls 相关配置*/
-/* 根证书路径*/
-#define TC_IOT_CONFIG_ROOT_CA NULL
-/* 客户端证书路径*/
-#define TC_IOT_CONFIG_CLIENT_CRT NULL
-/* 客户端私钥路径*/
-#define TC_IOT_CONFIG_CLIENT_KEY NULL
-
-/*-----------------COMMON end----------------------*/
 
 /**********************************选填项区域 end ********************************/
 

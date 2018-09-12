@@ -1,13 +1,11 @@
 extern "C" {
 #include "tc_iot_device_config.h"
+#include "tc_iot_device_logic.h"
 #include "tc_iot_export.h"
 }
 
-#include "tc_iot_device_logic.h"
-
-void operate_device(tc_iot_shadow_local_data * device);
-
 int _tc_iot_shadow_property_control_callback(tc_iot_event_message *msg, void * client,  void * context);
+void operate_device(tc_iot_shadow_local_data * device);
 
 /* 影子数据 Client  */
 tc_iot_shadow_client g_tc_iot_shadow_client;
@@ -62,15 +60,7 @@ tc_iot_shadow_config g_tc_iot_shadow_config = {
             TC_IOT_CONFIG_MQTT_HOST,
             TC_IOT_CONFIG_MQTT_PORT,
         },
-        TC_IOT_CONFIG_COMMAND_TIMEOUT_MS,
-        TC_IOT_CONFIG_TLS_HANDSHAKE_TIMEOUT_MS,
-        TC_IOT_CONFIG_KEEP_ALIVE_INTERVAL_SEC,
-        TC_IOT_CONFIG_CLEAN_SESSION,
         TC_IOT_CONFIG_USE_TLS,
-        TC_IOT_CONFIG_AUTO_RECONNECT,
-        TC_IOT_CONFIG_ROOT_CA,
-        TC_IOT_CONFIG_CLIENT_CRT,
-        TC_IOT_CONFIG_CLIENT_KEY,
         NULL,
         NULL,
         0,  /* send will */
@@ -90,7 +80,7 @@ tc_iot_shadow_config g_tc_iot_shadow_config = {
 };
 
 
-int _tc_iot_property_change( int property_id, void * data) {
+static int _tc_iot_property_change( int property_id, void * data) {
     tc_iot_shadow_bool param_bool;
     tc_iot_shadow_enum param_enum;
     tc_iot_shadow_number param_number;
@@ -148,6 +138,7 @@ int _tc_iot_property_change( int property_id, void * data) {
 
 int _tc_iot_shadow_property_control_callback(tc_iot_event_message *msg, void * client,  void * context) {
     tc_iot_shadow_property_def * p_property = NULL;
+    tc_iot_message_data * md = NULL;
 
     if (!msg) {
         TC_IOT_LOG_ERROR("msg is null.");
@@ -162,6 +153,13 @@ int _tc_iot_shadow_property_control_callback(tc_iot_event_message *msg, void * c
         }
 
         return _tc_iot_property_change(p_property->id, msg->data);
+    } else if (msg->event == TC_IOT_MQTT_EVENT_ERROR_NOTIFY) {
+        md = (tc_iot_message_data *)msg->data;
+        if (md->error_code == TC_IOT_MQTT_OVERSIZE_PACKET_RECEIVED ) {
+            TC_IOT_LOG_ERROR("error 'oversized package received' notified.");
+        } else {
+            TC_IOT_LOG_ERROR("error notified with code: %d", md->error_code);
+        }
     } else {
         TC_IOT_LOG_TRACE("unkown event received, event=%d", msg->event);
     }

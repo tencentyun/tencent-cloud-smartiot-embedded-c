@@ -19,9 +19,6 @@ static struct option long_options[] =
     {"client",       optional_argument,    0, 'i'},
     {"username",     optional_argument,    0, 'u'},
     {"password",     optional_argument,    0, 'P'},
-    {"cafile",       optional_argument,    0, 'a'},
-    {"clifile",      optional_argument,    0, 'c'},
-    {"clikey",       optional_argument,    0, 'k'},
     {"help",         optional_argument,    0, '?'},
     {0, 0, 0, 0}
 };
@@ -145,24 +142,6 @@ void parse_command(tc_iot_mqtt_client_config * config, int argc, char ** argv) {
                 if (optarg) {
                     strncpy(config->device_info.device_secret, optarg, sizeof(config->device_info.device_secret));
                     tc_iot_hal_printf ("secret=%s\n", optarg);
-                }
-                break;
-            case 'a':
-                if (optarg) {
-                    config->p_root_ca = optarg;
-                    tc_iot_hal_printf ("root ca=%s\n", config->p_root_ca);
-                }
-                break;
-            case 'c':
-                if (optarg) {
-                    config->p_client_crt = optarg;
-                    tc_iot_hal_printf ("client crt=%s\n", config->p_client_crt);
-                }
-                break;
-            case 'k':
-                if (optarg) {
-                    config->p_client_key = optarg;
-                    tc_iot_hal_printf ("client key=%s\n", config->p_client_key);
                 }
                 break;
             case 'u':

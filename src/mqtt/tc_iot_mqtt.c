@@ -5,57 +5,34 @@ int tc_iot_mqtt_client_construct(tc_iot_mqtt_client* c,
     int i;
     int ret;
     tc_iot_network_t* p_network;
-    tc_iot_net_context_init_t netcontext;
-
-#ifdef ENABLE_TLS
-    tc_iot_tls_config_t* p_tls_config;
-#endif
 
     IF_NULL_RETURN(c, TC_IOT_NULL_POINTER);
     IF_NULL_RETURN(p_client_config, TC_IOT_NULL_POINTER);
 
     p_network = &(c->ipstack);
-    memset(p_network, 0, sizeof(tc_iot_network_t));
-
-    netcontext.fd = -1;
-    netcontext.use_tls = p_client_config->use_tls;
-    netcontext.host = p_client_config->device_info.mqtt_host;
-    netcontext.port = p_client_config->device_info.mqtt_port;
-    if (netcontext.use_tls) {
-#ifdef ENABLE_TLS
-        p_tls_config = &(netcontext.tls_config);
-        if (netcontext.use_tls) {
-            p_tls_config->verify_server = 0;
-            p_tls_config->timeout_ms = p_client_config->tls_handshake_timeout_ms;
-            p_tls_config->root_ca_in_mem = g_tc_iot_mqtt_root_ca_certs;
-            p_tls_config->root_ca_location = p_client_config->p_root_ca;
-            p_tls_config->device_cert_location = p_client_config->p_client_crt;
-            p_tls_config->device_private_key_location =
-                p_client_config->p_client_key;
-        }
-
-        tc_iot_hal_tls_init(p_network, &netcontext);
-#else
-        TC_IOT_LOG_FATAL("tls network not supported.");
-        return TC_IOT_TLS_NOT_SUPPORTED;
-#endif
-    } else {
-        tc_iot_hal_net_init(p_network, &netcontext);
+    ret = tc_iot_network_prepare(p_network,TC_IOT_SOCK_STREAM, TC_IOT_PROTO_MQTT, p_client_config->use_tls, NULL);
+    if (ret != TC_IOT_SUCCESS) {
+        return ret;
     }
+    p_network->net_context.host = p_client_config->device_info.mqtt_host;
+    p_network->net_context.port = p_client_config->device_info.mqtt_port;
 
     for (i = 0; i < TC_IOT_MAX_MESSAGE_HANDLERS; ++i) {
-        c->message_handlers[i].topicFilter = 0;
+        c->message_handlers[i].topicFilter = NULL;
     }
 
-    c->command_timeout_ms = p_client_config->command_timeout_ms;
     c->buf_size = TC_IOT_CLIENT_SEND_BUF_SIZE;
     c->readbuf_size = TC_IOT_CLIENT_READ_BUF_SIZE;
-    TC_IOT_LOG_TRACE("mqtt client buf_size=%d,readbuf_size=%d", (int)c->buf_size,
-                     (int)c->readbuf_size);
-    c->auto_reconnect = p_client_config->auto_reconnect;
-    c->clean_session = p_client_config->clean_session;
+    TC_IOT_LOG_TRACE("mqtt client buf_size=%d,readbuf_size=%d", c->buf_size, c->readbuf_size);
+
+    tc_iot_mqtt_client_set_num_option(c, OPT_COMMAND_TIMEOUT_MS, TC_IOT_DEFAULT_COMMAND_TIMEOUT_MS);
+    tc_iot_mqtt_client_set_num_option(c, OPT_AUTO_RECONNECT, 1);
+    tc_iot_mqtt_client_set_num_option(c, OPT_CLEAN_SESSION, 1);
+    tc_iot_mqtt_client_set_num_option(c, OPT_KEEP_ALIVE_INTERVAL, TC_IOT_DEFAULT_KEEP_ALIVE_INTERVAL_SEC);
+
     c->default_msg_handler = p_client_config->default_msg_handler;
     c->on_event = p_client_config->on_event;
+
     c->ping_outstanding = 0;
     c->next_packetid = 1;
     c->reconnect_timeout_ms = 0;
@@ -95,8 +72,8 @@ int tc_iot_mqtt_client_connect(tc_iot_mqtt_client* c) {
     data->clientID.cstring = p_client_config->device_info.client_id;
     data->username.cstring = p_client_config->device_info.username;
     data->password.cstring = p_client_config->device_info.password;
-    data->keepAliveInterval = p_client_config->keep_alive_interval;
-    data->cleansession = p_client_config->clean_session;
+    data->keepAliveInterval = c->keep_alive_interval;
+    data->cleansession = c->clean_session;
 
     rc = tc_iot_mqtt_connect(c, data);
     if (TC_IOT_SUCCESS == rc) {
@@ -1232,6 +1209,49 @@ int tc_iot_mqtt_client_internal_disconnect(tc_iot_mqtt_client* c, int r) {
         c->on_event(c, TC_IOT_MQTT_EVENT_DISCONNECT, &r);
     }
     return rc;
+}
+
+int tc_iot_mqtt_client_set_num_option(tc_iot_mqtt_client * c, tc_iot_mqtt_option_id_e option_id, int value) {
+
+    IF_NULL_RETURN(c, TC_IOT_NULL_POINTER);
+
+    switch(option_id) {
+    case OPT_COMMAND_TIMEOUT_MS:
+        c->command_timeout_ms = value;
+        break;
+    case OPT_CLEAN_SESSION:
+        c->clean_session = value;
+        break;
+    case OPT_AUTO_RECONNECT:
+        c->auto_reconnect = value;
+        break;
+    case OPT_KEEP_ALIVE_INTERVAL:
+        c->keep_alive_interval = value;
+        break;
+    default:
+        TC_IOT_LOG_ERROR("option_id=%d invalid, value=%d.", option_id, value);
+        return TC_IOT_INVALID_PARAMETER;
+    }
+    return TC_IOT_SUCCESS;
+}
+
+int tc_iot_mqtt_client_get_num_option(tc_iot_mqtt_client * c, tc_iot_mqtt_option_id_e option_id) {
+
+    IF_NULL_RETURN(c, 0);
+
+    switch(option_id) {
+    case OPT_COMMAND_TIMEOUT_MS:
+        return c->command_timeout_ms;
+    case OPT_CLEAN_SESSION:
+        return c->clean_session;
+    case OPT_AUTO_RECONNECT:
+        return c->auto_reconnect;
+    case OPT_KEEP_ALIVE_INTERVAL:
+        return c->keep_alive_interval;
+    default:
+        TC_IOT_LOG_ERROR("option_id=%d invalid.", option_id);
+        return 0;
+    }
 }
 
 int tc_iot_mqtt_client_disconnect(tc_iot_mqtt_client* c) {

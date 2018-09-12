@@ -21,7 +21,7 @@ int tc_iot_copy_net_context(tc_iot_net_context_t * net_context, tc_iot_net_conte
     return 0;
 }
 
-int tc_iot_network_prepare(tc_iot_network_t * p_network, tc_iot_network_type type, tc_iot_network_protocol proto, bool over_tls) {
+int tc_iot_network_prepare(tc_iot_network_t * p_network, tc_iot_network_type type, tc_iot_network_protocol proto, bool over_tls, void * extra_options) {
     tc_iot_net_context_init_t netcontext;
 #ifdef ENABLE_TLS
     tc_iot_tls_config_t* config;
@@ -36,11 +36,13 @@ int tc_iot_network_prepare(tc_iot_network_t * p_network, tc_iot_network_type typ
 
         config = &(netcontext.tls_config);
         config->timeout_ms = TC_IOT_DEFAULT_TLS_HANSHAKE_TIMEOUT_MS;
-        if (netcontext.use_tls && (proto == TC_IOT_PROTO_HTTP)) {
+        if (proto == TC_IOT_PROTO_HTTP) {
             config->verify_server = TC_IOT_HTTPS_CERT_STRICT_CHECK;
             /* config->root_ca_in_mem = g_tc_iot_https_root_ca_certs; */
+        } else if (proto == TC_IOT_PROTO_MQTT) {
+            config->verify_server = 1;
         } else {
-            config->verify_server = 1; 
+            config->verify_server = 1;
         }
 
         if (TC_IOT_SOCK_STREAM == type) {
@@ -48,6 +50,7 @@ int tc_iot_network_prepare(tc_iot_network_t * p_network, tc_iot_network_type typ
             TC_IOT_LOG_TRACE("tls network intialized.");
         } else {
             TC_IOT_LOG_FATAL("tls network not supported type=%d.", type);
+            return TC_IOT_TLS_NOT_SUPPORTED;
         }
         /* init network end*/
 #else
