@@ -427,13 +427,17 @@ int tc_iot_shadow_doc_pack(char *buffer, int buffer_len, const char * method,
 }
 
 
-int tc_iot_shadow_doc_format(tc_iot_shadow_client * c, char * buffer, int buffer_len,
-                             const char * method, int count, tc_iot_shadow_property_def * p_fields) {
+int tc_iot_shadow_up_cmd(tc_iot_shadow_client * c, char * buffer, int buffer_len,
+                             const char * method, int count, tc_iot_shadow_property_def * p_fields,
+                             message_ack_handler callback, int timeout_ms, void * session_context) {
     int ret;
     tc_iot_shadow_session * p_session;
     tc_iot_json_writer writer;
     tc_iot_json_writer * w = &writer;
     int i = 0;
+    tc_iot_mqtt_message pubmsg;
+    const char * pub_topic;
+    bool is_delete = false;
 
     IF_NULL_RETURN(c, TC_IOT_NULL_POINTER);
     IF_NULL_RETURN(buffer, TC_IOT_NULL_POINTER);
@@ -447,44 +451,71 @@ int tc_iot_shadow_doc_format(tc_iot_shadow_client * c, char * buffer, int buffer
     }
 
     tc_iot_json_writer_open(w, buffer, buffer_len);
-    tc_iot_json_writer_string(w ,"method", TC_IOT_MQTT_METHOD_GET);
+    tc_iot_json_writer_string(w ,"method", method);
 
     tc_iot_json_writer_object_begin(w ,"passthrough");
     tc_iot_json_writer_string(w ,"sid", p_session->sid);
     tc_iot_json_writer_object_end(w);
 
     tc_iot_json_writer_object_begin(w ,"state");
-    tc_iot_json_writer_object_begin(w ,"reported");
-    for (i = 0; i < count; i++, p_fields++) {
-        switch (p_fields->type) {
-        case TC_IOT_SHADOW_TYPE_BOOL:
-            tc_iot_json_writer_string(w , p_fields->name, *(bool *)p_fields->value ? TC_IOT_SHADOW_JSON_TRUE:TC_IOT_SHADOW_JSON_FALSE);
-            break;
-        case TC_IOT_SHADOW_TYPE_INT:
-            tc_iot_json_writer_int(w , p_fields->name, *(int *)p_fields->value);
-            break;
-        case TC_IOT_SHADOW_TYPE_ENUM:
-            tc_iot_json_writer_int(w , p_fields->name, *(int *)p_fields->value);
-            break;
-        case TC_IOT_SHADOW_TYPE_NUMBER:
-            tc_iot_json_writer_decimal(w , p_fields->name, *(double *)p_fields->value);
-            break;
-        case TC_IOT_SHADOW_TYPE_STRING:
-            tc_iot_json_writer_string(w , p_fields->name, (char *)p_fields->value);
-            break;
-        default:
-            TC_IOT_LOG_ERROR("field type invalid:%s", p_fields->name);
-            break;
+    is_delete = (strcmp(method, TC_IOT_MQTT_METHOD_DELETE) == 0 );
+    if (is_delete ){
+        tc_iot_json_writer_object_begin(w ,"desired");
+        for (i = 0; i < count; i++, p_fields++) {
+            tc_iot_json_writer_raw_data(w , p_fields->name, TC_IOT_JSON_NULL);
         }
+        tc_iot_json_writer_object_end(w);
+    } else {
+        tc_iot_json_writer_object_begin(w ,"reported");
+        for (i = 0; i < count; i++, p_fields++) {
+            switch (p_fields->type) {
+            case TC_IOT_SHADOW_TYPE_BOOL:
+                tc_iot_json_writer_raw_data(w , p_fields->name, *(bool *)p_fields->value ? TC_IOT_SHADOW_JSON_TRUE:TC_IOT_SHADOW_JSON_FALSE);
+                break;
+            case TC_IOT_SHADOW_TYPE_INT:
+                tc_iot_json_writer_int(w , p_fields->name, *(int *)p_fields->value);
+                break;
+            case TC_IOT_SHADOW_TYPE_ENUM:
+                tc_iot_json_writer_int(w , p_fields->name, *(int *)p_fields->value);
+                break;
+            case TC_IOT_SHADOW_TYPE_NUMBER:
+                tc_iot_json_writer_decimal(w , p_fields->name, *(double *)p_fields->value);
+                break;
+            case TC_IOT_SHADOW_TYPE_STRING:
+                tc_iot_json_writer_string(w , p_fields->name, (char *)p_fields->value);
+                break;
+            default:
+                TC_IOT_LOG_ERROR("field type invalid:%s", p_fields->name);
+                break;
+            }
 
+        }
+        tc_iot_json_writer_object_end(w);
     }
-    tc_iot_json_writer_object_end(w);
     tc_iot_json_writer_object_end(w);
 
     ret = tc_iot_json_writer_close(w);
 
     if (ret <= 0) {
+        tc_iot_release_session(p_session);
         return ret;
+    }
+
+    tc_iot_hal_timer_init(&(p_session->timer));
+    tc_iot_hal_timer_countdown_ms(&(p_session->timer), timeout_ms);
+    p_session->handler = callback;
+    p_session->session_context = session_context;
+
+    pubmsg.payload = buffer;
+    pubmsg.payloadlen = strlen(pubmsg.payload);
+    pubmsg.qos = TC_IOT_QOS1;
+    pubmsg.retained = 0;
+    pubmsg.dup = 0;
+    TC_IOT_LOG_TRACE("[c-s]: %s", (char *)pubmsg.payload);
+    pub_topic = c->p_shadow_config->pub_topic;
+    ret = tc_iot_mqtt_client_publish(&(c->mqtt_client), pub_topic, &pubmsg);
+    if (TC_IOT_SUCCESS != ret) {
+        TC_IOT_LOG_ERROR("tc_iot_mqtt_client_publish failed, return=%d", ret);
     }
 
     return w->pos;

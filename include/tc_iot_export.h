@@ -199,10 +199,12 @@ int tc_iot_report_device_data(tc_iot_shadow_client* p_shadow_client, int count, 
     确认服务端控制指令执行结果，如果服务端下发的 desired 指令执行成功，
     则上报最新状态，并清空对应的 desired 指令。
  *  @param  p_shadow_client 设备影子对象
+ *  @param  count 上报属性数
+ *  @param  p_fields 待上报属性信息
  *  @return 结果返回码
  *  @see tc_iot_sys_code_e
  */
-int tc_iot_confirm_devcie_data(tc_iot_shadow_client* p_shadow_client);
+int tc_iot_confirm_devcie_data(tc_iot_shadow_client* p_shadow_client, int count, tc_iot_shadow_property_def * p_fields);
 
 #endif
 

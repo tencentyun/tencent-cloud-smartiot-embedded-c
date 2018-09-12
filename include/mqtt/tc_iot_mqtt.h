@@ -170,8 +170,8 @@ typedef struct _tc_iot_mqtt_client_config {
 
     tc_iot_mqtt_event_handler on_event; /**< MQTT 事件通知 */
     message_handler   default_msg_handler; /**< 默认消息处理回调*/
-    char willFlag;
-    MQTTPacket_willOptions will;
+    /* char willFlag; */
+    /* MQTTPacket_willOptions will; */
 } tc_iot_mqtt_client_config;
 
 

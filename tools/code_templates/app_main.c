@@ -4,7 +4,6 @@
 
 
 void parse_command(tc_iot_mqtt_client_config * config, int argc, char ** argv) ;
-void get_message_ack_callback(tc_iot_command_ack_status_e ack_status, tc_iot_message_data * md , void * session_context);
 extern tc_iot_shadow_config g_tc_iot_shadow_config;
 extern tc_iot_shadow_local_data g_tc_iot_device_local_data;
 
@@ -90,6 +89,12 @@ int main(int argc, char** argv) {
     ret = tc_iot_data_template_init(tc_iot_get_shadow_client(), &g_tc_iot_shadow_config);
     if (ret != TC_IOT_SUCCESS) {
         tc_iot_hal_printf("tc_iot_data_template_init failed, trouble shooting guide: " "%s#%d\n", TC_IOT_TROUBLE_SHOOTING_URL, ret);
+        return 0;
+    }
+
+    ret = tc_iot_data_template_sync(tc_iot_get_shadow_client());
+    if (ret != TC_IOT_SUCCESS) {
+        tc_iot_hal_printf("tc_iot_data_template_sync failed, trouble shooting guide: " "%s#%d\n", TC_IOT_TROUBLE_SHOOTING_URL, ret);
         return 0;
     }
 

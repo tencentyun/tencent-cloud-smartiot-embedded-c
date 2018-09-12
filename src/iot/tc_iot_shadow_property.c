@@ -88,7 +88,6 @@ int _tc_iot_sync_shadow_property(tc_iot_shadow_client * p_shadow_client, bool re
     int i;
     jsmntok_t  * key_tok = NULL;
     jsmntok_t  * val_tok = NULL;
-    char field_buf[TC_IOT_MAX_FIELD_LEN];
     int  key_len = 0, val_len = 0;
     char * key_start;
     char * val_start;
@@ -110,8 +109,6 @@ int _tc_iot_sync_shadow_property(tc_iot_shadow_client * p_shadow_client, bool re
         TC_IOT_LOG_ERROR("tok_count is invalid");
         return TC_IOT_INVALID_PARAMETER;
     }
-
-    memset(field_buf, 0, sizeof(field_buf));
 
     for (i = 0; i < tok_count/2; i++) {
         /* 位置 0 是object对象，所以要从位置 1 开始取数据*/
@@ -136,11 +133,13 @@ int _tc_iot_sync_shadow_property(tc_iot_shadow_client * p_shadow_client, bool re
 
         tc_iot_shadow_event_notify(p_shadow_client, TC_IOT_SHADOW_EVENT_SERVER_CONTROL, val_start, key_start);
 
-        // restore recevied package
+        // restore received package
         key_start[key_len] = key_placed;
         val_start[val_len] = val_placed;
     }
-    return tc_iot_confirm_devcie_data(p_shadow_client);
+
+    /* return tc_iot_confirm_devcie_data(p_shadow_client); */
+    return TC_IOT_SUCCESS;
 }
 
 
@@ -257,43 +256,42 @@ int tc_iot_shadow_doc_parse(tc_iot_shadow_client * p_shadow_client,
     return TC_IOT_SUCCESS;
 }
 
-int tc_iot_report_device_data(tc_iot_shadow_client* p_shadow_client, int count, tc_iot_shadow_property_def * p_fields) {
+int tc_iot_report_device_data(tc_iot_shadow_client* c, int count, tc_iot_shadow_property_def * p_fields) {
     char buffer[TC_IOT_REPORT_UPDATE_MSG_LEN];
     int buffer_len = sizeof(buffer);
     int ret = 0;
 
-    ret =  tc_iot_shadow_doc_format(p_shadow_client, buffer, buffer_len, TC_IOT_MQTT_METHOD_UPDATE, count, p_fields);
+    ret =  tc_iot_shadow_up_cmd(c, buffer, buffer_len,
+                                    TC_IOT_MQTT_METHOD_UPDATE, count, p_fields,
+                                    _tc_iot_report_message_ack_callback, c->mqtt_client.command_timeout_ms, NULL);
+    tc_iot_mem_usage_log("buffer[TC_IOT_REPORT_UPDATE_MSG_LEN]", sizeof(buffer), strlen(buffer));
+
     if (TC_IOT_BUFFER_OVERFLOW == ret) {
         TC_IOT_LOG_ERROR("buffer overflow, please check TC_IOT_REPORT_UPDATE_MSG_LEN");
     } else if (TC_IOT_REPORT_SKIPPED_FOR_NO_CHANGE == ret) {
         ret = TC_IOT_SUCCESS;
     }
-    tc_iot_mem_usage_log("buffer[TC_IOT_REPORT_UPDATE_MSG_LEN]", sizeof(buffer), strlen(buffer));
+
+
     return ret;
 }
 
-int tc_iot_confirm_devcie_data(tc_iot_shadow_client* p_shadow_client) {
-    /* char buffer[TC_IOT_UPDATE_DESIRED_MSG_LEN]; */
-    /* int buffer_len = sizeof(buffer); */
+int tc_iot_confirm_devcie_data(tc_iot_shadow_client* c, int count, tc_iot_shadow_property_def * p_fields) {
     int ret = 0;
+    char buffer[TC_IOT_REPORT_UPDATE_MSG_LEN];
+    int buffer_len = sizeof(buffer);
 
-    // TODO do real report
-    /* ret = tc_iot_shadow_check_and_report(p_shadow_client, buffer, buffer_len, */
-    /*         _tc_iot_report_message_ack_callback, p_shadow_client->mqtt_client.command_timeout_ms, NULL, false); */
-    /* tc_iot_mem_usage_log("buffer[TC_IOT_UPDATE_DESIRED_MSG_LEN]", sizeof(buffer), strlen(buffer)); */
-    /* if ((ret != TC_IOT_SUCCESS) && (ret != TC_IOT_REPORT_SKIPPED_FOR_NO_CHANGE)) { */
-    /*     if (TC_IOT_BUFFER_OVERFLOW == ret) { */
-    /*         TC_IOT_LOG_ERROR("buffer overflow, please check TC_IOT_UPDATE_DESIRED_MSG_LEN"); */
-    /*     } */
-    /*     return ret; */
-    /* } */
-    /* ret = tc_iot_shadow_check_and_report(p_shadow_client, buffer, buffer_len, */
-    /*         _tc_iot_report_message_ack_callback, p_shadow_client->mqtt_client.command_timeout_ms, NULL, true); */
-    /* if (TC_IOT_BUFFER_OVERFLOW == ret) { */
-    /*     TC_IOT_LOG_ERROR("buffer overflow, please check TC_IOT_UPDATE_DESIRED_MSG_LEN"); */
-    /* } else if (TC_IOT_REPORT_SKIPPED_FOR_NO_CHANGE == ret) { */
-    /*     ret = TC_IOT_SUCCESS; */
-    /* } */
+    ret =  tc_iot_shadow_up_cmd(c, buffer, buffer_len,
+                                    TC_IOT_MQTT_METHOD_DELETE, count, p_fields,
+                                    _tc_iot_report_message_ack_callback, c->mqtt_client.command_timeout_ms, NULL);
+    tc_iot_mem_usage_log("buffer[TC_IOT_REPORT_UPDATE_MSG_LEN]", sizeof(buffer), strlen(buffer));
+
+    if (TC_IOT_BUFFER_OVERFLOW == ret) {
+        TC_IOT_LOG_ERROR("buffer overflow, please check TC_IOT_REPORT_UPDATE_MSG_LEN");
+    } else if (TC_IOT_REPORT_SKIPPED_FOR_NO_CHANGE == ret) {
+        ret = TC_IOT_SUCCESS;
+    }
+
     return ret;
 }
 

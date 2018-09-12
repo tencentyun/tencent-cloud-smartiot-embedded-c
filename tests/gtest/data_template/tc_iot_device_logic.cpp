@@ -38,10 +38,6 @@ tc_iot_shadow_config g_tc_iot_shadow_config = {
         TC_IOT_CONFIG_USE_TLS,
         NULL,
         NULL,
-        0,  /* send will */
-        {
-            {'M', 'Q', 'T', 'W'}, 0, {NULL, {0, NULL}}, {NULL, {0, NULL}}, 0, 0,
-        }
     },
     TC_IOT_SHADOW_SUB_TOPIC_DEF,
     TC_IOT_SHADOW_PUB_TOPIC_DEF,

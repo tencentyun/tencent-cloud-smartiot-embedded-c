@@ -66,8 +66,9 @@ int tc_iot_mqtt_client_connect(tc_iot_mqtt_client* c) {
 
     data = &(c->connect_options);
     tc_iot_mqtt_init_conn_data(data);
-    data->willFlag = p_client_config->willFlag;
-    data->will = p_client_config->will;
+    /* data->willFlag = p_client_config->willFlag; */
+    /* data->will = p_client_config->will; */
+
     data->MQTTVersion = 4; /*4 means MQTT 3.1.1 */
     data->clientID.cstring = p_client_config->device_info.client_id;
     data->username.cstring = p_client_config->device_info.username;
