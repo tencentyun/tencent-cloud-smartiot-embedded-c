@@ -61,24 +61,24 @@ TEST(IOTSUITE, data_template)
     ASSERT_EQ(ret, TC_IOT_SUCCESS);
 
 
-    ret = tc_iot_server_init(tc_iot_get_shadow_client(), &g_tc_iot_shadow_config);
+    ret = tc_iot_data_template_init(tc_iot_get_shadow_client(), &g_tc_iot_shadow_config);
     ASSERT_EQ(ret, TC_IOT_SUCCESS);
 
     while (tc_iot_shadow_pending_session_count(tc_iot_get_shadow_client()) > 0) {
-        tc_iot_server_loop(tc_iot_get_shadow_client(), 200);
+        tc_iot_data_template_loop(tc_iot_get_shadow_client(), 200);
     }
 
     snprintf(desired, sizeof(desired),"{\"param_bool\":true,\"param_enum\":1,\"param_number\":2,\"param_string\":\"test\"}");
     tc_iot_shadow_update(tc_iot_get_shadow_client(), buffer, buffer_len, NULL, desired, NULL, 0, NULL);
 
-    ret = tc_iot_server_loop(tc_iot_get_shadow_client(), 2000);
+    ret = tc_iot_data_template_loop(tc_iot_get_shadow_client(), 2000);
 
     ASSERT_EQ(g_tc_iot_device_local_data.param_bool, true);
     ASSERT_EQ(g_tc_iot_device_local_data.param_enum, 1);
     ASSERT_EQ(g_tc_iot_device_local_data.param_number, 2);
     ASSERT_STREQ(g_tc_iot_device_local_data.param_string, "test");
 
-    tc_iot_server_destroy(tc_iot_get_shadow_client());
+    tc_iot_data_template_destroy(tc_iot_get_shadow_client());
     return ;
 }
 

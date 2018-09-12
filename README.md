@@ -207,9 +207,9 @@ SDK 常见错误码定义，参见：[tc_iot_const.h](include/common/tc_iot_cons
 
 | 序号        | 函数名      | 说明        |
 | ---------- | ---------- | ---------- |
-| 1 | tc_iot_server_init | 根据设备配置参数，初始化服务。 |
-| 2 | tc_iot_server_loop | 服务任务主循环函数，接收服务推送及响应数据。 |
-| 3 | tc_iot_server_destroy | 数据模板服务析构处理，释放资源。 |
+| 1 | tc_iot_data_template_init | 根据设备配置参数，初始化服务。 |
+| 2 | tc_iot_data_template_loop | 服务任务主循环函数，接收服务推送及响应数据。 |
+| 3 | tc_iot_data_template_destroy | 数据模板服务析构处理，释放资源。 |
 | 4 | tc_iot_report_device_data | 上报设备数据模板参数最新数据状态，更新到服务端。|
 | 5 | tc_iot_confirm_devcie_data | 根据设备控制端要求，发送设备数据模板参数控制指令，更新到服务端，推送给设备。 |
 

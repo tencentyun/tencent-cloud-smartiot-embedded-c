@@ -145,18 +145,18 @@ int tc_iot_mqtt_client_unsubscribe(tc_iot_mqtt_client* p_mqtt_client,
 int tc_iot_mqtt_client_disconnect(tc_iot_mqtt_client* p_mqtt_client);
 
 /**
- *  @brief tc_iot_server_init
+ *  @brief tc_iot_data_template_init
  * 根据设备配置参数，初始化服务。
  *  @param  p_shadow_client 设备服务对象
  *  @param  p_client_config 服务配置参数。
  *  @return 结果返回码
  *  @see tc_iot_sys_code_e
  */
-int tc_iot_server_init(tc_iot_shadow_client* p_shadow_client, tc_iot_shadow_config * p_client_config);
+int tc_iot_data_template_init(tc_iot_shadow_client* p_shadow_client, tc_iot_shadow_config * p_client_config);
 
 
 /**
- *  @brief tc_iot_server_loop
+ *  @brief tc_iot_data_template_loop
  *  服务任务主循环函数，接收服务推送及响应数据。
  *  @param  p_shadow_client 设备服务对象
  *  @param yield_timeout 循环等待时间，单位毫秒
@@ -164,17 +164,17 @@ int tc_iot_server_init(tc_iot_shadow_client* p_shadow_client, tc_iot_shadow_conf
  *  @see tc_iot_sys_code_e
  */
 
-int tc_iot_server_loop(tc_iot_shadow_client* p_shadow_client, int yield_timeout);
+int tc_iot_data_template_loop(tc_iot_shadow_client* p_shadow_client, int yield_timeout);
 
 /**
- *  @brief tc_iot_server_destroy
+ *  @brief tc_iot_data_template_destroy
  * 数据模板服务析构处理，释放资源。
  *  @param  p_shadow_client 设备影子对象
  *  @return 结果返回码
  *  @see tc_iot_sys_code_e
  */
 
-int tc_iot_server_destroy(tc_iot_shadow_client* p_shadow_client);
+int tc_iot_data_template_destroy(tc_iot_shadow_client* p_shadow_client);
 
 
 
@@ -185,10 +185,12 @@ int tc_iot_server_destroy(tc_iot_shadow_client* p_shadow_client);
     检查本地变量数据和服务端差异，上报设备数据模板参数最新数据状态，更新到服务端。
 
  *  @param  p_shadow_client 设备影子对象
+ *  @param  count 上报属性数
+ *  @param  p_fields 待上报属性信息
  *  @return 结果返回码
  *  @see tc_iot_sys_code_e
  */
-int tc_iot_report_device_data(tc_iot_shadow_client* p_shadow_client);
+int tc_iot_report_device_data(tc_iot_shadow_client* p_shadow_client, int count, tc_iot_shadow_property_def * p_fields);
 
 /**
  *  @brief tc_iot_confirm_devcie_data

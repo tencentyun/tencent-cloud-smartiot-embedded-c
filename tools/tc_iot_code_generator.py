@@ -223,7 +223,7 @@ class iot_field:
         sample_code = ""
         if self.type_name == "bool":
             sample_code = """
-<indent>field_name = *(field_define *)data;
+<indent>field_name = atoi(value);
 <indent>g_tc_iot_device_local_data.field_name = field_name;
 <indent>if (field_name) {
 <indent>    TC_IOT_LOG_TRACE("do something for field_name on");
@@ -234,7 +234,7 @@ class iot_field:
 
         elif self.type_name == "enum":
             sample_code = """
-<indent>field_name = *(field_define *)data;
+<indent>field_name = atoi(value);
 <indent>g_tc_iot_device_local_data.field_name = field_name;
 """.replace("<indent>", indent).replace("field_name", self.name).replace("field_define", self.type_define)
             sample_code += indent + "switch({})".format(self.name) + "{\n"
@@ -245,26 +245,24 @@ class iot_field:
 
             sample_code += indent + "    default:\n"
             sample_code += indent + '        TC_IOT_LOG_WARN("do something for {} = unknown");\n'.format(self.name)
-            sample_code += indent + "        /* 如果能正常处理未知状态，则返回 TC_IOT_SUCCESS */\n"
-            sample_code += indent + "        /* 如果不能正常处理未知状态，则返回 TC_IOT_FAILURE */\n"
             sample_code += indent + "        return TC_IOT_FAILURE;\n"
             sample_code += indent + "}\n"
 
         elif self.type_name == "number":
             sample_code = """
-<indent>field_name = *(field_define *)data;
+<indent>field_name = atof(value);
 <indent>g_tc_iot_device_local_data.field_name = field_name;
 <indent>TC_IOT_LOG_TRACE("do something for field_name=%f", field_name);
 """.replace("<indent>", indent).replace("field_name", self.name).replace("field_define", self.type_define)
         elif self.type_name == "int":
             sample_code = """
-<indent>field_name = *(field_define *)data;
+<indent>field_name = atoi(value);
 <indent>g_tc_iot_device_local_data.field_name = field_name;
 <indent>TC_IOT_LOG_TRACE("do something for field_name=%d", field_name);
 """.replace("<indent>", indent).replace("field_name", self.name).replace("field_define", self.type_define)
         elif self.type_name == "string":
             sample_code = """
-<indent>field_name = (char *)data;
+<indent>field_name = (char *)value;
 <indent>strcpy(g_tc_iot_device_local_data.field_name, field_name);
 <indent>TC_IOT_LOG_TRACE("do something for field_name=%s", field_name);
 """.replace("<indent>", indent).replace("field_name", self.name).replace("field_define", self.type_define)
@@ -278,6 +276,10 @@ class iot_field:
         if self.type_name == "bool":
             sample_code = """
 <indent>g_tc_iot_device_local_data.field_name = !g_tc_iot_device_local_data.field_name;
+<indent>fields[count].name = "field_name";
+<indent>fields[count].type = TC_IOT_SHADOW_TYPE_BOOL;
+<indent>fields[count].value = &g_tc_iot_device_local_data.field_name;
+<indent>count++;
 """.replace("<indent>", indent).replace("field_name", self.name)
 
         elif self.type_name == "enum":
@@ -285,12 +287,20 @@ class iot_field:
                 sample_code += """
 <indent>g_tc_iot_device_local_data.field_name += 1;
 <indent>g_tc_iot_device_local_data.field_name %= <max>;
+<indent>fields[count].name = "field_name";
+<indent>fields[count].type = TC_IOT_SHADOW_TYPE_ENUM;
+<indent>fields[count].value = &g_tc_iot_device_local_data.field_name;
+<indent>count++;
 """.replace("<indent>", indent).replace("field_name", self.name).replace("<max>", str(len(self.enums)))
 
         elif self.type_name == "number":
             sample_code = """
 <indent>g_tc_iot_device_local_data.field_name += 1;
 <indent>g_tc_iot_device_local_data.field_name = g_tc_iot_device_local_data.field_name > <max>?<min>:g_tc_iot_device_local_data.field_name;
+<indent>fields[count].name = "field_name";
+<indent>fields[count].type = TC_IOT_SHADOW_TYPE_NUMBER;
+<indent>fields[count].value = &g_tc_iot_device_local_data.field_name;
+<indent>count++;
 """
             sample_code = sample_code.replace("<indent>", indent).replace("field_name", self.name)
             sample_code = sample_code.replace("field_define", self.type_define).replace("<min>",str(self.min_value)).replace("<max>",str(self.max_value))
@@ -299,6 +309,10 @@ class iot_field:
             sample_code = """
 <indent>g_tc_iot_device_local_data.field_name += 1;
 <indent>g_tc_iot_device_local_data.field_name = g_tc_iot_device_local_data.field_name > <max>?<min>:g_tc_iot_device_local_data.field_name;
+<indent>fields[count].name = "field_name";
+<indent>fields[count].type = TC_IOT_SHADOW_TYPE_INT;
+<indent>fields[count].value = &g_tc_iot_device_local_data.field_name;
+<indent>count++;
 """
             sample_code = sample_code.replace("<indent>", indent).replace("field_name", self.name)
             sample_code = sample_code.replace("field_define", self.type_define).replace("<min>",str(self.min_value)).replace("<max>",str(self.max_value))
@@ -310,6 +324,10 @@ class iot_field:
 <indent><indent>g_tc_iot_device_local_data.field_name[i] = g_tc_iot_device_local_data.field_name[0] < 'A'?'A':g_tc_iot_device_local_data.field_name[0];
 <indent>}
 <indent>g_tc_iot_device_local_data.field_name[<min>+2] = 0;
+<indent>fields[count].name = "field_name";
+<indent>fields[count].type = TC_IOT_SHADOW_TYPE_STRING;
+<indent>fields[count].value = g_tc_iot_device_local_data.field_name;
+<indent>count++;
 """
             sample_code = sample_code.replace("<indent>", indent).replace("field_name", self.name)
             sample_code = sample_code.replace("field_define", self.type_define).replace("<min>",str(self.min_value)).replace("<max>",str(self.max_value))
@@ -332,17 +350,18 @@ class iot_struct:
     def generate_sample_code(self):
         declare_code = ""
         indent = "    "
-        sample_code = (indent * 1) + "switch (property_id) {\n"
+        sample_code = ""
         for field in self.fields:
             declare_code += ((indent * 1) + "{} {};\n").format(field.type_define, field.name)
-            sample_code += (indent * 2) + "case {}:".format(field.get_id_c_macro_name())
-            sample_code += field.get_sample_code_snippet(indent*3, "data")
-            sample_code +=  (indent * 3) + "break;\n"
-        sample_code += (indent * 2) + "default:\n"
-        sample_code += (indent * 3) + 'TC_IOT_LOG_WARN("unkown property id = %d", property_id);\n'
-        sample_code += (indent * 3) + 'return TC_IOT_FAILURE;\n'
-        sample_code += (indent * 1) + '}\n\n'
 
+            sample_code += (indent * 1) + "if (strcmp(\"{}\", name) == 0) {{".format(field.name)
+            sample_code += field.get_sample_code_snippet(indent*2, "data")
+            sample_code +=  (indent * 2) + "goto operate;\n"
+            sample_code +=  (indent * 1) + "}\n"
+        sample_code += (indent * 1) + 'TC_IOT_LOG_WARN("unkown %s = %s", name, value);\n'
+        sample_code += (indent * 1) + 'return TC_IOT_FAILURE;\n'
+
+        sample_code += (indent * 1) + 'operate:\n'
         sample_code += (indent * 1) + 'TC_IOT_LOG_TRACE("operating device");\n'
         sample_code += (indent * 1) + 'operate_device(&g_tc_iot_device_local_data);\n'
         sample_code += (indent * 1) + 'return TC_IOT_SUCCESS;\n'
@@ -373,11 +392,16 @@ class iot_struct:
         return declare_code + sample_code;
 
     def generate_sim_data_change(self):
-        declare_code = "    int i = 0;\n"
+        declare_code =  "    int i = 0;\n"
+        declare_code +=  "    int count = 0;\n"
+        declare_code +=  "    tc_iot_shadow_property_def fields[{}];\n".format(len(self.fields))
+        declare_code += '    TC_IOT_LOG_TRACE("simulate data change.");\n'
+
         sample_code = ""
         indent = "    "
         for field in self.fields:
             sample_code += field.get_data_change_sample_code_snippet(indent)
+        sample_code += "tc_iot_report_device_data(tc_iot_get_shadow_client(), count, fields);\n"
         return declare_code + sample_code;
 
     def declare_local_data_struct(self, struct_name="tc_iot_shadow_local_data"):

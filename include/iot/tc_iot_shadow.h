@@ -26,10 +26,8 @@ typedef enum _tc_iot_shadow_data_type_e {
 
 typedef struct _tc_iot_shadow_property_def {
     const char * name;
-    int id;
     tc_iot_shadow_data_type_e  type;
-    int offset;
-    int len;
+    void * value;
 } tc_iot_shadow_property_def;
 
 
@@ -41,12 +39,7 @@ typedef struct _tc_iot_shadow_config {
     char sub_topic[TC_IOT_MAX_MQTT_TOPIC_LEN]; /**< 影子设备订阅 Topic*/
     char pub_topic[TC_IOT_MAX_MQTT_TOPIC_LEN];  /**< 影子设备消息 Publish Topic*/
     message_handler on_receive_msg; /**< 影子设备消息回调*/
-    int property_total;
-    tc_iot_shadow_property_def * properties;
     tc_iot_event_handler event_notify;
-    void * p_current_device_data;
-    void * p_reported_device_data;
-    void * p_desired_device_data;
 } tc_iot_shadow_config;
 
 typedef enum _tc_iot_command_ack_status_e {
@@ -75,8 +68,6 @@ typedef struct _tc_iot_shadow_client {
     tc_iot_shadow_config* p_shadow_config; /**< 影子设备配置*/
     tc_iot_mqtt_client mqtt_client; /**< MQTT 客户端*/
     tc_iot_shadow_session sessions[TC_IOT_MAX_SESSION_COUNT];
-    char desired_bits[(TC_IOT_MAX_PROPERTY_COUNT/8)+1];
-    char reported_bits[(TC_IOT_MAX_PROPERTY_COUNT/8)+1];
     unsigned int shadow_seq;
 } tc_iot_shadow_client;
 
@@ -236,44 +227,35 @@ int tc_iot_shadow_doc_pack_for_get_with_sid(char *buffer, int buffer_len,
                                     bool metadata, bool reported,
                                     tc_iot_shadow_client *c) ;
 tc_iot_shadow_session * tc_iot_find_empty_session(tc_iot_shadow_client *c);
+tc_iot_shadow_session * tc_iot_fetch_session(tc_iot_shadow_client *c);
 void tc_iot_release_session(tc_iot_shadow_session * p_session);
 void tc_iot_device_on_message_received(tc_iot_message_data* md);
-int _tc_iot_sync_shadow_property(tc_iot_shadow_client * p_shadow_client,
-        int property_total, tc_iot_shadow_property_def * properties, bool reported,
-        const char * doc_start, jsmntok_t * json_token, int tok_count);
+int _tc_iot_sync_shadow_property(tc_iot_shadow_client * p_shadow_client, bool reported,
+        char * doc_start, jsmntok_t * json_token, int tok_count);
 
 int tc_iot_shadow_doc_pack(char *buffer, int buffer_len, const char * method,
                            const char * session_id,
                            const char * reported, const char * desired,
                            tc_iot_shadow_client *c);
 int tc_iot_shadow_doc_parse(tc_iot_shadow_client * p_shadow_client,
-        const char * payload, jsmntok_t * json_token, int token_count, char * field_buf, int field_buf_len);
+        char * payload, jsmntok_t * json_token, int token_count, char * field_buf, int field_buf_len);
 
 int tc_iot_shadow_event_notify(tc_iot_shadow_client * p_shadow_client, tc_iot_event_e event, void * data, void * context);
-
-int tc_iot_shadow_cmp_local(tc_iot_shadow_client * c, int property_id, void * src, void * dest);
-int tc_iot_shadow_cmp_local_with_reported(tc_iot_shadow_client * c, int property_id);
-int tc_iot_shadow_cmp_local_with_desired(tc_iot_shadow_client * c, int property_id);
-void * tc_iot_shadow_save_to_cached(tc_iot_shadow_client * c, int property_id, const void * p_data, void * p_cache);
-void * tc_iot_shadow_save_string_to_cached(tc_iot_shadow_client * c, int property_id, const void * p_data, int len, void * p_cache);
-
 int tc_iot_shadow_report_property(tc_iot_shadow_client * c, int property_id, tc_iot_json_writer * w);
 int tc_iot_shadow_check_and_report(tc_iot_shadow_client *c, char * buffer, int buffer_len,
         message_ack_handler callback, int timeout_ms, void * session_context, bool do_confirm);
-
-tc_iot_shadow_property_def * tc_iot_shadow_get_property_def(tc_iot_shadow_client * p_shadow_client, int property_id);
-const char * tc_iot_shadow_get_property_name(tc_iot_shadow_client * p_shadow_client, int property_id);
-int tc_iot_shadow_get_property_type(tc_iot_shadow_client * p_shadow_client, int property_id);
-int tc_iot_shadow_get_property_offset(tc_iot_shadow_client * p_shadow_client, int property_id);
 int tc_iot_shadow_pending_session_count(tc_iot_shadow_client *c);
 int _tc_iot_generate_session_id(char * session_id, int session_id_len, tc_iot_mqtt_client* c);
 
-int tc_iot_report_device_data(tc_iot_shadow_client* p_shadow_client);
+int tc_iot_report_device_data(tc_iot_shadow_client* p_shadow_client, int count, tc_iot_shadow_property_def * p_fields);
 int tc_iot_confirm_devcie_data(tc_iot_shadow_client* p_shadow_client);
 
-int tc_iot_server_init(tc_iot_shadow_client* p_shadow_client, tc_iot_shadow_config * p_client_config);
-int tc_iot_server_loop(tc_iot_shadow_client* p_shadow_client, int yield_timeout);
-int tc_iot_server_destroy(tc_iot_shadow_client* p_shadow_client);
+int tc_iot_data_template_init(tc_iot_shadow_client* p_shadow_client, tc_iot_shadow_config * p_client_config);
+int tc_iot_data_template_loop(tc_iot_shadow_client* p_shadow_client, int yield_timeout);
+int tc_iot_data_template_destroy(tc_iot_shadow_client* p_shadow_client);
+
+int tc_iot_shadow_doc_format(tc_iot_shadow_client * c, char * buffer, int buffer_len,
+                             const char * method, int count, tc_iot_shadow_property_def * p_fields);
 
 #endif /* end of include guard */
 

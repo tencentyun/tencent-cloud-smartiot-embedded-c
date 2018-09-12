@@ -106,7 +106,7 @@ make
 ## SDK API 样例及说明
 
 ### 1. 初始化 
-tc_iot_server_init 根据设备配置参数，初始化服务。此函数调用后：
+tc_iot_data_template_init 根据设备配置参数，初始化服务。此函数调用后：
 1. 初始化相关结构变量，和服务端建立 MQTT 连接；
 2. 默认订阅数据模板相关 Topic；
 3. 发起 get 请求，从服务端同步最新数据；
@@ -115,25 +115,25 @@ tc_iot_server_init 根据设备配置参数，初始化服务。此函数调用�
 
 ```c
     int ret = 0;
-    ret = tc_iot_server_init(tc_iot_get_shadow_client(), &g_tc_iot_shadow_config);
+    ret = tc_iot_data_template_init(tc_iot_get_shadow_client(), &g_tc_iot_shadow_config);
 ```
 
 #### 函数原型及说明
 
 ```c
 /**
- *  @brief tc_iot_server_init
+ *  @brief tc_iot_data_template_init
  * 根据设备配置参数，初始化服务。
  *  @param  p_shadow_client 设备服务对象
  *  @param  p_client_config 服务配置参数。
  *  @return 结果返回码
  *  @see tc_iot_sys_code_e
  */
-int tc_iot_server_init(tc_iot_shadow_client* p_shadow_client, tc_iot_shadow_config * p_client_config);
+int tc_iot_data_template_init(tc_iot_shadow_client* p_shadow_client, tc_iot_shadow_config * p_client_config);
 ```
 
 ### 2. 主循环 
-tc_iot_server_loop 服务任务主循环函数，接收服务推送及响应数据。 此函数调用后：
+tc_iot_data_template_loop 服务任务主循环函数，接收服务推送及响应数据。 此函数调用后：
 1. 接收服务端下发的控制指令或响应消息，并调用业务回调函数处理；
 2. 定时触发心跳逻辑，保持连接；
 3. 检测网络连接状态，异常时自动重连；
@@ -142,7 +142,7 @@ tc_iot_server_loop 服务任务主循环函数，接收服务推送及响应数�
 
 ```c
     while (!stop) {
-        tc_iot_server_loop(tc_iot_get_shadow_client(), 200);
+        tc_iot_data_template_loop(tc_iot_get_shadow_client(), 200);
     }
 ```
 
@@ -150,7 +150,7 @@ tc_iot_server_loop 服务任务主循环函数，接收服务推送及响应数�
 
 ```c
 /**
- *  @brief tc_iot_server_loop
+ *  @brief tc_iot_data_template_loop
  *  服务任务主循环函数，接收服务推送及响应数据。
  *  @param  p_shadow_client 设备服务对象
  *  @param yield_timeout 循环等待时间，单位毫秒
@@ -158,28 +158,28 @@ tc_iot_server_loop 服务任务主循环函数，接收服务推送及响应数�
  *  @see tc_iot_sys_code_e
  */
 
-int tc_iot_server_loop(tc_iot_shadow_client* p_shadow_client, int yield_timeout);
+int tc_iot_data_template_loop(tc_iot_shadow_client* p_shadow_client, int yield_timeout);
 ```
 
 ### 3. 析构资源
- tc_iot_server_destroy 数据模板服务析构处理，释放资源。
+ tc_iot_data_template_destroy 数据模板服务析构处理，释放资源。
 
 #### 样例
 
 ```c
-    tc_iot_server_destroy(tc_iot_get_shadow_client());
+    tc_iot_data_template_destroy(tc_iot_get_shadow_client());
 ```
 
 #### 函数原型及说明
 
 ```c
 /**
- *  @brief tc_iot_server_destroy
+ *  @brief tc_iot_data_template_destroy
  * 数据模板服务析构处理，释放资源。
  *  @param  p_shadow_client 设备影子对象
  *  @return 结果返回码
  *  @see tc_iot_sys_code_e
  */
 
-int tc_iot_server_destroy(tc_iot_shadow_client* p_shadow_client);
+int tc_iot_data_template_destroy(tc_iot_shadow_client* p_shadow_client);
 ```

@@ -45,16 +45,30 @@ void operate_device(tc_iot_shadow_local_data * p_device_data) {
  * @brief 本函数演示，当设备端状态发生变化时，如何更新设备端数据，并上报给服务端。
  */
 void do_sim_data_change(void) {
-    TC_IOT_LOG_TRACE("simulate data change.");
     int i = 0;
+    int count = 0;
+    tc_iot_shadow_property_def fields[4];
+    TC_IOT_LOG_TRACE("simulate data change.");
 
     g_tc_iot_device_local_data.param_bool = !g_tc_iot_device_local_data.param_bool;
+    fields[count].name = "param_bool";
+    fields[count].type = TC_IOT_SHADOW_TYPE_BOOL;
+    fields[count].value = &g_tc_iot_device_local_data.param_bool;
+    count++;
 
     g_tc_iot_device_local_data.param_enum += 1;
     g_tc_iot_device_local_data.param_enum %= 3;
+    fields[count].name = "param_enum";
+    fields[count].type = TC_IOT_SHADOW_TYPE_ENUM;
+    fields[count].value = &g_tc_iot_device_local_data.param_enum;
+    count++;
 
     g_tc_iot_device_local_data.param_number += 1;
     g_tc_iot_device_local_data.param_number = g_tc_iot_device_local_data.param_number > 4095?0:g_tc_iot_device_local_data.param_number;
+    fields[count].name = "param_number";
+    fields[count].type = TC_IOT_SHADOW_TYPE_NUMBER;
+    fields[count].value = &g_tc_iot_device_local_data.param_number;
+    count++;
 
     for (i = 0; i < 0+1;i++) {
         g_tc_iot_device_local_data.param_string[i] += 1;
@@ -62,10 +76,12 @@ void do_sim_data_change(void) {
         g_tc_iot_device_local_data.param_string[i] = g_tc_iot_device_local_data.param_string[0] < 'A'?'A':g_tc_iot_device_local_data.param_string[0];
     }
     g_tc_iot_device_local_data.param_string[0+2] = 0;
+    fields[count].name = "param_string";
+    fields[count].type = TC_IOT_SHADOW_TYPE_STRING;
+    fields[count].value = g_tc_iot_device_local_data.param_string;
+    count++;
+tc_iot_report_device_data(tc_iot_get_shadow_client(), count, fields);
 
-
-    /* 上报数据最新状态 */
-    tc_iot_report_device_data(tc_iot_get_shadow_client());
 }
 
 int main(int argc, char** argv) {
@@ -107,17 +123,17 @@ int main(int argc, char** argv) {
         tc_iot_hal_printf("username & password using: %s %s\n", p_client_config->device_info.username, p_client_config->device_info.password);
     }
 
-    ret = tc_iot_server_init(tc_iot_get_shadow_client(), &g_tc_iot_shadow_config);
+    ret = tc_iot_data_template_init(tc_iot_get_shadow_client(), &g_tc_iot_shadow_config);
     if (ret != TC_IOT_SUCCESS) {
-        tc_iot_hal_printf("tc_iot_server_init failed, trouble shooting guide: " "%s#%d\n", TC_IOT_TROUBLE_SHOOTING_URL, ret);
+        tc_iot_hal_printf("tc_iot_data_template_init failed, trouble shooting guide: " "%s#%d\n", TC_IOT_TROUBLE_SHOOTING_URL, ret);
         return 0;
     }
 
     while (!stop) {
-        tc_iot_server_loop(tc_iot_get_shadow_client(), 200);
+        tc_iot_data_template_loop(tc_iot_get_shadow_client(), 200);
     }
 
-    tc_iot_server_destroy(tc_iot_get_shadow_client());
+    tc_iot_data_template_destroy(tc_iot_get_shadow_client());
     return 0;
 }
 

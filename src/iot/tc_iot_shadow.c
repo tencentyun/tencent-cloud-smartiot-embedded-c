@@ -153,6 +153,18 @@ tc_iot_shadow_session * tc_iot_find_empty_session(tc_iot_shadow_client *c) {
     return NULL;
 }
 
+tc_iot_shadow_session * tc_iot_fetch_session(tc_iot_shadow_client *c) {
+    tc_iot_shadow_session * p_session = NULL;
+
+    p_session = tc_iot_find_empty_session(c);
+    if (p_session) {
+        _tc_iot_generate_session_id( &(p_session->sid[0]),sizeof(p_session->sid), &(c->mqtt_client));
+        return p_session;
+    }
+
+    return NULL;
+}
+
 int tc_iot_shadow_pending_session_count(tc_iot_shadow_client *c) {
     int i;
     int total = 0;
@@ -192,7 +204,7 @@ int tc_iot_shadow_get(tc_iot_shadow_client *c, char * buffer, int buffer_len,
         if (timeout_ms <= 0) {
             TC_IOT_LOG_ERROR("callback handler given, but timeout_ms=%d", timeout_ms);
         }
-        p_session = tc_iot_find_empty_session(c);
+        p_session = tc_iot_fetch_session(c);
         if (!p_session) {
             TC_IOT_LOG_ERROR("no more empty session.");
             return TC_IOT_SHADOW_SESSION_NOT_ENOUGH;
@@ -247,12 +259,11 @@ int tc_iot_shadow_update(tc_iot_shadow_client *c, char * buffer, int buffer_len,
         if (timeout_ms <= 0) {
             TC_IOT_LOG_ERROR("callback handler given, but timeout_ms=%d", timeout_ms);
         }
-        p_session = tc_iot_find_empty_session(c);
+        p_session = tc_iot_fetch_session(c);
         if (!p_session) {
             TC_IOT_LOG_ERROR("no more empty session.");
             return TC_IOT_SHADOW_SESSION_NOT_ENOUGH;
         }
-        _tc_iot_generate_session_id( &(p_session->sid[0]),sizeof(p_session->sid), &(c->mqtt_client));
         rc = tc_iot_shadow_doc_pack(buffer, buffer_len, TC_IOT_MQTT_METHOD_UPDATE,
                                     &(p_session->sid[0]), reported, desired, c);
         tc_iot_hal_timer_init(&(p_session->timer));
@@ -347,12 +358,11 @@ int tc_iot_shadow_delete(tc_iot_shadow_client *c, char * buffer, int buffer_len,
         if (timeout_ms <= 0) {
             TC_IOT_LOG_ERROR("callback handler given, but timeout_ms=%d", timeout_ms);
         }
-        p_session = tc_iot_find_empty_session(c);
+        p_session = tc_iot_fetch_session(c);
         if (!p_session) {
             TC_IOT_LOG_ERROR("no more empty session.");
             return TC_IOT_SHADOW_SESSION_NOT_ENOUGH;
         }
-        _tc_iot_generate_session_id( &(p_session->sid[0]),sizeof(p_session->sid), &(c->mqtt_client));
         rc = tc_iot_shadow_doc_pack(buffer, buffer_len, TC_IOT_MQTT_METHOD_DELETE,
                                     &(p_session->sid[0]), reported, desired, c);
         tc_iot_hal_timer_init(&(p_session->timer));
@@ -416,4 +426,67 @@ int tc_iot_shadow_doc_pack(char *buffer, int buffer_len, const char * method,
     return ret;
 }
 
+
+int tc_iot_shadow_doc_format(tc_iot_shadow_client * c, char * buffer, int buffer_len,
+                             const char * method, int count, tc_iot_shadow_property_def * p_fields) {
+    int ret;
+    tc_iot_shadow_session * p_session;
+    tc_iot_json_writer writer;
+    tc_iot_json_writer * w = &writer;
+    int i = 0;
+
+    IF_NULL_RETURN(c, TC_IOT_NULL_POINTER);
+    IF_NULL_RETURN(buffer, TC_IOT_NULL_POINTER);
+    IF_NULL_RETURN(method, TC_IOT_NULL_POINTER);
+    IF_NULL_RETURN(p_fields, TC_IOT_NULL_POINTER);
+
+    p_session = tc_iot_fetch_session(c);
+    if (!p_session) {
+        TC_IOT_LOG_ERROR("no more empty session.");
+        return TC_IOT_SHADOW_SESSION_NOT_ENOUGH;
+    }
+
+    tc_iot_json_writer_open(w, buffer, buffer_len);
+    tc_iot_json_writer_string(w ,"method", TC_IOT_MQTT_METHOD_GET);
+
+    tc_iot_json_writer_object_begin(w ,"passthrough");
+    tc_iot_json_writer_string(w ,"sid", p_session->sid);
+    tc_iot_json_writer_object_end(w);
+
+    tc_iot_json_writer_object_begin(w ,"state");
+    tc_iot_json_writer_object_begin(w ,"reported");
+    for (i = 0; i < count; i++, p_fields++) {
+        switch (p_fields->type) {
+        case TC_IOT_SHADOW_TYPE_BOOL:
+            tc_iot_json_writer_string(w , p_fields->name, *(bool *)p_fields->value ? TC_IOT_SHADOW_JSON_TRUE:TC_IOT_SHADOW_JSON_FALSE);
+            break;
+        case TC_IOT_SHADOW_TYPE_INT:
+            tc_iot_json_writer_int(w , p_fields->name, *(int *)p_fields->value);
+            break;
+        case TC_IOT_SHADOW_TYPE_ENUM:
+            tc_iot_json_writer_int(w , p_fields->name, *(int *)p_fields->value);
+            break;
+        case TC_IOT_SHADOW_TYPE_NUMBER:
+            tc_iot_json_writer_decimal(w , p_fields->name, *(double *)p_fields->value);
+            break;
+        case TC_IOT_SHADOW_TYPE_STRING:
+            tc_iot_json_writer_string(w , p_fields->name, (char *)p_fields->value);
+            break;
+        default:
+            TC_IOT_LOG_ERROR("field type invalid:%s", p_fields->name);
+            break;
+        }
+
+    }
+    tc_iot_json_writer_object_end(w);
+    tc_iot_json_writer_object_end(w);
+
+    ret = tc_iot_json_writer_close(w);
+
+    if (ret <= 0) {
+        return ret;
+    }
+
+    return w->pos;
+}
 

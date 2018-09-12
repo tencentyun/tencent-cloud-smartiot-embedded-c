@@ -45,11 +45,7 @@ void operate_device(tc_iot_shadow_local_data * p_device_data) {
  * @brief 本函数演示，当设备端状态发生变化时，如何更新设备端数据，并上报给服务端。
  */
 void do_sim_data_change(void) {
-    TC_IOT_LOG_TRACE("simulate data change.");
 /*${data_template.generate_sim_data_change()}*/
-
-    /* 上报数据最新状态 */
-    tc_iot_report_device_data(tc_iot_get_shadow_client());
 }
 
 int main(int argc, char** argv) {
@@ -91,17 +87,17 @@ int main(int argc, char** argv) {
         tc_iot_hal_printf("username & password using: %s %s\n", p_client_config->device_info.username, p_client_config->device_info.password);
     }
 
-    ret = tc_iot_server_init(tc_iot_get_shadow_client(), &g_tc_iot_shadow_config);
+    ret = tc_iot_data_template_init(tc_iot_get_shadow_client(), &g_tc_iot_shadow_config);
     if (ret != TC_IOT_SUCCESS) {
-        tc_iot_hal_printf("tc_iot_server_init failed, trouble shooting guide: " "%s#%d\n", TC_IOT_TROUBLE_SHOOTING_URL, ret);
+        tc_iot_hal_printf("tc_iot_data_template_init failed, trouble shooting guide: " "%s#%d\n", TC_IOT_TROUBLE_SHOOTING_URL, ret);
         return 0;
     }
 
     while (!stop) {
-        tc_iot_server_loop(tc_iot_get_shadow_client(), 200);
+        tc_iot_data_template_loop(tc_iot_get_shadow_client(), 200);
     }
 
-    tc_iot_server_destroy(tc_iot_get_shadow_client());
+    tc_iot_data_template_destroy(tc_iot_get_shadow_client());
     return 0;
 }
 

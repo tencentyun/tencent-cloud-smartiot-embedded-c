@@ -2,7 +2,7 @@
 #include "tc_iot_device_logic.h"
 #include "tc_iot_export.h"
 
-int _tc_iot_shadow_property_control_callback(tc_iot_event_message *msg, void * client,  void * context);
+int _tc_iot_shadow_property_control_callback(tc_iot_event_message *msg, void * client);
 void operate_device(tc_iot_shadow_local_data * device);
 
 /* 影子数据 Client  */
@@ -13,21 +13,8 @@ tc_iot_shadow_client * tc_iot_get_shadow_client(void) {
 }
 
 
-/* 设备本地数据类型及地址、回调函数等相关定义 */
-tc_iot_shadow_property_def g_tc_iot_shadow_property_defs[] = {
-/*${ data_template.property_def_initializer() }*/};
-
-
 /* 设备当前状态数据 */
 tc_iot_shadow_local_data g_tc_iot_device_local_data = {
-/*${ data_template.local_data_initializer() }*/};
-
-/* 设备状态控制数据 */
-static tc_iot_shadow_local_data g_tc_iot_device_desired_data = {
-/*${ data_template.local_data_initializer() }*/};
-
-/* 设备已上报状态数据 */
-tc_iot_shadow_local_data g_tc_iot_device_reported_data = {
 /*${ data_template.local_data_initializer() }*/};
 
 /* 设备初始配置 */
@@ -53,21 +40,15 @@ tc_iot_shadow_config g_tc_iot_shadow_config = {
     TC_IOT_SHADOW_SUB_TOPIC_DEF,
     TC_IOT_SHADOW_PUB_TOPIC_DEF,
     tc_iot_device_on_message_received,
-    TC_IOT_PROPTOTAL,
-    &g_tc_iot_shadow_property_defs[0],
     _tc_iot_shadow_property_control_callback,
-    &g_tc_iot_device_local_data,
-    &g_tc_iot_device_reported_data,
-    &g_tc_iot_device_desired_data,
 };
 
 
-static int _tc_iot_property_change( int property_id, void * data) {
+static int _tc_iot_property_change( const char * name, const char * value) {
 /*${data_template.generate_sample_code()}*/
 }
 
-int _tc_iot_shadow_property_control_callback(tc_iot_event_message *msg, void * client,  void * context) {
-    tc_iot_shadow_property_def * p_property = NULL;
+int _tc_iot_shadow_property_control_callback(tc_iot_event_message *msg, void * client) {
 
     if (!msg) {
         TC_IOT_LOG_ERROR("msg is null.");
@@ -75,13 +56,7 @@ int _tc_iot_shadow_property_control_callback(tc_iot_event_message *msg, void * c
     }
 
     if (msg->event == TC_IOT_SHADOW_EVENT_SERVER_CONTROL) {
-        p_property = (tc_iot_shadow_property_def *)context;
-        if (!p_property) {
-            TC_IOT_LOG_ERROR("p_property is null.");
-            return TC_IOT_FAILURE;
-        }
-
-        return _tc_iot_property_change(p_property->id, msg->data);
+        return _tc_iot_property_change((const char *)msg->context, (const char *)msg->data);
     } else {
         TC_IOT_LOG_TRACE("unkown event received, event=%d", msg->event);
     }

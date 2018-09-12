@@ -129,18 +129,18 @@ typedef struct _tc_iot_code_map {
 typedef struct _tc_iot_event_message {
     tc_iot_event_e  event;
     void * data;
+    void * context;
 } tc_iot_event_message;
 
 /**
 * @brief tc_iot_event_handler 通用事件回调原型
 *
 * @param msg 消息内容
-* @param src 触发事件的来源
-* @param context 附加 context 信息。
+* @param client 触发事件的来源
 *
 * @return @see tc_iot_sys_code_e
 */
-typedef int (*tc_iot_event_handler)(tc_iot_event_message *msg, void * client,  void * context);
+typedef int (*tc_iot_event_handler)(tc_iot_event_message *msg, void * client);
 
 #define TC_IOT_CONTAINER_OF(ptr, type, member)		\
 				(type *)((char *)ptr - offsetof(type, member))
