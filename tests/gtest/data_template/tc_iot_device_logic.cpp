@@ -36,12 +36,11 @@ tc_iot_shadow_config g_tc_iot_shadow_config = {
             TC_IOT_CONFIG_MQTT_PORT,
         },
         TC_IOT_CONFIG_USE_TLS,
-        NULL,
-        NULL,
+        _tc_iot_shadow_property_control_callback,
+        tc_iot_device_on_message_received,
     },
     TC_IOT_SHADOW_SUB_TOPIC_DEF,
     TC_IOT_SHADOW_PUB_TOPIC_DEF,
-    tc_iot_device_on_message_received,
 };
 
 

@@ -119,8 +119,8 @@ class iot_field:
             return "{} {};".format(self.type_define, self.name)
 
     def get_meta_define_str(self):
-        return '{{ "{}", {}, {}, offsetof(tc_iot_shadow_local_data, {}),TC_IOT_MEMBER_SIZE(tc_iot_shadow_local_data,{}) }},' \
-                    .format(self.name, self.get_id_c_macro_name(), self.type_id, self.name, self.name)
+        return '{{ "{}", {}, {} }},' \
+                    .format(self.name, self.get_id_c_macro_name(), self.type_id)
 
     def get_sample_process_code_snippet(self, indent):
         sample_code = ""
@@ -361,7 +361,7 @@ class iot_struct:
         sample_code += (indent * 1) + 'TC_IOT_LOG_WARN("unkown %s = %s", name, value);\n'
         sample_code += (indent * 1) + 'return TC_IOT_FAILURE;\n'
 
-        sample_code += (indent * 1) + 'operate:\n'
+        sample_code += '\noperate:\n'
         sample_code += (indent * 1) + 'TC_IOT_LOG_TRACE("operating device");\n'
         sample_code += (indent * 1) + 'operate_device(&g_tc_iot_device_local_data);\n'
         sample_code += (indent * 1) + 'return TC_IOT_SUCCESS;\n'

@@ -41,11 +41,10 @@ tc_iot_shadow_config g_tc_iot_shadow_config = {
         },
         TC_IOT_CONFIG_USE_TLS,
         NULL,
-        NULL,
+        _on_message_received,
     },
     TC_IOT_SHADOW_SUB_TOPIC_DEF,
     TC_IOT_SHADOW_PUB_TOPIC_DEF,
-    _on_message_received,
 };
 
 TEST(IOTSUITE, data_template)

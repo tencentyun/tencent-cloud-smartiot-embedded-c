@@ -111,18 +111,6 @@ typedef enum _tc_iot_mqtt_client_state_e {
 
 typedef struct _tc_iot_mqtt_client tc_iot_mqtt_client;
 
-
-/**
- * @brief  连接断开回调函数原型，用户可通过实现该函数，
- * 并注册到 MQTT client上，实现对连接状态的监控，以便
- * 在连接断开时，得到通知，做对应处理。
- *
- * @param p_mqtt_client MQTT client 对象
- *
- */
-typedef int (*tc_iot_mqtt_event_handler)(tc_iot_mqtt_client* c, int event_type, void* context);
-
-
 typedef enum _tc_iot_device_auth_mode_e {
     TC_IOT_MQTT_AUTH_STATIC_PASS = 0, // 静态直连 deprecated
     TC_IOT_MQTT_AUTH_DYNAMIC_TOKEN = 1, // 动态 Token
@@ -168,7 +156,7 @@ typedef struct _tc_iot_mqtt_client_config {
     tc_iot_device_info device_info;  /**< 设备信息*/
     char use_tls; /**< 是否通过 TLS 连接服务*/
 
-    tc_iot_mqtt_event_handler on_event; /**< MQTT 事件通知 */
+    tc_iot_event_handler on_event; /**< MQTT 事件通知 */
     message_handler   default_msg_handler; /**< 默认消息处理回调*/
     /* char willFlag; */
     /* MQTTPacket_willOptions will; */
@@ -209,7 +197,7 @@ struct _tc_iot_mqtt_client {
     } message_handlers[TC_IOT_MAX_MESSAGE_HANDLERS]; /**< 订阅消息回调*/
 
     message_handler  default_msg_handler; /**< 订阅消息默认回调*/
-    tc_iot_mqtt_event_handler on_event; /**< MQTT 事件通知 */
+    tc_iot_event_handler on_event; /**< MQTT 事件通知 */
 
     tc_iot_network_t ipstack; /**< 网络服务*/
     tc_iot_timer last_sent; /**< 最近一次发包定时器，用来判断是否需要发起 keep alive 心跳*/
@@ -264,6 +252,7 @@ tc_iot_mqtt_client_state_e tc_iot_mqtt_get_state(tc_iot_mqtt_client* client);
 char tc_iot_mqtt_get_auto_reconnect(tc_iot_mqtt_client* client);
 int tc_iot_mqtt_set_auto_reconnect(tc_iot_mqtt_client* client,
                                    char auto_reconnect);
+int tc_iot_mqtt_event_handler(tc_iot_mqtt_client * c, int event_type, void * data, void * context);
 void tc_iot_mqtt_init_conn_data(MQTTPacket_connectData * conn_data);
 int tc_iot_mqtt_refresh_dynamic_sign(long timestamp, long nonce, tc_iot_device_info* p_device_info, long reserve);
 

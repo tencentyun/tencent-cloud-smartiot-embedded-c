@@ -296,15 +296,8 @@ int tc_iot_confirm_devcie_data(tc_iot_shadow_client* c, int count, tc_iot_shadow
 }
 
 int tc_iot_shadow_event_notify(tc_iot_shadow_client * p_shadow_client, tc_iot_event_e event, void * data, void * context) {
-    tc_iot_event_message event_msg;
-
-    if (p_shadow_client
-            && p_shadow_client->p_shadow_config
-            && p_shadow_client->p_shadow_config->event_notify) {
-        event_msg.event = event;
-        event_msg.data = data;
-        event_msg.context = context;
-        return p_shadow_client->p_shadow_config->event_notify(&event_msg, p_shadow_client);
+    if (p_shadow_client) {
+        return tc_iot_mqtt_event_handler(&p_shadow_client->mqtt_client, event, data, context);
     } else {
         TC_IOT_LOG_TRACE("no event_notify callback, skip calling event_notify.");
         return TC_IOT_SUCCESS;

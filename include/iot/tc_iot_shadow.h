@@ -30,6 +30,12 @@ typedef struct _tc_iot_shadow_property_def {
     void * value;
 } tc_iot_shadow_property_def;
 
+typedef struct _tc_iot_shadow_property_meta {
+    const char * name;
+    tc_iot_shadow_data_type_e  type;
+    int id;
+} tc_iot_shadow_property_meta;
+
 
 /**
  * @brief 影子设备配置
@@ -38,8 +44,6 @@ typedef struct _tc_iot_shadow_config {
     tc_iot_mqtt_client_config mqtt_client_config;  /**< MQTT 相关配置*/
     char sub_topic[TC_IOT_MAX_MQTT_TOPIC_LEN]; /**< 影子设备订阅 Topic*/
     char pub_topic[TC_IOT_MAX_MQTT_TOPIC_LEN];  /**< 影子设备消息 Publish Topic*/
-    message_handler on_receive_msg; /**< 影子设备消息回调*/
-    tc_iot_event_handler event_notify;
 } tc_iot_shadow_config;
 
 typedef enum _tc_iot_command_ack_status_e {

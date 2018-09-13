@@ -12,6 +12,12 @@ tc_iot_shadow_client * tc_iot_get_shadow_client(void) {
     return &g_tc_iot_shadow_client;
 }
 
+tc_iot_shadow_property_meta g_tc_iot_shadow_property_metas[] = {
+    { "param_bool", TC_IOT_PROP_param_bool, TC_IOT_SHADOW_TYPE_BOOL },
+    { "param_enum", TC_IOT_PROP_param_enum, TC_IOT_SHADOW_TYPE_ENUM },
+    { "param_number", TC_IOT_PROP_param_number, TC_IOT_SHADOW_TYPE_NUMBER },
+    { "param_string", TC_IOT_PROP_param_string, TC_IOT_SHADOW_TYPE_STRING },
+};
 
 /* 设备当前状态数据 */
 tc_iot_shadow_local_data g_tc_iot_device_local_data = {
@@ -34,13 +40,11 @@ tc_iot_shadow_config g_tc_iot_shadow_config = {
             TC_IOT_CONFIG_MQTT_PORT,
         },
         TC_IOT_CONFIG_USE_TLS,
-        NULL,
-        NULL,
+        _tc_iot_shadow_property_control_callback,
+        tc_iot_device_on_message_received,
     },
     TC_IOT_SHADOW_SUB_TOPIC_DEF,
     TC_IOT_SHADOW_PUB_TOPIC_DEF,
-    tc_iot_device_on_message_received,
-    _tc_iot_shadow_property_control_callback,
 };
 
 
@@ -92,7 +96,8 @@ static int _tc_iot_property_change( const char * name, const char * value) {
     }
     TC_IOT_LOG_WARN("unkown %s = %s", name, value);
     return TC_IOT_FAILURE;
-    operate:
+
+operate:
     TC_IOT_LOG_TRACE("operating device");
     operate_device(&g_tc_iot_device_local_data);
     return TC_IOT_SUCCESS;

@@ -43,8 +43,8 @@ static void _tc_iot_shadow_on_message_received(tc_iot_message_data *md) {
         TC_IOT_LOG_TRACE("field passthrough.sid not found, could be push from server.");
     }
 
-    if (c && c->p_shadow_config && c->p_shadow_config->on_receive_msg) {
-        c->p_shadow_config->on_receive_msg(md);
+    if (c && c->mqtt_client.default_msg_handler) {
+        c->mqtt_client.default_msg_handler(md);
     } else {
         TC_IOT_LOG_ERROR("UNHANDLED ->%s", (char *)message->payload);
     }
