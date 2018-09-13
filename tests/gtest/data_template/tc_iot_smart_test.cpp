@@ -9,7 +9,7 @@ extern "C" {
 
 extern tc_iot_shadow_config g_tc_iot_shadow_config;
 extern tc_iot_shadow_local_data g_tc_iot_device_local_data;
-void operate_device(tc_iot_shadow_local_data * device) {
+void operate_device(unsigned char * changed_bits, tc_iot_shadow_local_data * device) {
     // TC_IOT_LOG_TRACE("checking control status");
 }
 
@@ -62,6 +62,9 @@ TEST(IOTSUITE, data_template)
 
 
     ret = tc_iot_data_template_init(tc_iot_get_shadow_client(), &g_tc_iot_shadow_config);
+    ASSERT_EQ(ret, TC_IOT_SUCCESS);
+
+    ret = tc_iot_data_template_sync(tc_iot_get_shadow_client());
     ASSERT_EQ(ret, TC_IOT_SUCCESS);
 
     while (tc_iot_shadow_pending_session_count(tc_iot_get_shadow_client()) > 0) {

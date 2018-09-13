@@ -397,7 +397,7 @@ class iot_struct:
         indent = "    "
         for field in self.fields:
             sample_code += field.get_data_change_sample_code_snippet(indent)
-        sample_code += "tc_iot_report_device_data(tc_iot_get_shadow_client(), count, fields);\n"
+        sample_code += indent + "tc_iot_report_device_data(tc_iot_get_shadow_client(), count, fields);\n"
         return declare_code + sample_code;
 
     def declare_local_data_struct(self, struct_name="tc_iot_shadow_local_data"):

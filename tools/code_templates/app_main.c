@@ -37,8 +37,6 @@ void operate_device(unsigned char * changed_bits, tc_iot_shadow_local_data * p_d
 
     tc_iot_hal_printf( "%04d-%02d-%02d %02d:%02d:%02d do something for data change.\n" ,
             tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
-
-
 }
 
 

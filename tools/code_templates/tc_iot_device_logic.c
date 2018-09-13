@@ -72,7 +72,7 @@ static void _tc_iot_set_changed_bit(const char * name) {
 
 int _tc_iot_shadow_property_control_callback(tc_iot_event_message *msg, void * client) {
     int i = 0;
-    tc_iot_mqtt_client * p_mqtt_client = client;
+    tc_iot_mqtt_client * p_mqtt_client = (tc_iot_mqtt_client *)client;
     tc_iot_shadow_client* c = TC_IOT_CONTAINER_OF(p_mqtt_client, tc_iot_shadow_client, mqtt_client);
     tc_iot_shadow_property_def fields[TC_IOT_PROPTOTAL];
     tc_iot_shadow_property_meta * p_metas = &g_tc_iot_shadow_property_metas[0];

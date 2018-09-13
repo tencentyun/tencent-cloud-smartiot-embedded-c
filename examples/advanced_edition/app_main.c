@@ -37,8 +37,6 @@ void operate_device(unsigned char * changed_bits, tc_iot_shadow_local_data * p_d
 
     tc_iot_hal_printf( "%04d-%02d-%02d %02d:%02d:%02d do something for data change.\n" ,
             tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
-
-
 }
 
 
@@ -81,7 +79,7 @@ void do_sim_data_change(void) {
     fields[count].type = TC_IOT_SHADOW_TYPE_STRING;
     fields[count].value = g_tc_iot_device_local_data.param_string;
     count++;
-tc_iot_report_device_data(tc_iot_get_shadow_client(), count, fields);
+    tc_iot_report_device_data(tc_iot_get_shadow_client(), count, fields);
 
 }
 
