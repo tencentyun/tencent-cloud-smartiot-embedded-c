@@ -133,6 +133,13 @@ int main(int argc, char** argv) {
         tc_iot_hal_printf("tc_iot_data_template_sync failed, trouble shooting guide: " "%s#%d\n", TC_IOT_TROUBLE_SHOOTING_URL, ret);
         return 0;
     }
+    ret = tc_iot_update_firm_info(tc_iot_get_shadow_client());
+    if (ret != TC_IOT_SUCCESS) {
+        tc_iot_hal_printf("tc_iot_update_firm_info failed, trouble shooting guide: " "%s#%d\n", TC_IOT_TROUBLE_SHOOTING_URL, ret);
+        return 0;
+    }
+
+    TC_IOT_LOG_TRACE("update firm info ret=%d" ,ret);
 
     while (!stop) {
         tc_iot_data_template_loop(tc_iot_get_shadow_client(), 200);

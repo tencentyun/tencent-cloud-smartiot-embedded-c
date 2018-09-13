@@ -96,6 +96,17 @@ typedef enum _tc_iot_device_config_id_def {
     TC_IOT_DCFG_API_HOST,
     TC_IOT_DCFG_REGION,
 
+    TC_IOT_DCFG_TYPE,
+    TC_IOT_DCFG_HW_ID,
+    TC_IOT_DCFG_MODEL,
+    TC_IOT_DCFG_MODEL_VER,
+    TC_IOT_DCFG_MCU_VER,
+    TC_IOT_DCFG_LAT,
+    TC_IOT_DCFG_LON,
+    TC_IOT_DCFG_KEEPALIVE,
+    TC_IOT_DCFG_LOG_LEVEL,
+    TC_IOT_DCFG_IS_UP_BUSILOG,
+
     // Optional
     TC_IOT_DCFG_PRODUCT_PASSWORD,
     TC_IOT_DCFG_MQTT_TLS_CA_CERT,
@@ -104,15 +115,13 @@ typedef enum _tc_iot_device_config_id_def {
     TC_IOT_DCFG_HTTPS_CA_CERT,
 } tc_iot_device_config_id_def;
 
-typedef struct _tc_iot_device_config_data {
-    char product_id[TC_IOT_MAX_PRODUCT_ID_LEN];
-    char product_key[TC_IOT_MAX_PRODUCT_KEY_LEN];
-    char device_name[TC_IOT_MAX_DEVICE_NAME_LEN];
-    char device_secret[TC_IOT_MAX_DEVICE_SECRET_LEN];
-    char mqtt_host[128];
-    char api_host[128];
-    char region[16];
-}tc_iot_device_config_data;
+#define TC_IOT_MAX_MQTT_HOST_LEN  128
+#define TC_IOT_MAX_API_HOST_LEN  128
+#define TC_IOT_MAX_REGION_LEN  128
+#define TC_IOT_MAX_TYPE_LEN   5
+#define TC_IOT_MAX_LOG_LEVEL_LEN  2
+#define TC_IOT_MAX_KEEP_ALIVE_LEN 4
+#define TC_IOT_MAX_UP_BUSILOG_LEN  2
 
 
 /**
@@ -136,6 +145,6 @@ int tc_iot_hal_set_config(tc_iot_device_config_id_def id,  const char* value );
  *
  * @return  value 指针地址
  */
-char * tc_iot_hal_get_config(tc_iot_device_config_id_def id, char* value , int len, const char * default_var);
+const char * tc_iot_hal_get_config(tc_iot_device_config_id_def id, char* value , int len, const char * default_var);
 
 #endif /* end of include guard */

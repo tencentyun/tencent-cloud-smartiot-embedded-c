@@ -8,7 +8,7 @@ extern "C" {
 TEST(tc_iot_hal_testcases, tc_iot_hal_get_config)
 {
     int ret = 0;
-    char * res;
+    const char * res;
     char buffer[1024];
 
     res = tc_iot_hal_get_config(TC_IOT_DCFG_PRODUCT_ID, buffer, sizeof(buffer), "");

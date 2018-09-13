@@ -8,7 +8,6 @@
 /* #undef ENABLE_COAP */
 
 /* #undef ENABLE_TLS */
-/* #undef ENABLE_DTLS */
 /* #undef ENABLE_SNTP_CLIENT */
 
 #define ENABLE_STACK_TRACE_LOG

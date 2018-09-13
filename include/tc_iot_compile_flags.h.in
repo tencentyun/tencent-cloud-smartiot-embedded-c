@@ -8,7 +8,6 @@
 #cmakedefine ENABLE_COAP
 
 #cmakedefine ENABLE_TLS
-#cmakedefine ENABLE_DTLS
 #cmakedefine ENABLE_SNTP_CLIENT
 
 #cmakedefine ENABLE_STACK_TRACE_LOG

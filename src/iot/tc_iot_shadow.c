@@ -484,6 +484,9 @@ int tc_iot_shadow_up_cmd(tc_iot_shadow_client * c, char * buffer, int buffer_len
             case TC_IOT_SHADOW_TYPE_STRING:
                 tc_iot_json_writer_string(w , p_fields->name, (char *)p_fields->value);
                 break;
+            case TC_IOT_SHADOW_TYPE_RAW:
+                tc_iot_json_writer_raw_data(w , p_fields->name, (char *)p_fields->value);
+                break;
             default:
                 TC_IOT_LOG_ERROR("field type invalid:%s", p_fields->name);
                 break;
@@ -497,6 +500,7 @@ int tc_iot_shadow_up_cmd(tc_iot_shadow_client * c, char * buffer, int buffer_len
     ret = tc_iot_json_writer_close(w);
 
     if (ret <= 0) {
+        TC_IOT_LOG_ERROR("ret=%d", ret);
         tc_iot_release_session(p_session);
         return ret;
     }
@@ -520,3 +524,5 @@ int tc_iot_shadow_up_cmd(tc_iot_shadow_client * c, char * buffer, int buffer_len
 
     return w->pos;
 }
+
+

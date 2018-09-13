@@ -22,6 +22,11 @@ typedef enum _tc_iot_shadow_data_type_e {
     TC_IOT_SHADOW_TYPE_ENUM = 3,
     TC_IOT_SHADOW_TYPE_INT = 4,
     TC_IOT_SHADOW_TYPE_STRING = 5,
+    TC_IOT_SHADOW_TYPE_TIMESTAMP = 6,
+
+    TC_IOT_SHADOW_TYPE_RAW = 10,
+    TC_IOT_SHADOW_TYPE_OBJECT = 11,
+    TC_IOT_SHADOW_TYPE_ARRAY = 12,
 } tc_iot_shadow_data_type_e;
 
 typedef struct _tc_iot_shadow_property_def {
@@ -101,6 +106,11 @@ typedef struct _tc_iot_shadow_client {
  * {"method":"control","state"{"reported":{"a":1}, "desired":{"a":2}}}
  * */
 #define TC_IOT_MQTT_METHOD_CONTROL   "control"
+
+/**< 上报设备信息指令
+ * {"method":"update_firm_info","state"{"reported":{"type":"wifi","hw_id":"0011223344"}}}
+ * */
+#define TC_IOT_MQTT_METHOD_UPDATE_FIRM_INFO   "update_firm_info"
 
 /* 响应类 */
 /**< 读取请求响应*/
@@ -256,6 +266,7 @@ int _tc_iot_generate_session_id(char * session_id, int session_id_len, tc_iot_mq
 
 int tc_iot_report_device_data(tc_iot_shadow_client* p_shadow_client, int count, tc_iot_shadow_property_def * p_fields);
 int tc_iot_confirm_device_data(tc_iot_shadow_client* p_shadow_client,int count, tc_iot_shadow_property_def * p_fields);
+int tc_iot_update_firm_info(tc_iot_shadow_client * c);
 
 int tc_iot_data_template_init(tc_iot_shadow_client* p_shadow_client, tc_iot_shadow_config * p_client_config);
 int tc_iot_data_template_sync(tc_iot_shadow_client* p_shadow_client);

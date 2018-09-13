@@ -271,10 +271,9 @@ int tc_iot_report_device_data(tc_iot_shadow_client* c, int count, tc_iot_shadow_
 
     if (TC_IOT_BUFFER_OVERFLOW == ret) {
         TC_IOT_LOG_ERROR("buffer overflow, please check TC_IOT_REPORT_UPDATE_MSG_LEN");
-    } else if (TC_IOT_REPORT_SKIPPED_FOR_NO_CHANGE == ret) {
+    } else if ((ret > 0) || (TC_IOT_REPORT_SKIPPED_FOR_NO_CHANGE == ret)) {
         ret = TC_IOT_SUCCESS;
     }
-
 
     return ret;
 }
@@ -291,7 +290,7 @@ int tc_iot_confirm_device_data(tc_iot_shadow_client* c, int count, tc_iot_shadow
 
     if (TC_IOT_BUFFER_OVERFLOW == ret) {
         TC_IOT_LOG_ERROR("buffer overflow, please check TC_IOT_REPORT_UPDATE_MSG_LEN");
-    } else if (TC_IOT_REPORT_SKIPPED_FOR_NO_CHANGE == ret) {
+    } else if ((ret > 0) || (TC_IOT_REPORT_SKIPPED_FOR_NO_CHANGE == ret)) {
         ret = TC_IOT_SUCCESS;
     }
 
@@ -305,6 +304,44 @@ int tc_iot_shadow_event_notify(tc_iot_shadow_client * p_shadow_client, tc_iot_ev
         TC_IOT_LOG_TRACE("no event_notify callback, skip calling event_notify.");
         return TC_IOT_SUCCESS;
     }
+}
+
+int tc_iot_update_firm_info(tc_iot_shadow_client * c) {
+    char buffer[TC_IOT_REPORT_UPDATE_MSG_LEN];
+    int buffer_len = sizeof(buffer);
+    int ret = 0;
+    int i = 0;
+
+    tc_iot_shadow_property_def fields[] = {
+        {"type", TC_IOT_SHADOW_TYPE_STRING, "wifi"},
+        {"hw_id", TC_IOT_SHADOW_TYPE_STRING, "00-00-00-00"},
+        {"model", TC_IOT_SHADOW_TYPE_STRING, "unkown"},
+        {"model_ver", TC_IOT_SHADOW_TYPE_STRING, "V1.0"},
+        {"mcu_ver", TC_IOT_SHADOW_TYPE_STRING, "V1.0"},
+        {"lat", TC_IOT_SHADOW_TYPE_RAW, "0.0"},
+        {"lon", TC_IOT_SHADOW_TYPE_RAW, "0.0"},
+        {"keepalive", TC_IOT_SHADOW_TYPE_RAW, "60"},
+        {"log_level", TC_IOT_SHADOW_TYPE_RAW, "0"},
+        {"is_up_busilog", TC_IOT_SHADOW_TYPE_RAW, "0"},
+    };
+
+    for (i = 0; i < TC_IOT_ARRAY_LENGTH(fields); i++) {
+        fields[i].value = (void *)tc_iot_hal_get_config(TC_IOT_DCFG_TYPE+i, NULL,0, fields[i].value);
+        TC_IOT_LOG_TRACE("value=%s", fields[i].value);
+    }
+
+    ret =  tc_iot_shadow_up_cmd(c, buffer, buffer_len,
+                                TC_IOT_MQTT_METHOD_UPDATE_FIRM_INFO, TC_IOT_ARRAY_LENGTH(fields), fields,
+                                _tc_iot_report_message_ack_callback, c->mqtt_client.command_timeout_ms, NULL);
+    tc_iot_mem_usage_log("buffer[TC_IOT_REPORT_UPDATE_MSG_LEN]", sizeof(buffer), strlen(buffer));
+
+    if (TC_IOT_BUFFER_OVERFLOW == ret) {
+        TC_IOT_LOG_ERROR("buffer overflow, please check TC_IOT_REPORT_UPDATE_MSG_LEN");
+    } else if ((ret > 0) || (TC_IOT_REPORT_SKIPPED_FOR_NO_CHANGE == ret)) {
+        ret = TC_IOT_SUCCESS;
+    }
+
+    return ret;
 }
 
 /*
