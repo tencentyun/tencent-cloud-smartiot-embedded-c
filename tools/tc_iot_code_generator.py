@@ -119,8 +119,8 @@ class iot_field:
             return "{} {};".format(self.type_define, self.name)
 
     def get_meta_define_str(self):
-        return '{{ "{}", {}, {} }},' \
-                    .format(self.name, self.get_id_c_macro_name(), self.type_id)
+        return '{{ "{}", {}, {}, &g_tc_iot_device_local_data.{}}},' \
+                    .format(self.name, self.type_id, self.get_id_c_macro_name(), self.name)
 
     def get_sample_process_code_snippet(self, indent):
         sample_code = ""
@@ -356,15 +356,11 @@ class iot_struct:
 
             sample_code += (indent * 1) + "if (strcmp(\"{}\", name) == 0) {{".format(field.name)
             sample_code += field.get_sample_code_snippet(indent*2, "data")
-            sample_code +=  (indent * 2) + "goto operate;\n"
+            sample_code +=  (indent * 2) + " return TC_IOT_SUCCESS;\n"
             sample_code +=  (indent * 1) + "}\n"
         sample_code += (indent * 1) + 'TC_IOT_LOG_WARN("unkown %s = %s", name, value);\n'
         sample_code += (indent * 1) + 'return TC_IOT_FAILURE;\n'
 
-        sample_code += '\noperate:\n'
-        sample_code += (indent * 1) + 'TC_IOT_LOG_TRACE("operating device");\n'
-        sample_code += (indent * 1) + 'operate_device(&g_tc_iot_device_local_data);\n'
-        sample_code += (indent * 1) + 'return TC_IOT_SUCCESS;\n'
         return declare_code + sample_code;
 
     def generate_coap_delete_code(self):

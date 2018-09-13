@@ -3,7 +3,7 @@
 #include "tc_iot_export.h"
 
 int _tc_iot_shadow_property_control_callback(tc_iot_event_message *msg, void * client);
-void operate_device(tc_iot_shadow_local_data * device);
+void operate_device(unsigned char * changed_bits, tc_iot_shadow_local_data * device);
 
 /* 影子数据 Client  */
 tc_iot_shadow_client g_tc_iot_shadow_client;
@@ -12,12 +12,6 @@ tc_iot_shadow_client * tc_iot_get_shadow_client(void) {
     return &g_tc_iot_shadow_client;
 }
 
-tc_iot_shadow_property_meta g_tc_iot_shadow_property_metas[] = {
-    { "param_bool", TC_IOT_PROP_param_bool, TC_IOT_SHADOW_TYPE_BOOL },
-    { "param_enum", TC_IOT_PROP_param_enum, TC_IOT_SHADOW_TYPE_ENUM },
-    { "param_number", TC_IOT_PROP_param_number, TC_IOT_SHADOW_TYPE_NUMBER },
-    { "param_string", TC_IOT_PROP_param_string, TC_IOT_SHADOW_TYPE_STRING },
-};
 
 /* 设备当前状态数据 */
 tc_iot_shadow_local_data g_tc_iot_device_local_data = {
@@ -25,6 +19,13 @@ tc_iot_shadow_local_data g_tc_iot_device_local_data = {
     TC_IOT_PROP_param_enum_enum_a,
     0,
     {'\0'},
+};
+
+tc_iot_shadow_property_meta g_tc_iot_shadow_property_metas[] = {
+    { "param_bool", TC_IOT_SHADOW_TYPE_BOOL, TC_IOT_PROP_param_bool, &g_tc_iot_device_local_data.param_bool},
+    { "param_enum", TC_IOT_SHADOW_TYPE_ENUM, TC_IOT_PROP_param_enum, &g_tc_iot_device_local_data.param_enum},
+    { "param_number", TC_IOT_SHADOW_TYPE_NUMBER, TC_IOT_PROP_param_number, &g_tc_iot_device_local_data.param_number},
+    { "param_string", TC_IOT_SHADOW_TYPE_STRING, TC_IOT_PROP_param_string, &g_tc_iot_device_local_data.param_string},
 };
 
 /* 设备初始配置 */
@@ -45,6 +46,8 @@ tc_iot_shadow_config g_tc_iot_shadow_config = {
     },
     TC_IOT_SHADOW_SUB_TOPIC_DEF,
     TC_IOT_SHADOW_PUB_TOPIC_DEF,
+    TC_IOT_PROPTOTAL,
+    &g_tc_iot_shadow_property_metas[0],
 };
 
 
@@ -61,7 +64,7 @@ static int _tc_iot_property_change( const char * name, const char * value) {
         } else {
             TC_IOT_LOG_TRACE("do something for param_bool off");
         }
-        goto operate;
+         return TC_IOT_SUCCESS;
     }
     if (strcmp("param_enum", name) == 0) {
         param_enum = atoi(value);
@@ -80,41 +83,93 @@ static int _tc_iot_property_change( const char * name, const char * value) {
                 TC_IOT_LOG_WARN("do something for param_enum = unknown");
                 return TC_IOT_FAILURE;
         }
-        goto operate;
+         return TC_IOT_SUCCESS;
     }
     if (strcmp("param_number", name) == 0) {
         param_number = atof(value);
         g_tc_iot_device_local_data.param_number = param_number;
         TC_IOT_LOG_TRACE("do something for param_number=%f", param_number);
-        goto operate;
+         return TC_IOT_SUCCESS;
     }
     if (strcmp("param_string", name) == 0) {
         param_string = (char *)value;
         strcpy(g_tc_iot_device_local_data.param_string, param_string);
         TC_IOT_LOG_TRACE("do something for param_string=%s", param_string);
-        goto operate;
+         return TC_IOT_SUCCESS;
     }
     TC_IOT_LOG_WARN("unkown %s = %s", name, value);
     return TC_IOT_FAILURE;
 
-operate:
-    TC_IOT_LOG_TRACE("operating device");
-    operate_device(&g_tc_iot_device_local_data);
-    return TC_IOT_SUCCESS;
+}
 
+
+static unsigned char _g_tc_iot_changed_bits[(TC_IOT_PROPTOTAL-1)/8 + 1];
+
+static void _tc_iot_clear_changed_bit() {
+    memset(_g_tc_iot_changed_bits, 0, sizeof(_g_tc_iot_changed_bits));
+}
+
+static void _tc_iot_set_changed_bit(const char * name) {
+    int i = 0;
+    if (!name) {
+        TC_IOT_LOG_ERROR("name is null");
+        return ;
+    }
+
+    for ( i = 0; i < TC_IOT_PROPTOTAL; i++) {
+        if (strcmp(name, g_tc_iot_shadow_property_metas[i].name) == 0) {
+            TC_IOT_BIT_SET(_g_tc_iot_changed_bits, g_tc_iot_shadow_property_metas[i].id);
+            TC_IOT_LOG_TRACE("%dth id=%d, name=%s", i,g_tc_iot_shadow_property_metas[i].id, g_tc_iot_shadow_property_metas[i].name)
+            return;
+        }
+    }
 }
 
 int _tc_iot_shadow_property_control_callback(tc_iot_event_message *msg, void * client) {
+    int i = 0;
+    tc_iot_mqtt_client * p_mqtt_client = client;
+    tc_iot_shadow_client* c = TC_IOT_CONTAINER_OF(p_mqtt_client, tc_iot_shadow_client, mqtt_client);
+    tc_iot_shadow_property_def fields[TC_IOT_PROPTOTAL];
+    tc_iot_shadow_property_meta * p_metas = &g_tc_iot_shadow_property_metas[0];
+    int count = 0;
 
     if (!msg) {
         TC_IOT_LOG_ERROR("msg is null.");
         return TC_IOT_FAILURE;
     }
 
-    if (msg->event == TC_IOT_SHADOW_EVENT_SERVER_CONTROL) {
+    switch (msg->event) {
+    case TC_IOT_SHADOW_EVENT_BEFORE_SERVER_CONTROL:
+        TC_IOT_LOG_TRACE("before server control, event=%d", msg->event);
+        break;
+    case TC_IOT_SHADOW_EVENT_SERVER_CONTROL:
+        _tc_iot_set_changed_bit((const char *)msg->context);
         return _tc_iot_property_change((const char *)msg->context, (const char *)msg->data);
-    } else {
+    case TC_IOT_SHADOW_EVENT_AFTER_SERVER_CONTROL:
+        TC_IOT_LOG_TRACE("after server control, event=%d", msg->event);
+
+        for (i = 0; i < TC_IOT_PROPTOTAL; i++) {
+            if (TC_IOT_BIT_GET(_g_tc_iot_changed_bits, i)) {
+                fields[count].name = p_metas[i].name;
+                fields[count].type = p_metas[i].type;
+                fields[count].value = p_metas[i].value;
+                TC_IOT_LOG_TRACE("%s type=%d", fields[count].name, fields[count].type);
+                count ++;
+            }
+        }
+
+        if (count) {
+            operate_device(_g_tc_iot_changed_bits, &g_tc_iot_device_local_data);
+            tc_iot_report_device_data(c, count, fields);
+            tc_iot_confirm_device_data(c, count, fields);
+            _tc_iot_clear_changed_bit();
+        }
+
+        break;
+
+    default:
         TC_IOT_LOG_TRACE("unkown event received, event=%d", msg->event);
+        return TC_IOT_SUCCESS;
     }
     return TC_IOT_SUCCESS;
 }

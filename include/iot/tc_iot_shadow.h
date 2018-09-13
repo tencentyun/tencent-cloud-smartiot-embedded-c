@@ -34,6 +34,7 @@ typedef struct _tc_iot_shadow_property_meta {
     const char * name;
     tc_iot_shadow_data_type_e  type;
     int id;
+    void * value;
 } tc_iot_shadow_property_meta;
 
 
@@ -44,6 +45,8 @@ typedef struct _tc_iot_shadow_config {
     tc_iot_mqtt_client_config mqtt_client_config;  /**< MQTT 相关配置*/
     char sub_topic[TC_IOT_MAX_MQTT_TOPIC_LEN]; /**< 影子设备订阅 Topic*/
     char pub_topic[TC_IOT_MAX_MQTT_TOPIC_LEN];  /**< 影子设备消息 Publish Topic*/
+    int  property_count;
+    tc_iot_shadow_property_meta * property_metas;
 } tc_iot_shadow_config;
 
 typedef enum _tc_iot_command_ack_status_e {
@@ -252,7 +255,7 @@ int tc_iot_shadow_pending_session_count(tc_iot_shadow_client *c);
 int _tc_iot_generate_session_id(char * session_id, int session_id_len, tc_iot_mqtt_client* c);
 
 int tc_iot_report_device_data(tc_iot_shadow_client* p_shadow_client, int count, tc_iot_shadow_property_def * p_fields);
-int tc_iot_confirm_devcie_data(tc_iot_shadow_client* p_shadow_client, int count, tc_iot_shadow_property_def * p_fields);
+int tc_iot_confirm_device_data(tc_iot_shadow_client* p_shadow_client,int count, tc_iot_shadow_property_def * p_fields);
 
 int tc_iot_data_template_init(tc_iot_shadow_client* p_shadow_client, tc_iot_shadow_config * p_client_config);
 int tc_iot_data_template_sync(tc_iot_shadow_client* p_shadow_client);

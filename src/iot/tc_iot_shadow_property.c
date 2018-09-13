@@ -110,6 +110,8 @@ int _tc_iot_sync_shadow_property(tc_iot_shadow_client * p_shadow_client, bool re
         return TC_IOT_INVALID_PARAMETER;
     }
 
+    tc_iot_shadow_event_notify(p_shadow_client, TC_IOT_SHADOW_EVENT_BEFORE_SERVER_CONTROL, NULL, NULL);
+
     for (i = 0; i < tok_count/2; i++) {
         /* 位置 0 是object对象，所以要从位置 1 开始取数据*/
         /* 2*i+1 为 key 字段，2*i + 2 为 value 字段*/
@@ -138,7 +140,8 @@ int _tc_iot_sync_shadow_property(tc_iot_shadow_client * p_shadow_client, bool re
         val_start[val_len] = val_placed;
     }
 
-    /* return tc_iot_confirm_devcie_data(p_shadow_client); */
+    tc_iot_shadow_event_notify(p_shadow_client, TC_IOT_SHADOW_EVENT_AFTER_SERVER_CONTROL, NULL, NULL);
+
     return TC_IOT_SUCCESS;
 }
 
@@ -276,7 +279,7 @@ int tc_iot_report_device_data(tc_iot_shadow_client* c, int count, tc_iot_shadow_
     return ret;
 }
 
-int tc_iot_confirm_devcie_data(tc_iot_shadow_client* c, int count, tc_iot_shadow_property_def * p_fields) {
+int tc_iot_confirm_device_data(tc_iot_shadow_client* c, int count, tc_iot_shadow_property_def * p_fields) {
     int ret = 0;
     char buffer[TC_IOT_REPORT_UPDATE_MSG_LEN];
     int buffer_len = sizeof(buffer);

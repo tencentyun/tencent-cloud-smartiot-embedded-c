@@ -520,4 +520,3 @@ int tc_iot_shadow_up_cmd(tc_iot_shadow_client * c, char * buffer, int buffer_len
 
     return w->pos;
 }
-

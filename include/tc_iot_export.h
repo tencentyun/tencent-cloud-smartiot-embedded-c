@@ -193,7 +193,7 @@ int tc_iot_data_template_destroy(tc_iot_shadow_client* p_shadow_client);
 int tc_iot_report_device_data(tc_iot_shadow_client* p_shadow_client, int count, tc_iot_shadow_property_def * p_fields);
 
 /**
- *  @brief tc_iot_confirm_devcie_data
+ *  @brief tc_iot_confirm_device_data
 
     @par
     确认服务端控制指令执行结果，如果服务端下发的 desired 指令执行成功，
@@ -204,7 +204,7 @@ int tc_iot_report_device_data(tc_iot_shadow_client* p_shadow_client, int count, 
  *  @return 结果返回码
  *  @see tc_iot_sys_code_e
  */
-int tc_iot_confirm_devcie_data(tc_iot_shadow_client* p_shadow_client, int count, tc_iot_shadow_property_def * p_fields);
+int tc_iot_confirm_device_data(tc_iot_shadow_client* p_shadow_client,int count, tc_iot_shadow_property_def * p_fields);
 
 #endif
 
