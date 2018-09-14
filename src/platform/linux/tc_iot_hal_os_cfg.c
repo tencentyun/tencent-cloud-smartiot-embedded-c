@@ -13,7 +13,7 @@ typedef struct _tc_iot_device_config_data {
     char hw_id[20];
     char module[20];
     char module_ver[20];
-    char mcu_ver[20];
+    char firm_ver[20];
     char lat[20];
     char lon[20];
     char keepalive[TC_IOT_MAX_KEEP_ALIVE_LEN];
@@ -75,9 +75,9 @@ static int _tc_iot_get_device_config_addr(tc_iot_device_config_data * p_device_c
         *addr = &p_device_cfg->module_ver[0];
         *len = sizeof(p_device_cfg->module_ver);
         break;
-    case TC_IOT_DCFG_MCU_VER:
-        *addr = &p_device_cfg->mcu_ver[0];
-        *len = sizeof(p_device_cfg->mcu_ver);
+    case TC_IOT_DCFG_FIRM_VER:
+        *addr = &p_device_cfg->firm_ver[0];
+        *len = sizeof(p_device_cfg->firm_ver);
         break;
     case TC_IOT_DCFG_LAT:
         *addr = &p_device_cfg->lat[0];
