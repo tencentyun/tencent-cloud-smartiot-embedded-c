@@ -92,6 +92,32 @@ class iot_field:
             self.default_value = self.min_value
             if self.default_value < self.min_value or self.default_value > self.max_value:
                 raise ValueError("错误：{} 字段 default 指定的默认值超出 min~max 取值范围".format(name))
+        elif self.type_name == "int":
+            self.type_id = "TC_IOT_SHADOW_TYPE_INT"
+            self.type_define = "tc_iot_shadow_int"
+            if TEMPLATE_CONSTANTS.RANGE not in field_obj:
+                raise ValueError("错误：{} 字段定义中未找到取值范围定义 Range 字段".format(name))
+            if len(field_obj[TEMPLATE_CONSTANTS.RANGE]) != 2:
+                raise ValueError("错误：{} 字段 Range 取值非法".format(name))
+
+            self.min_value = field_obj[TEMPLATE_CONSTANTS.RANGE][0]
+            self.max_value = field_obj[TEMPLATE_CONSTANTS.RANGE][1]
+            self.default_value = self.min_value
+            if self.default_value < self.min_value or self.default_value > self.max_value:
+                raise ValueError("错误：{} 字段 default 指定的默认值超出 min~max 取值范围".format(name))
+        elif self.type_name == "timestamp":
+            self.type_id = "TC_IOT_SHADOW_TYPE_TIMESTAMP"
+            self.type_define = "tc_iot_shadow_timestamp"
+            if TEMPLATE_CONSTANTS.RANGE not in field_obj:
+                raise ValueError("错误：{} 字段定义中未找到取值范围定义 Range 字段".format(name))
+            if len(field_obj[TEMPLATE_CONSTANTS.RANGE]) != 2:
+                raise ValueError("错误：{} 字段 Range 取值非法".format(name))
+
+            self.min_value = field_obj[TEMPLATE_CONSTANTS.RANGE][0]
+            self.max_value = field_obj[TEMPLATE_CONSTANTS.RANGE][1]
+            self.default_value = self.min_value
+            if self.default_value < self.min_value or self.default_value > self.max_value:
+                raise ValueError("错误：{} 字段 default 指定的默认值超出 min~max 取值范围".format(name))
         elif self.type_name == "string":
             self.type_id = "TC_IOT_SHADOW_TYPE_STRING"
             self.type_define = "tc_iot_shadow_string"
@@ -104,7 +130,7 @@ class iot_field:
             self.max_value = field_obj[TEMPLATE_CONSTANTS.RANGE][1]
             self.default_value = "{'\\0'}"
         else:
-            raise ValueError('{} 字段 数据类型 type={} 取值非法，有效值应为：bool,enum,number'.format(name, field_obj["type"]))
+            raise ValueError('{} 字段 数据类型 type={} 取值非法，有效值应为：bool,enum,number,int,timestamp,string'.format(name, field_obj["type"]))
 
     def get_id_c_macro_name(self):
         return "TC_IOT_PROP_{}".format(self.name)
@@ -161,6 +187,15 @@ class iot_field:
 <indent><indent><indent>continue;
 <indent><indent>} 
 """.replace("<indent>", indent).replace("field_name", self.name).replace("field_define", self.type_define)
+        elif self.type_name == "timestamp":
+            sample_code = """
+<indent><indent>if (strcmp("field_name", key_buf) == 0 ) {
+<indent><indent><indent>TC_IOT_BIT_SET(p_desired_bits, TC_IOT_PROP_field_name);
+<indent><indent><indent>TC_IOT_LOG_TRACE("desired field: %s=%u->%s", key_buf, p_local_data->field_name, val_buf);
+<indent><indent><indent>p_local_data->field_name = atoi(val_buf);
+<indent><indent><indent>continue;
+<indent><indent>} 
+""".replace("<indent>", indent).replace("field_name", self.name).replace("field_define", self.type_define)
         elif self.type_name == "string":
             sample_code = """
 <indent><indent>if (strcmp("field_name", key_buf) == 0 ) {
@@ -199,6 +234,12 @@ class iot_field:
             sample_code = """
 <indent>if (TC_IOT_BIT_GET(report_bits, TC_IOT_PROP_field_name)) {
 <indent><indent>tc_iot_json_writer_int(w ,"field_name", p_local_data->field_name);
+<indent>}
+""".replace("<indent>", indent).replace("field_name", self.name).replace("field_define", self.type_define)
+        elif self.type_name == "timestamp":
+            sample_code = """
+<indent>if (TC_IOT_BIT_GET(report_bits, TC_IOT_PROP_field_name)) {
+<indent><indent>tc_iot_json_writer_uint(w ,"field_name", p_local_data->field_name);
 <indent>}
 """.replace("<indent>", indent).replace("field_name", self.name).replace("field_define", self.type_define)
         elif self.type_name == "string":
@@ -260,6 +301,12 @@ class iot_field:
 <indent>g_tc_iot_device_local_data.field_name = field_name;
 <indent>TC_IOT_LOG_TRACE("do something for field_name=%d", field_name);
 """.replace("<indent>", indent).replace("field_name", self.name).replace("field_define", self.type_define)
+        elif self.type_name == "timestamp":
+            sample_code = """
+<indent>field_name = strtoul(value, NULL, 10);
+<indent>g_tc_iot_device_local_data.field_name = field_name;
+<indent>TC_IOT_LOG_TRACE("do something for field_name=%u", field_name);
+""".replace("<indent>", indent).replace("field_name", self.name).replace("field_define", self.type_define)
         elif self.type_name == "string":
             sample_code = """
 <indent>field_name = (char *)value;
@@ -311,6 +358,17 @@ class iot_field:
 <indent>g_tc_iot_device_local_data.field_name = g_tc_iot_device_local_data.field_name > <max>?<min>:g_tc_iot_device_local_data.field_name;
 <indent>fields[count].name = "field_name";
 <indent>fields[count].type = TC_IOT_SHADOW_TYPE_INT;
+<indent>fields[count].value = &g_tc_iot_device_local_data.field_name;
+<indent>count++;
+"""
+            sample_code = sample_code.replace("<indent>", indent).replace("field_name", self.name)
+            sample_code = sample_code.replace("field_define", self.type_define).replace("<min>",str(self.min_value)).replace("<max>",str(self.max_value))
+        elif self.type_name == "timestamp":
+            sample_code = """
+<indent>g_tc_iot_device_local_data.field_name += 1;
+<indent>g_tc_iot_device_local_data.field_name = g_tc_iot_device_local_data.field_name > <max>?<min>:g_tc_iot_device_local_data.field_name;
+<indent>fields[count].name = "field_name";
+<indent>fields[count].type = TC_IOT_SHADOW_TYPE_TIMESTAMP;
 <indent>fields[count].value = &g_tc_iot_device_local_data.field_name;
 <indent>count++;
 """

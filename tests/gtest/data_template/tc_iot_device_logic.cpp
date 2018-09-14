@@ -170,7 +170,7 @@ int _tc_iot_shadow_property_control_callback(tc_iot_event_message *msg, void * c
         break;
 
     default:
-        TC_IOT_LOG_TRACE("unkown event received, event=%d", msg->event);
+        TC_IOT_LOG_TRACE("event=%d ignored.", msg->event);
         return TC_IOT_SUCCESS;
     }
     return TC_IOT_SUCCESS;

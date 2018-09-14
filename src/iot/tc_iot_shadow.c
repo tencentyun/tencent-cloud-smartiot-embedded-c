@@ -470,19 +470,22 @@ int tc_iot_shadow_up_cmd(tc_iot_shadow_client * c, char * buffer, int buffer_len
         for (i = 0; i < count; i++, p_fields++) {
             switch (p_fields->type) {
             case TC_IOT_SHADOW_TYPE_BOOL:
-                tc_iot_json_writer_raw_data(w , p_fields->name, *(bool *)p_fields->value ? TC_IOT_SHADOW_JSON_TRUE:TC_IOT_SHADOW_JSON_FALSE);
+                tc_iot_json_writer_raw_data(w , p_fields->name, *(tc_iot_shadow_bool *)p_fields->value ? TC_IOT_SHADOW_JSON_TRUE:TC_IOT_SHADOW_JSON_FALSE);
                 break;
             case TC_IOT_SHADOW_TYPE_INT:
-                tc_iot_json_writer_int(w , p_fields->name, *(int *)p_fields->value);
+                tc_iot_json_writer_int(w , p_fields->name, *(tc_iot_shadow_int *)p_fields->value);
                 break;
             case TC_IOT_SHADOW_TYPE_ENUM:
-                tc_iot_json_writer_int(w , p_fields->name, *(int *)p_fields->value);
+                tc_iot_json_writer_int(w , p_fields->name, *(tc_iot_shadow_enum *)p_fields->value);
+                break;
+            case TC_IOT_SHADOW_TYPE_TIMESTAMP:
+                tc_iot_json_writer_uint(w , p_fields->name, *(tc_iot_shadow_timestamp *)p_fields->value);
                 break;
             case TC_IOT_SHADOW_TYPE_NUMBER:
-                tc_iot_json_writer_decimal(w , p_fields->name, *(double *)p_fields->value);
+                tc_iot_json_writer_decimal(w , p_fields->name, *(tc_iot_shadow_number *)p_fields->value);
                 break;
             case TC_IOT_SHADOW_TYPE_STRING:
-                tc_iot_json_writer_string(w , p_fields->name, (char *)p_fields->value);
+                tc_iot_json_writer_string(w , p_fields->name, (tc_iot_shadow_string)p_fields->value);
                 break;
             case TC_IOT_SHADOW_TYPE_RAW:
                 tc_iot_json_writer_raw_data(w , p_fields->name, (char *)p_fields->value);

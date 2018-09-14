@@ -14,6 +14,7 @@ typedef int tc_iot_shadow_int;
 typedef int tc_iot_shadow_enum;
 typedef char tc_iot_shadow_bool;
 typedef char * tc_iot_shadow_string;
+typedef unsigned int tc_iot_shadow_timestamp;
 
 typedef enum _tc_iot_shadow_data_type_e {
     TC_IOT_SHADOW_TYPE_INVALID = 0,
