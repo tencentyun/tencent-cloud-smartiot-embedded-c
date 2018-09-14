@@ -98,8 +98,8 @@ typedef enum _tc_iot_device_config_id_def {
 
     TC_IOT_DCFG_TYPE,
     TC_IOT_DCFG_HW_ID,
-    TC_IOT_DCFG_MODEL,
-    TC_IOT_DCFG_MODEL_VER,
+    TC_IOT_DCFG_MODULE,
+    TC_IOT_DCFG_MODULE_VER,
     TC_IOT_DCFG_MCU_VER,
     TC_IOT_DCFG_LAT,
     TC_IOT_DCFG_LON,
