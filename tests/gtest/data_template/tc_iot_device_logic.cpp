@@ -168,6 +168,9 @@ int _tc_iot_shadow_property_control_callback(tc_iot_event_message *msg, void * c
         }
 
         break;
+    case TC_IOT_SHADOW_EVENT_REMOTE_CONF:
+        TC_IOT_LOG_TRACE("remote conf: %s=%s", (const char *)msg->context, (const char *)msg->data);
+        break;
 
     default:
         TC_IOT_LOG_TRACE("event=%d ignored.", msg->event);

@@ -139,8 +139,6 @@ int main(int argc, char** argv) {
         return 0;
     }
 
-    TC_IOT_LOG_TRACE("update firm info ret=%d" ,ret);
-
     while (!stop) {
         tc_iot_data_template_loop(tc_iot_get_shadow_client(), 200);
     }

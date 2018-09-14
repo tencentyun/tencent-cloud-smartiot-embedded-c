@@ -180,12 +180,87 @@ void tc_iot_device_on_message_received(tc_iot_message_data* md) {
     }
 
     if (strncmp(TC_IOT_MQTT_METHOD_CONTROL, field_buf, strlen(field_buf)) == 0) {
-        TC_IOT_LOG_TRACE("Control data receved.");
+        TC_IOT_LOG_TRACE("[%s] pack recevied.", field_buf);
+        tc_iot_shadow_doc_parse(p_shadow_client, (char *)message->payload, json_token, ret, field_buf, sizeof(field_buf));
     } else if (strncmp(TC_IOT_MQTT_METHOD_REPLY, field_buf, strlen(field_buf)) == 0) {
-        TC_IOT_LOG_TRACE("Reply pack recevied.");
+        TC_IOT_LOG_TRACE("[%s] pack recevied.", field_buf);
+        tc_iot_shadow_doc_parse(p_shadow_client, (char *)message->payload, json_token, ret, field_buf, sizeof(field_buf));
+    } else if (strncmp(TC_IOT_MQTT_METHOD_REMOTE_CONF, field_buf, strlen(field_buf)) == 0) {
+        TC_IOT_LOG_TRACE("[%s] pack recevied.", field_buf);
+        tc_iot_shadow_remote_conf_parse(p_shadow_client, (char *)message->payload, json_token, ret, field_buf, sizeof(field_buf));
+    } else {
+        TC_IOT_LOG_ERROR("unknown method [%s] pack recevied.", field_buf);
+        return ;
     }
 
-    tc_iot_shadow_doc_parse(p_shadow_client, (char *)message->payload, json_token, ret, field_buf, sizeof(field_buf));
+}
+
+int tc_iot_shadow_remote_conf_parse(tc_iot_shadow_client * p_shadow_client,
+        char * payload, jsmntok_t * json_token, int token_count, char * field_buf, int field_buf_len) {
+    char * conf_start = NULL;
+    int conf_len = 0;
+    int field_index = 0;
+    int tok_count = 0;
+    int ret = 0;
+    int i = 0;
+    jsmntok_t  * key_tok = NULL;
+    jsmntok_t  * val_tok = NULL;
+    int  key_len = 0, val_len = 0;
+    char * key_start;
+    char * val_start;
+    tc_iot_shadow_property_def * p_prop = NULL;
+    char key_placed = '"';
+    char val_placed = '"';
+
+    /* 检查 reported 字段是否存在 */
+    field_index = tc_iot_json_find_token(payload, json_token, token_count, "state", NULL, 0);
+    if (field_index <= 0 ) {
+        TC_IOT_LOG_ERROR("state not found");
+        return TC_IOT_FAILURE;
+    }
+
+    conf_start = payload + json_token[field_index].start;
+    conf_len = json_token[field_index].end - json_token[field_index].start;
+
+    TC_IOT_LOG_TRACE("state found:%s", tc_iot_log_summary_string(conf_start, conf_len));
+
+    ret = tc_iot_json_parse(conf_start, conf_len, json_token, token_count);
+    if (ret <= 0) {
+        TC_IOT_LOG_ERROR("state parse failed found");
+        return ret;
+    }
+
+    tok_count = ret;
+
+    for (i = 0; i < tok_count/2; i++) {
+        /* 位置 0 是object对象，所以要从位置 1 开始取数据*/
+        /* 2*i+1 为 key 字段，2*i + 2 为 value 字段*/
+        key_tok = &(json_token[2*i + 1]);
+        key_start = conf_start + key_tok->start;
+        key_len = key_tok->end - key_tok->start;
+        key_placed = key_start[key_len];
+        key_start[key_len] = '\0';
+
+        val_tok = &(json_token[2*i + 2]);
+        val_start = conf_start + val_tok->start;
+        val_len = val_tok->end - val_tok->start;
+
+        val_placed = val_start[val_len];
+        val_start[val_len] = '\0';
+
+        if ((val_len > 0) && strcmp(TC_IOT_JSON_NULL, val_start) == 0) {
+            TC_IOT_LOG_WARN("skip for %s recevied null value.", p_prop->name);
+            continue;
+        }
+
+        tc_iot_shadow_event_notify(p_shadow_client, TC_IOT_SHADOW_EVENT_REMOTE_CONF, val_start, key_start);
+
+        // restore received package
+        key_start[key_len] = key_placed;
+        val_start[val_len] = val_placed;
+    }
+
+    return TC_IOT_SUCCESS;
 }
 
 int tc_iot_shadow_doc_parse(tc_iot_shadow_client * p_shadow_client,

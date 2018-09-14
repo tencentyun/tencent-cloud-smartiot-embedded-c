@@ -113,6 +113,11 @@ typedef struct _tc_iot_shadow_client {
  * */
 #define TC_IOT_MQTT_METHOD_UPDATE_FIRM_INFO   "update_firm_info"
 
+/**< 服务端远程控制指令
+ * {"method":"remote_conf","state"{"reboot":0,"log_level":0,"is_up_busilog":0}}
+ * */
+#define TC_IOT_MQTT_METHOD_REMOTE_CONF   "remote_conf"
+
 /* 响应类 */
 /**< 读取请求响应*/
 #define TC_IOT_MQTT_METHOD_REPLY     "reply"
@@ -268,6 +273,9 @@ int _tc_iot_generate_session_id(char * session_id, int session_id_len, tc_iot_mq
 int tc_iot_report_device_data(tc_iot_shadow_client* p_shadow_client, int count, tc_iot_shadow_property_def * p_fields);
 int tc_iot_confirm_device_data(tc_iot_shadow_client* p_shadow_client,int count, tc_iot_shadow_property_def * p_fields);
 int tc_iot_update_firm_info(tc_iot_shadow_client * c);
+
+int tc_iot_shadow_remote_conf_parse(tc_iot_shadow_client * p_shadow_client,
+                                    char * payload, jsmntok_t * json_token, int token_count, char * field_buf, int field_buf_len);
 
 int tc_iot_data_template_init(tc_iot_shadow_client* p_shadow_client, tc_iot_shadow_config * p_client_config);
 int tc_iot_data_template_sync(tc_iot_shadow_client* p_shadow_client);
