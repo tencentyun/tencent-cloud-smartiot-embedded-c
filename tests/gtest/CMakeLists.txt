@@ -19,5 +19,5 @@ add_test(NAME test_smartiot COMMAND test_smartiot)
 
 
 add_executable(test_hal gtest.cpp tc_iot_hal_test.cpp)
-target_link_libraries(test_hal stdc++ pthread gtest gtest_main tc_iot_common tc_iot_hal)
+target_link_libraries(test_hal stdc++ pthread gtest gtest_main tc_iot_hal tc_iot_common )
 add_test(NAME test_hal COMMAND test_hal)
