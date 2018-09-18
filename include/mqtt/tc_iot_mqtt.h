@@ -143,7 +143,7 @@ typedef struct _tc_iot_device_info {
 
     char auth_mode;   /** MQ 服务鉴权类型，参见 tc_iot_device_auth_mode_e */
     const char * region; /** 区域标识 */
-    char api_host[TC_IOT_HTTP_MAX_HOST_LENGTH]; /** 动态令牌模式服务端接口地址 */
+    char http_host[TC_IOT_HTTP_MAX_HOST_LENGTH]; /** API 接口地址 */
     char mqtt_host[TC_IOT_HTTP_MAX_HOST_LENGTH]; /**< MQ 服务地址*/
     uint16_t mqtt_port; /**< MQ 服务端口*/
 } tc_iot_device_info;

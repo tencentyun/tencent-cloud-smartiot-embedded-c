@@ -5,7 +5,7 @@
 
 
 /**
- * @brief tc_iot_calc_auth_sign 计算 Token 请求签名
+ * @brief 计算 Token 请求签名
  *
  * @param sign_out 签名( Base64 编码)结果
  * @param max_sign_len 签名( Bsse64 编码)结果区长度
@@ -29,7 +29,7 @@ int tc_iot_calc_auth_sign(char* sign_out, int max_sign_len, const char* secret,
 
 
 /**
- * @brief tc_iot_create_auth_request_form 构造 Token HTTP 签名请求 form
+ * @brief 构造 Token HTTP 签名请求 form
  *
  * @param form 结果缓存区
  * @param max_form_len 结果缓存区最大大小
@@ -54,7 +54,7 @@ int tc_iot_create_auth_request_form(char* form,  int max_form_len,
                                     unsigned int timestamp);
 
 /**
- * @brief tc_iot_create_active_device_form 构造 get device 设备激活 HTTP 签名请求 form
+ * @brief 构造 get device 设备激活 HTTP 签名请求 form
  *
  * @param form 结果缓存区
  * @param max_form_len 结果缓存区最大大小
@@ -71,5 +71,15 @@ int tc_iot_create_active_device_form(char* form, int max_form_len,
                                      const char* device_name,  
                                      const char* product_id,
                                      unsigned int nonce, unsigned int timestamp);
-
+/**
+ * @brief 构造 query 请求云端配置接口 HTTP form
+ *
+ * @param form 结果缓存区
+ * @param max_form_len 结果缓存区最大大小
+ * @param product_id Product Id , 例子 : "iot-dalqbv1g"	
+ * @return >=0 签名结果实际长度，<0 错误码
+ * @see tc_iot_sys_code_e
+ */
+int tc_iot_create_query_request_form(char* form, int max_form_len,
+                                     const char* product_id);
 #endif /* end of include guard */

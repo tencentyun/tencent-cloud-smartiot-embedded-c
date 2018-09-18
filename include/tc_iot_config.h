@@ -102,14 +102,19 @@
 // 请求 激活设备 Active 接口总长度
 #define TC_IOT_HTTP_ACTIVE_REQUEST_LEN       1024
 // 请求 激活设备 Active 接口响应数据
-#define TC_IOT_HTTP_ACTIVE_RESPONSE_LEN      512  
+#define TC_IOT_HTTP_ACTIVE_RESPONSE_LEN      512
 
 #define TC_IOT_HTTP_OTA_REQUEST_LEN          1024
 
 // 请求 Token 接口表单长度
 #define TC_IOT_HTTP_TOKEN_REQUEST_FORM_LEN  256
 // 请求 Token 接口响应数据
-#define TC_IOT_HTTP_TOKEN_RESPONSE_LEN      512  
+#define TC_IOT_HTTP_TOKEN_RESPONSE_LEN      512
+
+// 请求 Query 接口表单长度
+#define TC_IOT_HTTP_QUERY_REQUEST_FORM_LEN  256
+// 请求 Query 接口响应数据
+#define TC_IOT_HTTP_QUERY_RESPONSE_LEN      512
 
 // 请求 Rpc 接口表单长度
 #define TC_IOT_HTTP_MQAPI_REQUEST_FORM_LEN  (1024*BUF_MULTIPLE)
@@ -125,6 +130,7 @@
 #define TC_IOT_API_TIMEOUT_MS               6000
 #define TC_IOT_API_TOKEN_PATH               "/token"
 #define TC_IOT_API_ACTIVE_PATH              "/secret"
+#define TC_IOT_API_QUERY_PATH               "/query"
 
 #define TC_IOT_TROUBLE_SHOOTING_URL         "https://invalid/"
 

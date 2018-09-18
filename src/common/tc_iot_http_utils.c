@@ -43,6 +43,19 @@ static int add_url_uint_field(tc_iot_yabuffer_t* buffer, const char* prefix,
         return TC_IOT_BUFFER_OVERFLOW;
     }
 }
+int tc_iot_create_query_request_form(char* form, int max_form_len,
+                                    const char* product_id) {
+    tc_iot_yabuffer_t form_buf;
+    int total = 0;
+
+    IF_NULL_RETURN(form, TC_IOT_NULL_POINTER);
+    IF_NULL_RETURN(product_id, TC_IOT_NULL_POINTER);
+
+    tc_iot_yabuffer_init(&form_buf, form, max_form_len);
+    total += add_tc_iot_url_encoded_field(&form_buf, "productId=", product_id,
+                                          strlen(product_id));
+    return total;
+}
 
 int tc_iot_create_auth_request_form(char* form, int max_form_len,
                                     const char* secret,
