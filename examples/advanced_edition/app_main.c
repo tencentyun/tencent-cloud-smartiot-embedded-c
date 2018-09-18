@@ -11,16 +11,16 @@ extern tc_iot_shadow_local_data g_tc_iot_device_local_data;
 volatile int stop = 0;
 void sig_handler(int sig) {
     if (sig == SIGINT) {
-        tc_iot_hal_printf("SIGINT received, going down.\n");
+        TC_IOT_LOG_INFO("SIGINT received, going down.");
         stop ++;
     } else if (sig == SIGTERM) {
-        tc_iot_hal_printf("SIGTERM received, going down.\n");
+        TC_IOT_LOG_INFO("SIGTERM received, going down.");
         stop ++;
     } else {
-        tc_iot_hal_printf("signal received:%d\n", sig);
+        TC_IOT_LOG_INFO("signal received:%d", sig);
     }
     if (stop >= 3) {
-        tc_iot_hal_printf("SIGINT/SIGTERM received over %d times, force shutdown now.\n", stop);
+        TC_IOT_LOG_INFO("SIGINT/SIGTERM received over %d times, force shutdown now.", stop);
         exit(0);
     }
 }
@@ -32,11 +32,7 @@ void sig_handler(int sig) {
  * @param p_device_data 设备状态数据
  */
 void operate_device(unsigned char * changed_bits, tc_iot_shadow_local_data * p_device_data) {
-    time_t t = time(NULL);
-    struct tm tm = *localtime(&t);
-
-    tc_iot_hal_printf( "%04d-%02d-%02d %02d:%02d:%02d do something for data change.\n" ,
-            tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+    TC_IOT_LOG_INFO("do something for data change.");
 }
 
 
@@ -111,31 +107,31 @@ int main(int argc, char** argv) {
 
     if (!use_static_token) {
         /* 获取动态 token */
-        tc_iot_hal_printf("requesting username and password for mqtt.\n");
+        TC_IOT_LOG_INFO("requesting username and password for mqtt.");
         ret = TC_IOT_AUTH_FUNC( timestamp, nonce, &p_client_config->device_info, TC_IOT_TOKEN_MAX_EXPIRE_SECOND);
         if (ret != TC_IOT_SUCCESS) {
-            tc_iot_hal_printf("refresh token failed, trouble shooting guide: " "%s#%d\n", TC_IOT_TROUBLE_SHOOTING_URL, ret);
+            TC_IOT_LOG_ERROR("refresh token failed, trouble shooting guide: " "%s#%d", TC_IOT_TROUBLE_SHOOTING_URL, ret);
             return 0;
         }
-        tc_iot_hal_printf("request username and password for mqtt success.\n");
+        TC_IOT_LOG_INFO("request username and password for mqtt success.");
     } else {
-        tc_iot_hal_printf("username & password using: %s %s\n", p_client_config->device_info.username, p_client_config->device_info.password);
+        TC_IOT_LOG_INFO("username & password using: %s %s", p_client_config->device_info.username, p_client_config->device_info.password);
     }
 
     ret = tc_iot_data_template_init(tc_iot_get_shadow_client(), &g_tc_iot_shadow_config);
     if (ret != TC_IOT_SUCCESS) {
-        tc_iot_hal_printf("tc_iot_data_template_init failed, trouble shooting guide: " "%s#%d\n", TC_IOT_TROUBLE_SHOOTING_URL, ret);
+        TC_IOT_LOG_ERROR("tc_iot_data_template_init failed, trouble shooting guide: " "%s#%d", TC_IOT_TROUBLE_SHOOTING_URL, ret);
         return 0;
     }
 
     ret = tc_iot_data_template_sync(tc_iot_get_shadow_client());
     if (ret != TC_IOT_SUCCESS) {
-        tc_iot_hal_printf("tc_iot_data_template_sync failed, trouble shooting guide: " "%s#%d\n", TC_IOT_TROUBLE_SHOOTING_URL, ret);
+        TC_IOT_LOG_ERROR("tc_iot_data_template_sync failed, trouble shooting guide: " "%s#%d", TC_IOT_TROUBLE_SHOOTING_URL, ret);
         return 0;
     }
     ret = tc_iot_update_firm_info(tc_iot_get_shadow_client());
     if (ret != TC_IOT_SUCCESS) {
-        tc_iot_hal_printf("tc_iot_update_firm_info failed, trouble shooting guide: " "%s#%d\n", TC_IOT_TROUBLE_SHOOTING_URL, ret);
+        TC_IOT_LOG_ERROR("tc_iot_update_firm_info failed, trouble shooting guide: " "%s#%d", TC_IOT_TROUBLE_SHOOTING_URL, ret);
         return 0;
     }
 

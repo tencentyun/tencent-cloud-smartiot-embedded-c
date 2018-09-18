@@ -119,7 +119,9 @@ static void _tc_iot_set_changed_bit(const char * name) {
     for ( i = 0; i < TC_IOT_PROPTOTAL; i++) {
         if (strcmp(name, g_tc_iot_shadow_property_metas[i].name) == 0) {
             TC_IOT_BIT_SET(_g_tc_iot_changed_bits, g_tc_iot_shadow_property_metas[i].id);
-            TC_IOT_LOG_TRACE("%dth id=%d, name=%s", i,g_tc_iot_shadow_property_metas[i].id, g_tc_iot_shadow_property_metas[i].name)
+            TC_IOT_LOG_TRACE("%dth id=%d, name=%s", i,
+                             g_tc_iot_shadow_property_metas[i].id,
+                             g_tc_iot_shadow_property_metas[i].name);
             return;
         }
     }

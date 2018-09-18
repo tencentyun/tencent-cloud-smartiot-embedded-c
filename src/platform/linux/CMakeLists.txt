@@ -1,5 +1,5 @@
 
-list(APPEND tc_iot_hal_srcs tc_iot_hal_util.c tc_iot_hal_os_cfg.c tc_iot_hal_os.c tc_iot_hal_timer.c)
+list(APPEND tc_iot_hal_srcs tc_iot_hal_util.c tc_iot_hal_os_cfg.c tc_iot_hal_os.c tc_iot_hal_timer.c tc_iot_hal_log.c)
 
 if (ENABLE_MQTT)
     if(ENABLE_TLS)

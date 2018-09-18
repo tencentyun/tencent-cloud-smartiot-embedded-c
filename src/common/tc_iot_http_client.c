@@ -441,7 +441,7 @@ int tc_iot_http_client_internal_perform(char * buffer, int buffer_used, int buff
     ret = p_network->do_connect(p_network, host, port);
     write_ret = p_network->do_write(p_network, (unsigned char *)buffer, buffer_used, timeout_ms);
     if (write_ret != buffer_used) {
-        TC_IOT_LOG_ERROR("send packet failed: expect len=%d, write return=%d", buffer_used, write_ret)
+        TC_IOT_LOG_ERROR("send packet failed: expect len=%d, write return=%d", buffer_used, write_ret);
         return TC_IOT_SEND_PACK_FAILED;
     }
 
