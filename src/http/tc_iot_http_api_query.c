@@ -90,6 +90,52 @@ int tc_iot_http_api_query(tc_iot_device_info* p_device_info) {
             tc_iot_hal_set_config(TC_IOT_DCFG_MQTT_HOST, temp_buf);
         }
 
+        field_index = tc_iot_json_find_token(rsp_body, t, r, "data.mqtt_ip",
+                                                 temp_buf, sizeof(temp_buf));
+        if (field_index <= 0) {
+            TC_IOT_LOG_WARN("data.mqtt_ip not found in response.");
+        } else {
+            TC_IOT_LOG_TRACE("setting mqtt_ip to %s", temp_buf);
+            tc_iot_hal_set_config(TC_IOT_DCFG_MQTT_IP, temp_buf);
+        }
+
+        field_index = tc_iot_json_find_token(rsp_body, t, r, "data.http_host",
+                                                 temp_buf, sizeof(temp_buf));
+        if (field_index <= 0) {
+            TC_IOT_LOG_WARN("data.http_host not found in response.");
+        } else {
+            TC_IOT_LOG_TRACE("setting http_host to %s", temp_buf);
+            tc_iot_hal_set_config(TC_IOT_DCFG_HTTP_HOST, temp_buf);
+        }
+
+        field_index = tc_iot_json_find_token(rsp_body, t, r, "data.http_ip",
+                                                 temp_buf, sizeof(temp_buf));
+        if (field_index <= 0) {
+            TC_IOT_LOG_WARN("data.http_ip not found in response.");
+        } else {
+            TC_IOT_LOG_TRACE("setting http_ip to %s", temp_buf);
+            tc_iot_hal_set_config(TC_IOT_DCFG_HTTP_IP, temp_buf);
+        }
+
+
+        field_index = tc_iot_json_find_token(rsp_body, t, r, "data.log_server_host",
+                                                 temp_buf, sizeof(temp_buf));
+        if (field_index <= 0) {
+            TC_IOT_LOG_WARN("data.log_server_host not found in response.");
+        } else {
+            TC_IOT_LOG_TRACE("setting log_server_host to %s", temp_buf);
+            tc_iot_hal_set_config(TC_IOT_DCFG_LOG_SERVER_HOST, temp_buf);
+        }
+
+        field_index = tc_iot_json_find_token(rsp_body, t, r, "data.log_server_ip",
+                                                 temp_buf, sizeof(temp_buf));
+        if (field_index <= 0) {
+            TC_IOT_LOG_WARN("data.log_server_ip not found in response.");
+        } else {
+            TC_IOT_LOG_TRACE("setting log_server_ip to %s", temp_buf);
+            tc_iot_hal_set_config(TC_IOT_DCFG_LOG_SERVER_IP, temp_buf);
+        }
+
         return TC_IOT_SUCCESS;
     } else {
         return TC_IOT_ERROR_HTTP_REQUEST_FAILED;
