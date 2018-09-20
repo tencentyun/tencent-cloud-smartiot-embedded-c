@@ -429,6 +429,7 @@ int tc_iot_update_firm_info(tc_iot_shadow_client * c) {
 */
 int tc_iot_data_template_init(tc_iot_shadow_client* p_shadow_client, tc_iot_shadow_config * p_client_config) {
     int ret = 0;
+
     /* 初始化 shadow client */
     TC_IOT_LOG_INFO("constructing mqtt shadow client.");
     ret = tc_iot_shadow_construct(p_shadow_client, p_client_config);

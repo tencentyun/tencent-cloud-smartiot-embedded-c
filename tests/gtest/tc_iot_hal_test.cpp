@@ -23,7 +23,7 @@ TEST(tc_iot_hal_testcases, tc_iot_hal_get_config)
     ASSERT_EQ(ret, TC_IOT_SUCCESS);
     ret = tc_iot_hal_set_config(TC_IOT_DCFG_MQTT_HOST, TC_IOT_CONFIG_MQTT_HOST);
     ASSERT_EQ(ret, TC_IOT_SUCCESS);
-    ret = tc_iot_hal_set_config(TC_IOT_DCFG_API_HOST, TC_IOT_CONFIG_API_HOST);
+    ret = tc_iot_hal_set_config(TC_IOT_DCFG_HTTP_HOST, TC_IOT_CONFIG_API_HOST);
     ASSERT_EQ(ret, TC_IOT_SUCCESS);
 
     res = tc_iot_hal_get_config(TC_IOT_DCFG_PRODUCT_ID, buffer, sizeof(buffer), "");

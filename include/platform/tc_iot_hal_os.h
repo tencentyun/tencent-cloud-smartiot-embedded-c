@@ -88,13 +88,17 @@ void tc_iot_hal_srandom(unsigned int seed);
  */
 typedef enum _tc_iot_device_config_id_def {
     // Required
-    TC_IOT_DCFG_PRODUCT_ID,
-    TC_IOT_DCFG_PRODUCT_KEY,
-    TC_IOT_DCFG_DEVICE_NAME,
-    TC_IOT_DCFG_DEVICE_SECRET,
-    TC_IOT_DCFG_MQTT_HOST,
-    TC_IOT_DCFG_API_HOST,
-    TC_IOT_DCFG_REGION,
+    TC_IOT_DCFG_PRODUCT_ID = 0,
+    TC_IOT_DCFG_PRODUCT_KEY = 1,
+    TC_IOT_DCFG_DEVICE_NAME = 2,
+    TC_IOT_DCFG_DEVICE_SECRET = 3,
+    TC_IOT_DCFG_MQTT_HOST = 4,
+    TC_IOT_DCFG_MQTT_IP = 5,
+    TC_IOT_DCFG_HTTP_HOST = 6,
+    TC_IOT_DCFG_HTTP_IP = 7,
+    TC_IOT_DCFG_LOG_SERVER_HOST = 8,
+    TC_IOT_DCFG_LOG_SERVER_IP = 9,
+    TC_IOT_DCFG_REGION = 10,
 
     TC_IOT_DCFG_TYPE,
     TC_IOT_DCFG_HW_ID,
@@ -115,8 +119,8 @@ typedef enum _tc_iot_device_config_id_def {
     TC_IOT_DCFG_HTTPS_CA_CERT,
 } tc_iot_device_config_id_def;
 
-#define TC_IOT_MAX_MQTT_HOST_LEN  128
-#define TC_IOT_MAX_API_HOST_LEN  128
+#define TC_IOT_MAX_HOST_LEN  128
+#define TC_IOT_MAX_IP_LEN    16
 #define TC_IOT_MAX_REGION_LEN  128
 #define TC_IOT_MAX_TYPE_LEN   5
 #define TC_IOT_MAX_LOG_LEVEL_LEN  2

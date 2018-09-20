@@ -469,4 +469,14 @@ int tc_iot_http_mqapi_rpc( char * result, int result_len,
  */
 int tc_iot_refresh_auth_token(long timestamp, long nonce, tc_iot_device_info* p_device_info, long expire);
 
+/**
+  * @brief 查询当前设备的服务端配置，包括 MQ 服务IP及域名，HTTP 服务IP及域名，Log 服务IP及域名等。
+ *
+ * @param p_device_info 设备信息，请求成功后，会将信息通过 tc_iot_hal_set_config 写入存储。
+ *
+ * @return 结果返回码
+ * @see tc_iot_sys_code_e
+ */
+int tc_iot_http_api_query(tc_iot_device_info* p_device_info);
+
 #endif /* end of include guard */

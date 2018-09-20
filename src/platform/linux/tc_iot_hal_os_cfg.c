@@ -5,8 +5,12 @@ typedef struct _tc_iot_device_config_data {
     char product_key[TC_IOT_MAX_PRODUCT_KEY_LEN];
     char device_name[TC_IOT_MAX_DEVICE_NAME_LEN];
     char device_secret[TC_IOT_MAX_DEVICE_SECRET_LEN];
-    char mqtt_host[TC_IOT_MAX_MQTT_HOST_LEN];
-    char api_host[TC_IOT_MAX_API_HOST_LEN];
+    char mqtt_host[TC_IOT_MAX_HOST_LEN];
+    char mqtt_ip[TC_IOT_MAX_IP_LEN];
+    char http_host[TC_IOT_MAX_HOST_LEN];
+    char http_ip[TC_IOT_MAX_IP_LEN];
+    char log_server_host[TC_IOT_MAX_HOST_LEN];
+    char log_server_ip[TC_IOT_MAX_IP_LEN];
     char region[TC_IOT_MAX_REGION_LEN];
 
     char type[TC_IOT_MAX_TYPE_LEN];
@@ -51,9 +55,25 @@ static int _tc_iot_get_device_config_addr(tc_iot_device_config_data * p_device_c
         *addr = &p_device_cfg->mqtt_host[0];
         *len = sizeof(p_device_cfg->mqtt_host);
         break;
-    case TC_IOT_DCFG_API_HOST:
-        *addr = &p_device_cfg->api_host[0];
-        *len = sizeof(p_device_cfg->api_host);
+    case TC_IOT_DCFG_MQTT_IP:
+        *addr = &p_device_cfg->mqtt_ip[0];
+        *len = sizeof(p_device_cfg->mqtt_ip);
+        break;
+    case TC_IOT_DCFG_HTTP_HOST:
+        *addr = &p_device_cfg->http_host[0];
+        *len = sizeof(p_device_cfg->http_host);
+        break;
+    case TC_IOT_DCFG_HTTP_IP:
+        *addr = &p_device_cfg->http_ip[0];
+        *len = sizeof(p_device_cfg->http_ip);
+        break;
+    case TC_IOT_DCFG_LOG_SERVER_HOST:
+        *addr = &p_device_cfg->log_server_host[0];
+        *len = sizeof(p_device_cfg->log_server_host);
+        break;
+    case TC_IOT_DCFG_LOG_SERVER_IP:
+        *addr = &p_device_cfg->log_server_ip[0];
+        *len = sizeof(p_device_cfg->log_server_ip);
         break;
     case TC_IOT_DCFG_REGION:
         *addr = &p_device_cfg->region[0];
@@ -129,10 +149,14 @@ static int _tc_iot_save_device_config(const char * name, tc_iot_device_config_da
     for (i = 0; i < TC_IOT_DCFG_REGION; i++) {
         ret = _tc_iot_get_device_config_addr(data,i, &addr, &len);
         if (ret == TC_IOT_SUCCESS) {
-            ret = fprintf(fp, "%d,%s\n", i, addr);
-            if (ret <= 0) {
-                TC_IOT_LOG_ERROR("write config failed: %d,%s", i, addr);
-                break;
+            if (strlen(addr) > 0) {
+                ret = fprintf(fp, "%d,%s\n", i, addr);
+                if (ret <= 0) {
+                    TC_IOT_LOG_ERROR("write config failed: %d,%s", i, addr);
+                    break;
+                }
+            } else {
+                TC_IOT_LOG_WARN("skip empty value for id=%d", i);
             }
         }
     }

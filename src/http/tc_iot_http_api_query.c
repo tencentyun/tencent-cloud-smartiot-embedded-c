@@ -82,20 +82,13 @@ int tc_iot_http_api_query(tc_iot_device_info* p_device_info) {
         }
 
         field_index = tc_iot_json_find_token(rsp_body, t, r, "data.mqtt_host",
-                                                p_device_info->mqtt_host,
-                                             sizeof(p_device_info->mqtt_host));
+                                                 temp_buf, sizeof(temp_buf));
         if (field_index <= 0) {
-            TC_IOT_LOG_TRACE("data.mqtt_host not found in response.");
-            return TC_IOT_ERROR_HTTP_REQUEST_FAILED;
+            TC_IOT_LOG_WARN("data.mqtt_host not found in response.");
+        } else {
+            TC_IOT_LOG_TRACE("setting mqtt_host to %s", temp_buf);
+            tc_iot_hal_set_config(TC_IOT_DCFG_MQTT_HOST, temp_buf);
         }
-
-        /* field_index = tc_iot_json_find_token(rsp_body, t, r, "data.mqtt_ip", */
-        /*                                         p_device_info->mqtt_ip, */
-        /*                                      sizeof(p_device_info->mqtt_ip)); */
-        /* if (field_index <= 0) { */
-        /*     TC_IOT_LOG_TRACE("data.mqtt_ip not found in response."); */
-        /*     return TC_IOT_ERROR_HTTP_REQUEST_FAILED; */
-        /* } */
 
         return TC_IOT_SUCCESS;
     } else {

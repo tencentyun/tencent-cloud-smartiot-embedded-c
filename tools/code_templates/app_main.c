@@ -50,36 +50,61 @@ int main(int argc, char** argv) {
     long timestamp = tc_iot_hal_timestamp(NULL);
     tc_iot_hal_srandom(timestamp);
     long nonce = tc_iot_hal_random();
+    tc_iot_device_info * p_device;
 
     signal(SIGINT, sig_handler);
     signal(SIGTERM, sig_handler);
     setbuf(stdout, NULL);
 
     p_client_config = &(g_tc_iot_shadow_config.mqtt_client_config);
+    p_device = &p_client_config->device_info;
 
     /* 解析命令行参数 */
     parse_command(p_client_config, argc, argv);
 
+    tc_iot_hal_get_config(TC_IOT_DCFG_HTTP_HOST, p_device->http_host,
+                          sizeof(p_device->http_host), NULL);
+    tc_iot_hal_get_config(TC_IOT_DCFG_PRODUCT_ID, p_device->product_id,
+                          sizeof(p_device->product_id), NULL);
+    tc_iot_hal_get_config(TC_IOT_DCFG_PRODUCT_KEY, p_device->product_key,
+                          sizeof(p_device->product_key), NULL);
+    tc_iot_hal_get_config(TC_IOT_DCFG_MQTT_HOST, p_device->mqtt_host,
+                          sizeof(p_device->mqtt_host), NULL);
+    tc_iot_hal_get_config(TC_IOT_DCFG_DEVICE_NAME, p_device->device_name,
+                          sizeof(p_device->device_name), NULL);
+    tc_iot_hal_get_config(TC_IOT_DCFG_DEVICE_SECRET, p_device->device_secret,
+                          sizeof(p_device->device_secret), NULL);
+
+    tc_iot_hal_snprintf(p_device->client_id, sizeof(p_device->client_id),
+                        "%s@%s",p_device->product_key,p_device->device_name);
+
+    ret = tc_iot_http_api_query(&p_client_config->device_info);
+    if (ret != TC_IOT_SUCCESS) {
+        TC_IOT_LOG_ERROR("query config failed, trouble shooting guide: " "%s#%d",
+                         TC_IOT_TROUBLE_SHOOTING_URL, ret);
+        /* return 0; */
+    }
+
     /* 根据 product id 和device name 定义，生成发布和订阅的 Topic 名称。 */
-    snprintf(g_tc_iot_shadow_config.sub_topic,TC_IOT_MAX_MQTT_TOPIC_LEN, TC_IOT_SHADOW_SUB_TOPIC_FMT,
-            p_client_config->device_info.product_id,p_client_config->device_info.device_name);
-    snprintf(g_tc_iot_shadow_config.pub_topic,TC_IOT_MAX_MQTT_TOPIC_LEN, TC_IOT_SHADOW_PUB_TOPIC_FMT,
-            p_client_config->device_info.product_id,p_client_config->device_info.device_name);
+    tc_iot_hal_snprintf(g_tc_iot_shadow_config.sub_topic,TC_IOT_MAX_MQTT_TOPIC_LEN, TC_IOT_SHADOW_SUB_TOPIC_FMT,
+            p_device->product_id,p_device->device_name);
+    tc_iot_hal_snprintf(g_tc_iot_shadow_config.pub_topic,TC_IOT_MAX_MQTT_TOPIC_LEN, TC_IOT_SHADOW_PUB_TOPIC_FMT,
+            p_device->product_id,p_device->device_name);
 
     /* 判断是否需要获取动态 token */
-    use_static_token = strlen(p_client_config->device_info.username) && strlen(p_client_config->device_info.password);
+    use_static_token = strlen(p_device->username) && strlen(p_device->password);
 
     if (!use_static_token) {
         /* 获取动态 token */
         TC_IOT_LOG_INFO("requesting username and password for mqtt.");
-        ret = TC_IOT_AUTH_FUNC( timestamp, nonce, &p_client_config->device_info, TC_IOT_TOKEN_MAX_EXPIRE_SECOND);
+        ret = TC_IOT_AUTH_FUNC( timestamp, nonce, p_device, TC_IOT_TOKEN_MAX_EXPIRE_SECOND);
         if (ret != TC_IOT_SUCCESS) {
             TC_IOT_LOG_ERROR("refresh token failed, trouble shooting guide: " "%s#%d", TC_IOT_TROUBLE_SHOOTING_URL, ret);
             return 0;
         }
         TC_IOT_LOG_INFO("request username and password for mqtt success.");
     } else {
-        TC_IOT_LOG_INFO("username & password using: %s %s", p_client_config->device_info.username, p_client_config->device_info.password);
+        TC_IOT_LOG_INFO("username & password using: %s %s", p_device->username, p_device->password);
     }
 
     ret = tc_iot_data_template_init(tc_iot_get_shadow_client(), &g_tc_iot_shadow_config);
