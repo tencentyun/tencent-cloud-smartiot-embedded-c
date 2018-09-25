@@ -146,6 +146,7 @@ typedef struct _tc_iot_device_info {
     char http_host[TC_IOT_HTTP_MAX_HOST_LENGTH]; /** API 接口地址 */
     char mqtt_host[TC_IOT_HTTP_MAX_HOST_LENGTH]; /**< MQ 服务地址*/
     uint16_t mqtt_port; /**< MQ 服务端口*/
+    char log_server_host[TC_IOT_HTTP_MAX_HOST_LENGTH]; /**< Log 服务地址*/
 } tc_iot_device_info;
 
 

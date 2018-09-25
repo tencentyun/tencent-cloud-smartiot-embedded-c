@@ -132,6 +132,8 @@
 #define TC_IOT_API_ACTIVE_PATH              "/secret"
 #define TC_IOT_API_QUERY_PATH               "/query"
 
+#define TC_IOT_API_LOG_PATH                 "/log"
+
 #define TC_IOT_TROUBLE_SHOOTING_URL         "https://invalid/"
 
 #endif /* end of include guard */

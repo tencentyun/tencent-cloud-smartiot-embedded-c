@@ -75,6 +75,9 @@ int main(int argc, char** argv) {
     tc_iot_hal_get_config(TC_IOT_DCFG_DEVICE_SECRET, p_device->device_secret,
                           sizeof(p_device->device_secret), NULL);
 
+    tc_iot_hal_get_config(TC_IOT_DCFG_LOG_SERVER_HOST, p_device->log_server_host,
+                          sizeof(p_device->log_server_host), NULL);
+
     tc_iot_hal_snprintf(p_device->client_id, sizeof(p_device->client_id),
                         "%s@%s",p_device->product_key,p_device->device_name);
 
@@ -118,6 +121,8 @@ int main(int argc, char** argv) {
         TC_IOT_LOG_ERROR("tc_iot_data_template_sync failed, trouble shooting guide: " "%s#%d", TC_IOT_TROUBLE_SHOOTING_URL, ret);
         return 0;
     }
+    tc_iot_http_upload_log(p_device, "Hello");
+
     ret = tc_iot_update_firm_info(tc_iot_get_shadow_client());
     if (ret != TC_IOT_SUCCESS) {
         TC_IOT_LOG_ERROR("tc_iot_update_firm_info failed, trouble shooting guide: " "%s#%d", TC_IOT_TROUBLE_SHOOTING_URL, ret);

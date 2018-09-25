@@ -1,6 +1,6 @@
 #include "tc_iot_inc.h"
 
-static int add_tc_iot_url_encoded_field(tc_iot_yabuffer_t* buffer,
+int tc_iot_add_url_encoded_field(tc_iot_yabuffer_t* buffer,
                                         const char* prefix, const char* val,
                                         int val_len) {
     int total = 0;
@@ -19,7 +19,7 @@ static int add_tc_iot_url_encoded_field(tc_iot_yabuffer_t* buffer,
     return total;
 }
 
-static int add_url_uint_field(tc_iot_yabuffer_t* buffer, const char* prefix,
+int tc_iot_add_url_uint_field(tc_iot_yabuffer_t* buffer, const char* prefix,
                               unsigned int val) {
     int total = 0;
     int ret;
@@ -52,7 +52,7 @@ int tc_iot_create_query_request_form(char* form, int max_form_len,
     IF_NULL_RETURN(product_id, TC_IOT_NULL_POINTER);
 
     tc_iot_yabuffer_init(&form_buf, form, max_form_len);
-    total += add_tc_iot_url_encoded_field(&form_buf, "productId=", product_id,
+    total += tc_iot_add_url_encoded_field(&form_buf, "productId=", product_id,
                                           strlen(product_id));
     return total;
 }
@@ -75,16 +75,16 @@ int tc_iot_create_auth_request_form(char* form, int max_form_len,
     IF_NULL_RETURN(product_id, TC_IOT_NULL_POINTER);
 
     tc_iot_yabuffer_init(&form_buf, form, max_form_len);
-    total += add_tc_iot_url_encoded_field(&form_buf, "clientId=", client_id,
+    total += tc_iot_add_url_encoded_field(&form_buf, "clientId=", client_id,
                                           strlen(client_id));
-    total += add_tc_iot_url_encoded_field(&form_buf, "&deviceName=",
+    total += tc_iot_add_url_encoded_field(&form_buf, "&deviceName=",
                                           device_name, strlen(device_name));
-    total += add_url_uint_field(&form_buf, "&expire=", expire);
-    total += add_url_uint_field(&form_buf, "&nonce=", nonce);
-    total += add_tc_iot_url_encoded_field(&form_buf, "&productId=", product_id,
+    total += tc_iot_add_url_uint_field(&form_buf, "&expire=", expire);
+    total += tc_iot_add_url_uint_field(&form_buf, "&nonce=", nonce);
+    total += tc_iot_add_url_encoded_field(&form_buf, "&productId=", product_id,
                                           strlen(product_id));
-    total += add_url_uint_field(&form_buf, "&timestamp=", timestamp);
-    total += add_tc_iot_url_encoded_field(&form_buf, "&signature=", "", 0);
+    total += tc_iot_add_url_uint_field(&form_buf, "&timestamp=", timestamp);
+    total += tc_iot_add_url_encoded_field(&form_buf, "&signature=", "", 0);
 
     total += tc_iot_calc_auth_sign(
         tc_iot_yabuffer_current(&form_buf), tc_iot_yabuffer_left(&form_buf),
@@ -109,15 +109,15 @@ int tc_iot_create_active_device_form(char* form, int max_form_len,
 
     tc_iot_yabuffer_init(&form_buf, form, max_form_len);
 
-    total += add_tc_iot_url_encoded_field(&form_buf, "productId=", product_id,
+    total += tc_iot_add_url_encoded_field(&form_buf, "productId=", product_id,
                                       strlen(product_id));
-    total += add_tc_iot_url_encoded_field(&form_buf, "&deviceName=",
+    total += tc_iot_add_url_encoded_field(&form_buf, "&deviceName=",
                                           device_name, strlen(device_name));
 
-    total += add_url_uint_field(&form_buf, "&nonce=", nonce);
+    total += tc_iot_add_url_uint_field(&form_buf, "&nonce=", nonce);
 
-    total += add_url_uint_field(&form_buf, "&timestamp=", timestamp);
-    total += add_tc_iot_url_encoded_field(&form_buf, "&signature=", "", 0);
+    total += tc_iot_add_url_uint_field(&form_buf, "&timestamp=", timestamp);
+    total += tc_iot_add_url_encoded_field(&form_buf, "&signature=", "", 0);
 
     total += tc_iot_calc_active_device_sign(
         tc_iot_yabuffer_current(&form_buf), tc_iot_yabuffer_left(&form_buf),

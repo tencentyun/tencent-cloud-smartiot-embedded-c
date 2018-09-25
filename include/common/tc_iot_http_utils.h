@@ -82,4 +82,9 @@ int tc_iot_create_active_device_form(char* form, int max_form_len,
  */
 int tc_iot_create_query_request_form(char* form, int max_form_len,
                                      const char* product_id);
+int tc_iot_add_url_encoded_field(tc_iot_yabuffer_t* buffer,
+                                        const char* prefix, const char* val,
+                                 int val_len);
+int tc_iot_add_url_uint_field(tc_iot_yabuffer_t* buffer, const char* prefix,
+                       unsigned int val);
 #endif /* end of include guard */

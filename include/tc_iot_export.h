@@ -479,4 +479,16 @@ int tc_iot_refresh_auth_token(long timestamp, long nonce, tc_iot_device_info* p_
  */
 int tc_iot_http_api_query(tc_iot_device_info* p_device_info);
 
+
+/**
+  * @brief 上传日志
+ *
+ * @param p_device_info 设备信息
+ * @param content 设备信息
+ *
+ * @return 结果返回码
+ * @see tc_iot_sys_code_e
+ */
+int tc_iot_http_upload_log(tc_iot_device_info* p_device_info, const char * content);
+
 #endif /* end of include guard */
