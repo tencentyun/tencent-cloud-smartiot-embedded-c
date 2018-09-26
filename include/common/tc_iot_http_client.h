@@ -21,6 +21,7 @@
 #define HTTP_HEADER_CONTENT_LENGTH "Content-Length"
 #define HTTP_HEADER_LOCATION "Location"
 #define HTTP_HEADER_CONTENT_TYPE "Content-Type"
+#define HTTP_HEADER_TRANSFER_ENCODING "Transfer-Encoding"
 #define HTTP_CONTENT_FORM_URLENCODED "application/x-www-form-urlencoded"
 #define HTTP_CONTENT_OCTET_STREAM "application/octet-stream"
 #define HTTP_CONTENT_FORM_DATA "multipart/form-data"
@@ -50,11 +51,20 @@ typedef enum _tc_iot_http_response_parse_state {
     _PARSER_END,
 } tc_iot_http_response_parse_state;
 
+typedef enum _tc_iot_http_transfer_encoding {
+    TRANSFER_ENCODING_IDENTITY,
+    TRANSFER_ENCODING_CHUNKED,
+    TRANSFER_ENCODING_GZIP,
+    TRANSFER_ENCODING_DEFLATE,
+    TRANSFER_ENCODING_COMPRESS,
+}tc_iot_http_transfer_encoding;
+
 typedef struct _tc_iot_http_response_parser {
     tc_iot_http_response_parse_state state;
     char  version;
     short status_code;
     int  content_length;
+    int  transfer_encoding;
     const char * location;
     // const char * body;
 }tc_iot_http_response_parser;

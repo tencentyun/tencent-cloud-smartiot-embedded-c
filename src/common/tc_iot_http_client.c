@@ -32,8 +32,108 @@ void tc_iot_http_parser_init(tc_iot_http_response_parser * parser) {
         parser->version = 0;
         parser->status_code = 0;
         parser->content_length = 0;
+        parser->transfer_encoding = TRANSFER_ENCODING_IDENTITY;
         parser->location = NULL;
     }
+}
+
+bool tc_iot_http_is_complete_chunk(char * buffer, int buffer_len) {
+    int num_char_count = 0;
+    int chunk_size = 0;
+    char * pos = buffer;
+
+    IF_NULL_RETURN(buffer, TC_IOT_NULL_POINTER);
+
+    while (pos <= (buffer+buffer_len)) {
+       /*  Chunked-Body   = *chunk */
+       /*                  last-chunk */
+       /*                  trailer */
+       /*                  CRLF */
+
+       /* chunk          = chunk-size [ chunk-extension ] CRLF */
+       /*                  chunk-data CRLF */
+       /* chunk-size     = 1*HEX */
+       /* last-chunk     = 1*("0") [ chunk-extension ] CRLF */
+        num_char_count = 0;
+        chunk_size = tc_iot_try_parse_hex(pos, &num_char_count);
+        if (chunk_size == 0 && num_char_count == 1) {
+            TC_IOT_LOG_TRACE("last chunk found.");
+            return true;
+        }
+
+        TC_IOT_LOG_TRACE("chunk size = %d", chunk_size);
+
+        // +2 means should contain CRLF followed by the chunk-data
+        if (buffer+buffer_len < pos + chunk_size+2) {
+            return false;
+        }
+        pos += num_char_count + 2; // skip chunk header
+        pos += chunk_size + 2; // skip chunk data
+    }
+
+    return false;
+}
+
+/**
+ * @brief    解析 HTTP 响应的 chunked 格式数据。
+ *
+ * @details  根据 buffer 输入数据，进行解析，合并掉 chunk size 数据，仅保留合并后的数据。
+ *
+ * @param    buffer 输入及输出缓存区
+ *
+ * @return   已处理的长度：
+ *              1.当接收的包是完整的包时，返回值一般等于 buffer_len，表示全部都已解析处理;
+ *              2.当接收的包不是完整的包时，返回值为已处理部分的长度，一般小于 buffer_len，
+ *                表示已处理部分的长度，剩余部分未处理数据，需要接收更多数据后，合并后再次调用本函数解析；
+ *              3.数据不满足解析要求，无法解析，需要继续接收更多内容时，返回值为 0，调用端处理逻辑同 2；
+ *              4.出现异常，无法处理时，返回错误码，取值 < 0。
+ * @see tc_iot_sys_code_e
+ */
+
+int tc_iot_http_merge_chunk(char * buffer, int buffer_len, int * total_chunk_size, bool * chunk_ended) {
+    int num_char_count = 0;
+    int chunk_size = 0;
+    char * pos = buffer;
+
+    IF_NULL_RETURN(buffer, TC_IOT_NULL_POINTER);
+    IF_NULL_RETURN(total_chunk_size, TC_IOT_NULL_POINTER);
+
+    *total_chunk_size = 0;
+
+    while (pos <= (buffer+buffer_len)) {
+       /*  Chunked-Body   = *chunk */
+       /*                  last-chunk */
+       /*                  trailer */
+       /*                  CRLF */
+
+       /* chunk          = chunk-size [ chunk-extension ] CRLF */
+       /*                  chunk-data CRLF */
+       /* chunk-size     = 1*HEX */
+       /* last-chunk     = 1*("0") [ chunk-extension ] CRLF */
+        num_char_count = 0;
+        chunk_size = tc_iot_try_parse_hex(pos, &num_char_count);
+        pos += num_char_count + 2;
+        if (chunk_size == 0 && num_char_count == 1) {
+            *chunk_ended = true;
+            pos += 2; // last chunk has CRLF too.
+            return pos-buffer;
+        }
+
+        // +2 means should contain CRLF followed by the chunk-data
+        if (buffer+buffer_len < pos + chunk_size+2) {
+            TC_IOT_LOG_ERROR("chunk not complete:buffer_len=%d, last chunk_size=%d", buffer_len, chunk_size);
+            *chunk_ended = false;
+            return pos-buffer;
+        }
+
+        memmove(buffer+ *total_chunk_size, pos, chunk_size);
+        pos += chunk_size + 2;
+        *total_chunk_size += chunk_size;
+        buffer[*total_chunk_size] = '\0';
+    }
+
+    *chunk_ended = false;
+    return pos-buffer;
 }
 
 /**
@@ -171,6 +271,25 @@ start:
                         } else if ((i == tc_iot_const_str_len(HTTP_HEADER_CONTENT_TYPE))
                                 && (0 == memcmp(pos, HTTP_HEADER_CONTENT_TYPE, i))) {
                             /* TC_IOT_LOG_TRACE("%s found:%s",HTTP_HEADER_CONTENT_TYPE, pos+i+2); */
+                        } else if ((i == tc_iot_const_str_len(HTTP_HEADER_TRANSFER_ENCODING))
+                                && (0 == memcmp(pos, HTTP_HEADER_TRANSFER_ENCODING, i))) {
+                            header_complete = tc_iot_http_has_line_ended(pos+i+1);
+                            if (header_complete) {
+                                /* chunked, compress, deflate, gzip, identity. */
+                                // 请求的时候 指定 了 identity，响应只会是 identity 或 chunked
+                                if (*(pos+i+2) == 'i') {
+                                    TC_IOT_LOG_TRACE("%s recorgnized as : identity",HTTP_HEADER_TRANSFER_ENCODING);
+                                    parser->transfer_encoding = TRANSFER_ENCODING_IDENTITY;
+                                } else if (*(pos+i+2) == 'c' && *(pos+i+3) == 'h') {
+                                    TC_IOT_LOG_TRACE("%s recorgnized as : chunked",HTTP_HEADER_TRANSFER_ENCODING);
+                                    parser->transfer_encoding = TRANSFER_ENCODING_CHUNKED;
+                                } else {
+                                    TC_IOT_LOG_ERROR("%s value invalid :%s",HTTP_HEADER_TRANSFER_ENCODING, pos+i+2);
+                                }
+                            } else {
+                                TC_IOT_LOG_TRACE("%s not complete, continue reading:%s",HTTP_HEADER_TRANSFER_ENCODING, pos+i+2);
+                                return buffer_parsed;
+                            }
                         } else {
                             /* TC_IOT_LOG_TRACE("ignore i=%d,pos=%s",i, pos); */
                         }
@@ -428,6 +547,8 @@ int tc_iot_http_client_internal_perform(char * buffer, int buffer_used, int buff
     int parse_left = 0;
     int content_length = 0;
     int received_bytes = 0;
+    bool chunk_end = false;
+    int total_chunk_size = 0;
 
     ret = tc_iot_network_prepare(p_network, TC_IOT_SOCK_STREAM, TC_IOT_PROTO_HTTP, secured, NULL);
     if (ret < 0) {
@@ -453,7 +574,7 @@ int tc_iot_http_client_internal_perform(char * buffer, int buffer_used, int buff
 
             read_ret += parse_left;
             if (read_ret < buffer_len) {
-                buffer[read_ret] = '0';
+                buffer[read_ret] = '\0';
             }
 
             parse_ret = tc_iot_http_parser_analysis(p_parser, buffer, read_ret);
@@ -490,6 +611,7 @@ int tc_iot_http_client_internal_perform(char * buffer, int buffer_used, int buff
                     return TC_IOT_SUCCESS;
                 }
                 content_length = p_parser->content_length;
+
                 // 至此，未解析的数据都是响应包体
                 received_bytes = parse_left;
                 TC_IOT_LOG_TRACE("ver=1.%d, code=%d,content_length=%d, received_bytes=%d",
@@ -541,17 +663,42 @@ int tc_iot_http_client_internal_perform(char * buffer, int buffer_used, int buff
                     }
                 }
 
-                while (received_bytes < content_length) {
-                    read_ret = p_network->do_read(p_network, (unsigned char *)buffer+parse_left, buffer_len-parse_left, timer_tick);
-                    if (read_ret > 0) {
-                        received_bytes += read_ret;
-                        TC_IOT_LOG_TRACE("read=%d,total_read=%d, total=%d", read_ret, received_bytes, content_length);
-                    } else if (read_ret == TC_IOT_NET_NOTHING_READ) {
-                        continue;
-                    } else {
-                        TC_IOT_LOG_ERROR("read buffer error:%d", read_ret);
+                if (p_parser->transfer_encoding == TRANSFER_ENCODING_IDENTITY) {
+                    while (received_bytes < content_length) {
+                        read_ret = p_network->do_read(p_network, (unsigned char *)buffer+received_bytes, buffer_len-received_bytes, timer_tick);
+                        if (read_ret > 0) {
+                            received_bytes += read_ret;
+                            TC_IOT_LOG_TRACE("read=%d,total_read=%d, total=%d", read_ret, received_bytes, content_length);
+                        } else if (read_ret == TC_IOT_NET_NOTHING_READ) {
+                            continue;
+                        } else {
+                            TC_IOT_LOG_ERROR("read buffer error:%d", read_ret);
+                            p_network->do_disconnect(p_network);
+                            return read_ret;
+                        }
+                    }
+                } else {
+                    /* TC_IOT_LOG_TRACE("chunk processing  %d:%s", received_bytes, buffer); */
+                    while (!tc_iot_http_is_complete_chunk(buffer, received_bytes)) {
+                        read_ret = p_network->do_read(p_network, (unsigned char *)buffer+received_bytes, buffer_len-received_bytes, timer_tick);
+                        if (read_ret > 0) {
+                            received_bytes += read_ret;
+                            TC_IOT_LOG_TRACE("read=%d,total_read=%d, total=%d", read_ret, received_bytes, content_length);
+                        } else if (read_ret == TC_IOT_NET_NOTHING_READ) {
+                            continue;
+                        } else {
+                            TC_IOT_LOG_ERROR("read buffer error:%d", read_ret);
+                            p_network->do_disconnect(p_network);
+                            return read_ret;
+                        }
+                    }
+
+                    ret = tc_iot_http_merge_chunk(buffer, received_bytes, &total_chunk_size, &chunk_end);
+                    if (ret != received_bytes || total_chunk_size <= 0 || !chunk_end) {
+                        TC_IOT_LOG_ERROR("ret(%d) != received_bytes(%d) || total_chunk_size(%d) <= 0 || !chunk_end(%d)",
+                                         ret, received_bytes,total_chunk_size ,chunk_end );
                         p_network->do_disconnect(p_network);
-                        return read_ret;
+                        return TC_IOT_INVALID_HTTP_CHUNK_FORMAT;
                     }
                 }
                 p_network->do_disconnect(p_network);

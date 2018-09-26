@@ -85,6 +85,7 @@ typedef enum _tc_iot_sys_code_e {
     TC_IOT_HTTP_RESPONSE_NO_CONTENT_LENGTH = -1013, /**< HTTP 响应中未包含Content-Length字段*/
     TC_IOT_JSON_PARSE_TOKEN_NO_MEM = -1014, /**< json 解析Token数不足*/
     TC_IOT_HTTP_RPC_FAILED = -1015, /**< HTTP rpc 接口请求失败*/
+    TC_IOT_INVALID_HTTP_CHUNK_FORMAT = -1016, /** HTTP 返回的 chunk 数据格式非法 */
 
     TC_IOT_HTTP_INVALID_STATUS_CODE = -1201, /** 返回码错误，不是 1xx ~ 5xx 返回码 */
     TC_IOT_HTTP_BODY_START_FOUND = -1204, /** 发现 HTTP 包体 */

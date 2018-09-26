@@ -122,3 +122,38 @@ int tc_iot_try_parse_int(const char * str, int * num_char_count) {
     return result;
 }
 
+
+int tc_iot_try_parse_hex(const char * str, int * num_char_count) {
+    int result = 0;
+    int count = 0;
+
+    if (num_char_count) {
+        *num_char_count = 0;
+    }
+
+    if (!str) {
+        return 0;
+    }
+
+    while ((*str >= '0' && *str <= '9') || (*str >= 'A' && *str <= 'F') || (*str >= 'a' && *str <= 'f')) {
+        count++;
+        if  (*str >= '0' && *str <= '9') {
+            result = result*16 + (*str - '0');
+        }
+
+        if (*str >= 'A' && *str <= 'F') {
+            result = result*16 +10+ (*str - 'A');
+        }
+
+        if (*str >= 'a' && *str <= 'f') {
+            result = result*16 +10+ (*str - 'a');
+        }
+        str++;
+    }
+
+    if (num_char_count) {
+        *num_char_count = count;
+    }
+
+    return result;
+}
