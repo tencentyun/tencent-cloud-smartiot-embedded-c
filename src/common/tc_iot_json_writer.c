@@ -1,6 +1,34 @@
 #include "tc_iot_inc.h"
 
 /**
+ * @brief    加载临时缓存到 json_writer
+ *
+ * @details  为json writer 指定数据缓存区，及初始相关状态。
+ *
+ * @param    w 待初始化的 json writer
+ * @param    buffer 数据缓存区
+ * @param    buffer_len 数据缓存区长度
+ *
+ * @return   返回码
+ * @see tc_iot_sys_code_e
+ */
+int tc_iot_json_writer_load(tc_iot_json_writer * w, char * buffer, int buffer_len) {
+    int ret = 0;
+
+    IF_NULL_RETURN(w, TC_IOT_NULL_POINTER);
+    IF_NULL_RETURN(buffer, TC_IOT_NULL_POINTER);
+    if (buffer_len <= 0) {
+        TC_IOT_LOG_ERROR("buffer_len=%d", buffer_len);
+        return TC_IOT_INVALID_PARAMETER;
+    }
+    w->buffer = buffer;
+    w->buffer_len = buffer_len;
+    w->pos = 0;
+
+    return ret;
+}
+
+/**
  * @brief    初始化 json_writer
  *
  * @details  为json writer 指定数据缓存区，及初始相关状态。
@@ -15,11 +43,10 @@
 int tc_iot_json_writer_open(tc_iot_json_writer * w, char * buffer, int buffer_len) {
     int ret = 0;
 
-    IF_NULL_RETURN(w, TC_IOT_NULL_POINTER);
-    IF_NULL_RETURN(buffer, TC_IOT_NULL_POINTER);
-    w->buffer = buffer;
-    w->buffer_len = buffer_len;
-    w->pos = 0;
+    ret = tc_iot_json_writer_load(w, buffer, buffer_len);
+    if (ret < 0) {
+        return ret;
+    }
 
     ret = tc_iot_hal_snprintf(&w->buffer[w->pos], w->buffer_len-w->pos, "{");
     w->pos += ret;
@@ -271,6 +298,32 @@ int tc_iot_json_writer_raw_data(tc_iot_json_writer * w, const char * name, const
 }
 
 /**
+ * @brief    写入一连串的 JSON 反括号，完整序列化 JSON 串。
+ *
+ * @details  写入原始字符串数据，例如：]}]}。一般用来写入已经预处理好的，格式化的符合类型 JSON 数据。
+ *           数据必须是预先格式化并做好转义的。
+ *
+ * @param    w json writer
+ * @param    name 名称
+ * @param    value 取值
+ *
+ * @return   > 0 时，表示处理过程中，往 buffer 区域写入的字节数。 < 0，表示出错
+ * @see tc_iot_sys_code_e
+ */
+int tc_iot_json_writer_raw_end_quote(tc_iot_json_writer * w, const char * end_quotes) {
+    int ret = 0;
+
+    ret = tc_iot_hal_snprintf(&w->buffer[w->pos], w->buffer_len-w->pos, "%s", end_quotes);
+    w->pos += ret;
+    if (w->pos == w->buffer_len) {
+        TC_IOT_LOG_ERROR("buffer overflow processing:%s", end_quotes);
+        return TC_IOT_BUFFER_OVERFLOW;
+    }
+
+    return ret;
+}
+
+/**
  * @brief    格式化写入数据。
  *
  * @details  格式化写入数据，根据 format 中指定的格式，来写入数据。例如，
@@ -292,36 +345,41 @@ int tc_iot_json_writer_raw_data(tc_iot_json_writer * w, const char * name, const
 int tc_iot_json_writer_format_data(tc_iot_json_writer * w, const char * name, const char * format, const void * value_ptr) {
     int ret = 0;
     const char * type_field = format;
+    int old_pos = 0;
 
     IF_NULL_RETURN(w, TC_IOT_NULL_POINTER);
-    IF_NULL_RETURN(name, TC_IOT_NULL_POINTER);
     IF_NULL_RETURN(format, TC_IOT_NULL_POINTER);
     IF_LESS_RETURN(w->buffer_len, w->pos+1, TC_IOT_BUFFER_OVERFLOW);
-    IF_LESS_RETURN(w->pos, 1, TC_IOT_JSON_PARSE_FAILED);
+    IF_LESS_RETURN(w->pos, 0, TC_IOT_JSON_PARSE_FAILED);
 
-    if (w->buffer[w->pos-1] != '{') {
-        ret = tc_iot_hal_snprintf(&w->buffer[w->pos], w->buffer_len-w->pos, ",\"");
+    old_pos = w->pos;
+    if (w->buffer[w->pos-1] != '{' && w->buffer[w->pos-1] != '[' ) {
+        ret = tc_iot_hal_snprintf(&w->buffer[w->pos], w->buffer_len-w->pos, ",");
+        w->pos += ret;
     } else {
+        /* TC_IOT_LOG_TRACE("%c|name=%s,v=%s,0x%x", w->buffer[w->pos-1], name, w->buffer-5, w->buffer); */
+    }
+
+    if (name) {
         ret = tc_iot_hal_snprintf(&w->buffer[w->pos], w->buffer_len-w->pos, "\"");
-    }
-    w->pos += ret;
-    if (w->pos == w->buffer_len) {
-        TC_IOT_LOG_ERROR("buffer overflow processing:%s", name);
-        return TC_IOT_BUFFER_OVERFLOW;
-    }
+        w->pos += ret;
+        if (w->pos == w->buffer_len) {
+            TC_IOT_LOG_ERROR("buffer overflow processing:%s", name);
+            return TC_IOT_BUFFER_OVERFLOW;
+        }
+        ret = tc_iot_json_escape(&w->buffer[w->pos], w->buffer_len-w->pos, name, strlen(name));
+        w->pos += ret;
+        if (w->pos == w->buffer_len) {
+            TC_IOT_LOG_ERROR("buffer overflow processing:%s", name);
+            return TC_IOT_BUFFER_OVERFLOW;
+        }
 
-    ret = tc_iot_json_escape(&w->buffer[w->pos], w->buffer_len-w->pos, name, strlen(name));
-    w->pos += ret;
-    if (w->pos == w->buffer_len) {
-        TC_IOT_LOG_ERROR("buffer overflow processing:%s", name);
-        return TC_IOT_BUFFER_OVERFLOW;
-    }
-
-    ret = tc_iot_hal_snprintf(&w->buffer[w->pos], w->buffer_len-w->pos, "\":");
-    w->pos += ret;
-    if (w->pos == w->buffer_len) {
-        TC_IOT_LOG_ERROR("buffer overflow processing:%s", name);
-        return TC_IOT_BUFFER_OVERFLOW;
+        ret = tc_iot_hal_snprintf(&w->buffer[w->pos], w->buffer_len-w->pos, "\":");
+        w->pos += ret;
+        if (w->pos == w->buffer_len) {
+            TC_IOT_LOG_ERROR("buffer overflow processing:%s", name);
+            return TC_IOT_BUFFER_OVERFLOW;
+        }
     }
 
     while(*type_field) {
@@ -341,7 +399,7 @@ int tc_iot_json_writer_format_data(tc_iot_json_writer * w, const char * name, co
     switch(type_field[1]) {
     case 's':
         // print raw string to buffer
-        ret = tc_iot_hal_snprintf(&w->buffer[w->pos], w->buffer_len-w->pos, "%s", value_ptr);
+        ret = tc_iot_hal_snprintf(&w->buffer[w->pos], w->buffer_len-w->pos, "%s", (char *)value_ptr);
 
         // if has extra char after %s, append to buffer too.
         if (type_field[2]) {
@@ -401,6 +459,5 @@ int tc_iot_json_writer_format_data(tc_iot_json_writer * w, const char * name, co
         return TC_IOT_BUFFER_OVERFLOW;
     }
 
-    return ret;
+    return w->pos - old_pos;
 }
-
