@@ -34,12 +34,12 @@ int tc_iot_http_api_query(tc_iot_device_info* p_device_info) {
     tc_iot_mem_usage_log("req_form[TC_IOT_HTTP_QUERY_REQUEST_FORM_LEN]", sizeof(req_form), req_form_len);
 
     TC_IOT_LOG_TRACE("request form:\n%s", req_form);
-
+    tc_iot_hal_snprintf(req_form, sizeof(req_form), "%s?productId=%s", TC_IOT_API_QUERY_PATH, p_device_info->product_id);
     p_http_client = &http_client;
-    tc_iot_http_client_init(p_http_client, HTTP_POST);
-    tc_iot_http_client_set_body(p_http_client, req_form);
+    tc_iot_http_client_init(p_http_client, HTTP_GET);
+    tc_iot_http_client_set_body(p_http_client, "");
     tc_iot_http_client_set_host(p_http_client, p_device_info->http_host);
-    tc_iot_http_client_set_abs_path(p_http_client, TC_IOT_API_QUERY_PATH);
+    tc_iot_http_client_set_abs_path(p_http_client, req_form);
     tc_iot_http_client_set_content_type(p_http_client, HTTP_CONTENT_FORM_URLENCODED);
 
     tc_iot_http_client_format_buffer(http_buffer, sizeof(http_buffer), p_http_client);

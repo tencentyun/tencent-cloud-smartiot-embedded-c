@@ -109,7 +109,7 @@ int tc_iot_http_upload_log(tc_iot_device_info* p_device_info, const char * conte
     tc_iot_http_client_set_body(p_http_client, content);
     tc_iot_http_client_set_host(p_http_client, p_device_info->log_server_host);
     tc_iot_http_client_set_abs_path(p_http_client, sign_out);
-    tc_iot_http_client_set_content_type(p_http_client, HTTP_CONTENT_FORM_URLENCODED);
+    tc_iot_http_client_set_content_type(p_http_client, HTTP_CONTENT_TEXT_PLAIN);
 
     tc_iot_http_client_format_buffer(http_buffer, sizeof(http_buffer), p_http_client);
 

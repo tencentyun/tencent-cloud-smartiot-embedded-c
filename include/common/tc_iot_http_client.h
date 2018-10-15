@@ -23,6 +23,7 @@
 #define HTTP_HEADER_CONTENT_TYPE "Content-Type"
 #define HTTP_HEADER_TRANSFER_ENCODING "Transfer-Encoding"
 #define HTTP_CONTENT_FORM_URLENCODED "application/x-www-form-urlencoded"
+#define HTTP_CONTENT_TEXT_PLAIN      "text/plain"
 #define HTTP_CONTENT_OCTET_STREAM "application/octet-stream"
 #define HTTP_CONTENT_FORM_DATA "multipart/form-data"
 #define HTTP_CONTENT_JSON "application/json"
