@@ -35,7 +35,9 @@
 #if defined(ENABLE_MQTT)
 #include "mqtt/tc_iot_mqtt.h"
 #include "iot/tc_iot_shadow.h"
+#include "iot/tc_iot_event.h"
 #include "http/tc_iot_token.h"
+
 #endif
 
 #if defined(ENABLE_OTA)

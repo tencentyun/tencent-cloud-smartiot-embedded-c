@@ -79,6 +79,8 @@ void do_sim_data_change(void) {
 
 }
 
+void do_sim_report_event_and_error();
+
 int main(int argc, char** argv) {
     tc_iot_mqtt_client_config * p_client_config;
     bool use_static_token;
