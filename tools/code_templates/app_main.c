@@ -123,7 +123,6 @@ int main(int argc, char** argv) {
         TC_IOT_LOG_ERROR("tc_iot_data_template_sync failed, trouble shooting guide: " "%s#%d", TC_IOT_TROUBLE_SHOOTING_URL, ret);
         return 0;
     }
-    tc_iot_http_upload_log(p_device, "Hello");
 
     ret = tc_iot_update_firm_info(tc_iot_get_shadow_client());
     if (ret != TC_IOT_SUCCESS) {

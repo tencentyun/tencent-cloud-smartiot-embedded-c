@@ -255,8 +255,8 @@ const char * tc_iot_hal_get_config(tc_iot_device_config_id_def id, char* value ,
                 } else {
                     return addr;
                 }
-            } else {
-                TC_IOT_LOG_WARN("config id=%d, value=%s is empty.", id, addr);
+            /* } else { */
+            /*     TC_IOT_LOG_WARN("config id=%d, value=%s is empty.", id, addr); */
             }
         } else {
             TC_IOT_LOG_ERROR("config id=%d, value=%s not processed.", id, value);

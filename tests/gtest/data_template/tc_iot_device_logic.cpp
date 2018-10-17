@@ -136,6 +136,9 @@ int _tc_iot_shadow_property_control_callback(tc_iot_event_message *msg, void * c
     tc_iot_shadow_property_def fields[TC_IOT_PROPTOTAL];
     tc_iot_shadow_property_meta * p_metas = &g_tc_iot_shadow_property_metas[0];
     int count = 0;
+    const char * name = NULL;
+    const char * value = NULL;
+    int log_level = 0;
 
     if (!msg) {
         TC_IOT_LOG_ERROR("msg is null.");
@@ -171,7 +174,44 @@ int _tc_iot_shadow_property_control_callback(tc_iot_event_message *msg, void * c
 
         break;
     case TC_IOT_SHADOW_EVENT_REMOTE_CONF:
-        TC_IOT_LOG_TRACE("remote conf: %s=%s", (const char *)msg->context, (const char *)msg->data);
+        name = msg->context;
+        value = msg->data;
+        TC_IOT_LOG_TRACE("remote conf: %s=%s", name, value);
+        if (strcmp(name,"reboot") == 0) {
+            if (value[0] == '1') {
+                TC_IOT_LOG_WARN("Reboot command received, please restart this program manually.");
+            } else {
+                TC_IOT_LOG_ERROR("remote_conf/reboot has invalid value=%s", value);
+            }
+        } else if (strcmp(name,"log_level") == 0) {
+            log_level = atoi(value);
+            TC_IOT_LOG_INFO("remote_conf/log_level set new log level=%s", value);
+            // 0，默认不打； 1. 简要 2：详细
+            if (log_level == 0) {
+                tc_iot_set_log_level(TC_IOT_LOG_LEVEL_ERROR);
+            } else if (log_level == 1) {
+                tc_iot_set_log_level(TC_IOT_LOG_LEVEL_INFO);
+            } else if (log_level == 2) {
+                tc_iot_set_log_level(TC_IOT_LOG_LEVEL_DEBUG);
+            } else {
+                TC_IOT_LOG_INFO("remote_conf/log_level has invalid value=%s", value);
+                return TC_IOT_SUCCESS;
+            }
+            tc_iot_hal_set_config(TC_IOT_DCFG_LOG_LEVEL, value);
+        } else if (strcmp(name,"is_up_busilog") == 0) {
+            TC_IOT_LOG_TRACE("remote_conf/is_up_busilog=%s", value);
+            if (value[0] == '1') {
+                tc_iot_set_is_up_busilog(1);
+            } else if (value[0] == '0') {
+                tc_iot_set_is_up_busilog(0);
+            } else {
+                TC_IOT_LOG_ERROR("remote_conf/is_up_busilog has invalid value=%s", value);
+                return TC_IOT_SUCCESS;
+            }
+            tc_iot_hal_set_config(TC_IOT_DCFG_IS_UP_BUSILOG, value);
+        } else {
+            TC_IOT_LOG_ERROR("unknown remote_conf parameter found:%s=%s",  name, value);
+        }
         break;
 
     default:

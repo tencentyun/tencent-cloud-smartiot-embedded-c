@@ -402,7 +402,7 @@ int tc_iot_update_firm_info(tc_iot_shadow_client * c) {
 
     for (i = 0; i < TC_IOT_ARRAY_LENGTH(fields); i++) {
         fields[i].value = (void *)tc_iot_hal_get_config(TC_IOT_DCFG_TYPE+i, NULL,0, fields[i].value);
-        TC_IOT_LOG_TRACE("value=%s", fields[i].value);
+        /* TC_IOT_LOG_TRACE("value=%s", fields[i].value); */
     }
 
     ret =  tc_iot_shadow_up_cmd(c, buffer, buffer_len,
