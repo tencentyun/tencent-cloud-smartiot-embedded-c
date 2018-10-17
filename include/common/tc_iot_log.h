@@ -20,6 +20,13 @@ typedef enum _tc_iot_log_level_e{
 void tc_iot_set_log_level(tc_iot_log_level_e log_level);
 tc_iot_log_level_e tc_iot_get_log_level(void);
 char tc_iot_log_level_enabled(tc_iot_log_level_e log_level);
+extern int g_tc_iot_log_is_up_busilog;
+
+int tc_iot_log_set_busilog_device( void * p_device_info);
+void * tc_iot_log_get_busilog_device();
+
+int tc_iot_set_is_up_busilog(int is_up);
+int tc_iot_get_is_up_busilog();
 
 typedef int (* tc_iot_log_output_handler) (tc_iot_log_level_e level, const char * function, int line, const char * format, ...);
 

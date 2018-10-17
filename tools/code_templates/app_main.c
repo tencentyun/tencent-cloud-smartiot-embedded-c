@@ -81,6 +81,8 @@ int main(int argc, char** argv) {
     tc_iot_hal_snprintf(p_device->client_id, sizeof(p_device->client_id),
                         "%s@%s",p_device->product_key,p_device->device_name);
 
+    tc_iot_log_set_busilog_device( &p_device);
+
     ret = tc_iot_http_api_query(&p_client_config->device_info);
     if (ret != TC_IOT_SUCCESS) {
         TC_IOT_LOG_ERROR("query config failed, trouble shooting guide: " "%s#%d",

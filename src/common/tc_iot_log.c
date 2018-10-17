@@ -9,6 +9,9 @@ const char * g_tc_iot_log_level_str[] = {
 
 static tc_iot_log_level_e g_tc_iot_log_level = TC_IOT_LOG_LEVEL_TRACE;
 
+int g_tc_iot_log_is_up_busilog = 0;
+static void * g_tc_iot_log_device = NULL;
+
 void tc_iot_set_log_level(tc_iot_log_level_e log_level) {
     g_tc_iot_log_level = log_level;
 }
@@ -35,4 +38,20 @@ const char * tc_iot_log_summary_string(const char * src, int src_len) {
     return &g_tc_iot_log_summary_print_str[0];
 }
 
+int tc_iot_log_set_busilog_device( void * p_device_info) {
+    g_tc_iot_log_device = p_device_info;
+    return TC_IOT_SUCCESS;
+}
 
+void * tc_iot_log_get_busilog_device() {
+    return g_tc_iot_log_device;
+}
+
+int tc_iot_set_is_up_busilog(int is_up) {
+    g_tc_iot_log_is_up_busilog = is_up;
+    return g_tc_iot_log_is_up_busilog;
+}
+
+int tc_iot_get_is_up_busilog() {
+    return g_tc_iot_log_is_up_busilog;
+}

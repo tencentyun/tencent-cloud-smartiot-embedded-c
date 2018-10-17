@@ -14,6 +14,7 @@ int tc_iot_mqtt_client_construct(tc_iot_mqtt_client* c,
     if (ret != TC_IOT_SUCCESS) {
         return ret;
     }
+
     p_network->net_context.host = p_client_config->device_info.mqtt_host;
     p_network->net_context.port = p_client_config->device_info.mqtt_port;
 
