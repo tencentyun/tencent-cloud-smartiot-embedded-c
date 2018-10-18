@@ -3,6 +3,7 @@
 #include "tc_iot_export.h"
 
 
+int tc_iot_log_do_check_and_upload_log();
 void parse_command(tc_iot_mqtt_client_config * config, int argc, char ** argv) ;
 extern tc_iot_shadow_config g_tc_iot_shadow_config;
 extern tc_iot_shadow_local_data g_tc_iot_device_local_data;
@@ -79,8 +80,6 @@ void do_sim_data_change(void) {
 
 }
 
-void do_sim_report_event_and_error();
-
 int main(int argc, char** argv) {
     tc_iot_mqtt_client_config * p_client_config;
     bool use_static_token;
@@ -119,7 +118,7 @@ int main(int argc, char** argv) {
     tc_iot_hal_snprintf(p_device->client_id, sizeof(p_device->client_id),
                         "%s@%s",p_device->product_key,p_device->device_name);
 
-    tc_iot_log_set_busilog_device( &p_device);
+    tc_iot_log_set_busilog_device( p_device);
 
     ret = tc_iot_http_api_query(&p_client_config->device_info);
     if (ret != TC_IOT_SUCCESS) {
@@ -170,6 +169,7 @@ int main(int argc, char** argv) {
 
     while (!stop) {
         tc_iot_data_template_loop(tc_iot_get_shadow_client(), 200);
+        tc_iot_log_do_check_and_upload_log();
     }
 
     tc_iot_data_template_destroy(tc_iot_get_shadow_client());

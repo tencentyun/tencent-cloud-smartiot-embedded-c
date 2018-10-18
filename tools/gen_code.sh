@@ -20,3 +20,5 @@ extern "C" {
 w
 q
 END
+
+echo "All done."
