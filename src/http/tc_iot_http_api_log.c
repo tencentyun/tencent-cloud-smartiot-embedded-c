@@ -66,8 +66,8 @@ int tc_iot_create_log_form(char* form, int max_form_len,
 int tc_iot_http_upload_log(tc_iot_device_info* p_device_info, const char * content) {
     long timestamp;
     long nonce;
-    char sign_out[TC_IOT_HTTP_TOKEN_REQUEST_FORM_LEN];
-    char http_buffer[TC_IOT_HTTP_TOKEN_RESPONSE_LEN];
+    char query_string[TC_IOT_HTTP_LOG_REQUEST_FORM_LEN];
+    char http_buffer[TC_IOT_HTTP_LOG_RESPONSE_LEN];
     int sign_len;
     int ret;
     char* rsp_body;
@@ -94,21 +94,21 @@ int tc_iot_http_upload_log(tc_iot_device_info* p_device_info, const char * conte
     IF_NULL_RETURN(content, TC_IOT_NULL_POINTER);
 
 
-    ret = tc_iot_hal_snprintf(sign_out, sizeof(sign_out), "%s?", TC_IOT_API_LOG_PATH);
+    ret = tc_iot_hal_snprintf(query_string, sizeof(query_string), "%s?", TC_IOT_API_LOG_PATH);
     sign_len = tc_iot_create_log_form(
-        sign_out+ret, sizeof(sign_out)-ret, p_device_info->device_secret,
+        query_string+ret, sizeof(query_string)-ret, p_device_info->device_secret,
          p_device_info->device_name,
         p_device_info->product_id);
 
-    tc_iot_mem_usage_log("sign_out[TC_IOT_HTTP_TOKEN_REQUEST_FORM_LEN]", sizeof(sign_out), sign_len);
+    tc_iot_mem_usage_log("sign_out[TC_IOT_HTTP_LOG_REQUEST_FORM_LEN]", sizeof(query_string), sign_len);
 
-    TC_IOT_LOG_TRACE("signed request form:\n%s", sign_out);
+    TC_IOT_LOG_TRACE("signed request form:\n%s", query_string);
 
     p_http_client = &http_client;
     tc_iot_http_client_init(p_http_client, HTTP_POST);
     tc_iot_http_client_set_body(p_http_client, content);
     tc_iot_http_client_set_host(p_http_client, p_device_info->log_server_host);
-    tc_iot_http_client_set_abs_path(p_http_client, sign_out);
+    tc_iot_http_client_set_abs_path(p_http_client, query_string);
     tc_iot_http_client_set_content_type(p_http_client, HTTP_CONTENT_TEXT_PLAIN);
 
     tc_iot_http_client_format_buffer(http_buffer, sizeof(http_buffer), p_http_client);
@@ -119,6 +119,7 @@ int tc_iot_http_upload_log(tc_iot_device_info* p_device_info, const char * conte
     tc_iot_mem_usage_log("http_buffer[TC_IOT_HTTP_TOKEN_RESPONSE_LEN]", sizeof(http_buffer), strlen(http_buffer));
 
     if (ret < 0) {
+        TC_IOT_LOG_TRACE("upload log ret=%d", ret);
         return ret;
     }
 

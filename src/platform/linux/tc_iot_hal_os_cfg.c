@@ -27,7 +27,7 @@ typedef struct _tc_iot_device_config_data {
 
 static tc_iot_device_config_data _g_tc_iot_device_config_data = {};
 
-const char * g_tc_iot_device_bin_name = "device.bin";
+const char * g_tc_iot_device_bin_name = "device_config.bin";
 
 static int _tc_iot_get_device_config_addr(tc_iot_device_config_data * p_device_cfg, tc_iot_device_config_id_def id, char ** addr, int * len) {
 
@@ -146,7 +146,7 @@ static int _tc_iot_save_device_config(const char * name, tc_iot_device_config_da
         return TC_IOT_FAILURE;
     }
 
-    for (i = 0; i < TC_IOT_DCFG_REGION; i++) {
+    for (i = 0; i < TC_IOT_DCFG_TOTAL; i++) {
         ret = _tc_iot_get_device_config_addr(data,i, &addr, &len);
         if (ret == TC_IOT_SUCCESS) {
             if (strlen(addr) > 0) {

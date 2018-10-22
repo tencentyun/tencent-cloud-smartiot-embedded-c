@@ -117,6 +117,7 @@ typedef enum _tc_iot_device_config_id_def {
     TC_IOT_DCFG_MQTT_TLS_CLIENT_KEY,
     TC_IOT_DCFG_MQTT_TLS_CLIENT_CERT,
     TC_IOT_DCFG_HTTPS_CA_CERT,
+    TC_IOT_DCFG_TOTAL,
 } tc_iot_device_config_id_def;
 
 #define TC_IOT_MAX_HOST_LEN  128

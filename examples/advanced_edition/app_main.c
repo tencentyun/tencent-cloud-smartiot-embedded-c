@@ -88,6 +88,7 @@ int main(int argc, char** argv) {
     tc_iot_hal_srandom(timestamp);
     long nonce = tc_iot_hal_random();
     tc_iot_device_info * p_device;
+    int log_level = TC_IOT_LOG_LEVEL_TRACE;
 
     signal(SIGINT, sig_handler);
     signal(SIGTERM, sig_handler);
@@ -114,6 +115,9 @@ int main(int argc, char** argv) {
 
     tc_iot_hal_get_config(TC_IOT_DCFG_LOG_SERVER_HOST, p_device->log_server_host,
                           sizeof(p_device->log_server_host), NULL);
+
+    tc_iot_set_is_up_busilog(atoi(tc_iot_hal_get_config(TC_IOT_DCFG_IS_UP_BUSILOG, NULL, 0, "0")));
+    log_level = atoi(tc_iot_hal_get_config(TC_IOT_DCFG_LOG_LEVEL, NULL, 0, "0"));
 
     tc_iot_hal_snprintf(p_device->client_id, sizeof(p_device->client_id),
                         "%s@%s",p_device->product_key,p_device->device_name);
