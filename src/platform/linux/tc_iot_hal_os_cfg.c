@@ -156,7 +156,7 @@ static int _tc_iot_save_device_config(const char * name, tc_iot_device_config_da
                     break;
                 }
             } else {
-                TC_IOT_LOG_WARN("skip empty value for id=%d", i);
+                TC_IOT_LOG_TRACE("skip empty value for id=%d", i);
             }
         }
     }

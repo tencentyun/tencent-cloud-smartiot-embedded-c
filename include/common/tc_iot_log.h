@@ -44,10 +44,16 @@ if (tc_iot_log_level_enabled(level)){               \
        tc_iot_hal_printf(TC_IOT_LOG_NEWLINE);                                   \
  }
 
+#define TC_IOT_LOG_OUTPUT_RAW(level,func,line, ...)                         \
+    if (tc_iot_log_level_enabled(level)){                               \
+        tc_iot_hal_printf(__VA_ARGS__);                                 \
+    }
+
 #endif
 
 #ifdef ENABLE_TC_IOT_LOG_TRACE
 #define TC_IOT_LOG_TRACE(...) TC_IOT_LOG_OUTPUT(TC_IOT_LOG_LEVEL_TRACE,__FUNCTION__, __LINE__, __VA_ARGS__)
+#define TC_IOT_LOG_TRACE_RAW(...) TC_IOT_LOG_OUTPUT_RAW(TC_IOT_LOG_LEVEL_TRACE,__FUNCTION__, __LINE__, __VA_ARGS__)
 
 #define TC_IOT_FUNC_ENTRY TC_IOT_LOG_TRACE("TC_IOT_FUNC_ENTRY")
 #define TC_IOT_FUNC_EXIT TC_IOT_LOG_TRACE("TC_IOT_FUNC_EXIT")

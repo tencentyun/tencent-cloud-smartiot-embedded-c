@@ -7,13 +7,12 @@ static void _tc_iot_sign_trace_print(const char * str, int len) {
     int i = 0;
     if (tc_iot_get_log_level() <= TC_IOT_LOG_LEVEL_TRACE) {
         if (len == -1) {
-            tc_iot_hal_printf("%s", str);
+            TC_IOT_LOG_TRACE_RAW("%s", str);
         } else {
             for (i = 0; i < len; i++) {
-                tc_iot_hal_printf("%c", str[i]);
+                TC_IOT_LOG_TRACE_RAW("%c", str[i]);
             }
         }
-
     }
 }
 #else
