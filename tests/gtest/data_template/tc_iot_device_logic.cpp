@@ -192,7 +192,7 @@ int _tc_iot_shadow_property_control_callback(tc_iot_event_message *msg, void * c
             } else if (log_level == 1) {
                 tc_iot_set_log_level(TC_IOT_LOG_LEVEL_INFO);
             } else if (log_level == 2) {
-                tc_iot_set_log_level(TC_IOT_LOG_LEVEL_DEBUG);
+                tc_iot_set_log_level(TC_IOT_LOG_LEVEL_TRACE);
             } else {
                 TC_IOT_LOG_INFO("remote_conf/log_level has invalid value=%s", value);
                 return TC_IOT_SUCCESS;

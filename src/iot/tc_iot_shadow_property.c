@@ -213,6 +213,14 @@ int tc_iot_shadow_remote_conf_parse(tc_iot_shadow_client * p_shadow_client,
     char val_placed = '"';
 
     /* 检查 reported 字段是否存在 */
+    field_index = tc_iot_json_find_token(payload, json_token, token_count, "passthrough", field_buf, field_buf_len);
+    if (field_index <= 0 ) {
+        tc_iot_shadow_do_response(p_shadow_client, NULL);
+    } else {
+        tc_iot_shadow_do_response(p_shadow_client, field_buf);
+    }
+
+    /* 检查 reported 字段是否存在 */
     field_index = tc_iot_json_find_token(payload, json_token, token_count, "state", NULL, 0);
     if (field_index <= 0 ) {
         TC_IOT_LOG_ERROR("state not found");
@@ -261,6 +269,37 @@ int tc_iot_shadow_remote_conf_parse(tc_iot_shadow_client * p_shadow_client,
     }
 
     return TC_IOT_SUCCESS;
+}
+
+
+int tc_iot_shadow_do_response(tc_iot_shadow_client * p_shadow_client, const char * passthrough) {
+    int ret;
+    char buffer[256];
+    tc_iot_mqtt_message pubmsg;
+    const char * pub_topic;
+    if (passthrough) {
+        tc_iot_hal_snprintf(buffer, sizeof(buffer),
+                            "{\"method\":\"reply\",\"passthrough\":%s,\"timestamp\":%u,\"payload\":{\"code\":0,\"status\":\"OK\"}}",
+                            passthrough,
+                            (unsigned int)tc_iot_hal_timestamp(NULL));
+    } else {
+        tc_iot_hal_snprintf(buffer, sizeof(buffer),
+                            "{\"method\":\"reply\",\"timestamp\":%u,\"payload\":{\"code\":0,\"status\":\"OK\"}}",
+                            (unsigned int)tc_iot_hal_timestamp(NULL));
+    }
+    pubmsg.payload = buffer;
+    pubmsg.payloadlen = strlen(pubmsg.payload);
+    pubmsg.qos = TC_IOT_QOS1;
+    pubmsg.retained = 0;
+    pubmsg.dup = 0;
+    TC_IOT_LOG_TRACE("[c-s]: %s", (char *)pubmsg.payload);
+    pub_topic = p_shadow_client->p_shadow_config->pub_topic;
+    ret = tc_iot_mqtt_client_publish(&(p_shadow_client->mqtt_client), pub_topic, &pubmsg);
+    if (TC_IOT_SUCCESS != ret) {
+        TC_IOT_LOG_ERROR("tc_iot_mqtt_client_publish failed, return=%d", ret);
+    }
+
+    return ret;
 }
 
 int tc_iot_shadow_doc_parse(tc_iot_shadow_client * p_shadow_client,

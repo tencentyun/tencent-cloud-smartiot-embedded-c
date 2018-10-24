@@ -274,6 +274,7 @@ int tc_iot_report_device_data(tc_iot_shadow_client* p_shadow_client, int count, 
 int tc_iot_confirm_device_data(tc_iot_shadow_client* p_shadow_client,int count, tc_iot_shadow_property_def * p_fields);
 int tc_iot_update_firm_info(tc_iot_shadow_client * c);
 
+int tc_iot_shadow_do_response(tc_iot_shadow_client * p_shadow_client, const char * passthrough);
 int tc_iot_shadow_remote_conf_parse(tc_iot_shadow_client * p_shadow_client,
                                     char * payload, jsmntok_t * json_token, int token_count, char * field_buf, int field_buf_len);
 

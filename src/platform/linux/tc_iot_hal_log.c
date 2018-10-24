@@ -142,9 +142,7 @@ int tc_iot_log_do_check_and_upload_log() {
             TC_IOT_LOG_TRACE("read ret=%d",ret);
         }
         buffer[ret] = '\0';
-        TC_IOT_LOG_TRACE(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
         ret = tc_iot_http_upload_log(tc_iot_log_get_busilog_device(), buffer);
-        TC_IOT_LOG_TRACE("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
         tc_iot_log_archive(buffer);
     }
     remove(log_name);

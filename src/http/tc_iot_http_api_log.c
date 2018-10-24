@@ -113,7 +113,9 @@ int tc_iot_http_upload_log(tc_iot_device_info* p_device_info, const char * conte
 
     tc_iot_http_client_format_buffer(http_buffer, sizeof(http_buffer), p_http_client);
 
+    TC_IOT_LOG_TRACE(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
     TC_IOT_LOG_TRACE("http_buffer:\n%s", http_buffer);
+    TC_IOT_LOG_TRACE("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
     ret = tc_iot_http_client_perform(http_buffer,strlen(http_buffer), sizeof(http_buffer),
                                      p_device_info->http_host, port, secured, timeout_ms);
     tc_iot_mem_usage_log("http_buffer[TC_IOT_HTTP_TOKEN_RESPONSE_LEN]", sizeof(http_buffer), strlen(http_buffer));
