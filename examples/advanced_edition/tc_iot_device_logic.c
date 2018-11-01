@@ -166,6 +166,7 @@ int _tc_iot_shadow_property_control_callback(tc_iot_event_message *msg, void * c
         if (count) {
             operate_device(_g_tc_iot_changed_bits, &g_tc_iot_device_local_data);
             tc_iot_report_device_data(c, count, fields);
+            c->shadow_seq++;
             tc_iot_confirm_device_data(c, count, fields);
             _tc_iot_clear_changed_bit();
         }

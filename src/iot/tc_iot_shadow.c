@@ -24,7 +24,7 @@ static void _tc_iot_shadow_on_message_received(tc_iot_message_data *md) {
     tc_iot_mem_usage_log("json_token[TC_IOT_MAX_JSON_TOKEN_COUNT]", sizeof(json_token), sizeof(json_token[0])*ret);
 
     field_index = tc_iot_json_find_token((char*)message->payload, json_token, ret,
-            "passthrough.sid", session_id, sizeof(session_id));
+            "clientToken", session_id, sizeof(session_id));
     if (field_index > 0 ) {
         for (i = 0; i < TC_IOT_MAX_SESSION_COUNT; i++) {
             session = &(c->sessions[i]);
@@ -318,7 +318,7 @@ int tc_iot_shadow_doc_pack_for_get_with_sid(char *buffer, int buffer_len,
     tc_iot_json_writer * w = &writer;
 
     tc_iot_json_writer_open(w, buffer, buffer_len);
-    tc_iot_json_writer_string(w ,"method", TC_IOT_MQTT_METHOD_GET);
+    tc_iot_json_writer_string(w ,"type", TC_IOT_MQTT_METHOD_GET);
 
     if (session_id && (session_id_len >= TC_IOT_SESSION_ID_LEN)) {
         sid_len = _tc_iot_generate_session_id(session_id, session_id_len, &(c->mqtt_client));
@@ -327,14 +327,14 @@ int tc_iot_shadow_doc_pack_for_get_with_sid(char *buffer, int buffer_len,
             memset(session_id, '0', TC_IOT_SESSION_ID_LEN);
             sid_len = TC_IOT_SESSION_ID_LEN;
         } else {
-            tc_iot_json_writer_object_begin(w ,"passthrough");
-            tc_iot_json_writer_string(w ,"sid", session_id);
-            tc_iot_json_writer_object_end(w);
+            /* tc_iot_json_writer_object_begin(w ,"passthrough"); */
+            tc_iot_json_writer_string(w ,"clientToken", session_id);
+            /* tc_iot_json_writer_object_end(w); */
         }
     }
 
-    tc_iot_json_writer_bool(w ,"metadata", metadata);
-    tc_iot_json_writer_bool(w ,"reported", reported);
+    /* tc_iot_json_writer_bool(w ,"metadata", metadata); */
+    /* tc_iot_json_writer_bool(w ,"reported", reported); */
     ret = tc_iot_json_writer_close(w);
 
     if (ret <= 0) {
@@ -399,12 +399,10 @@ int tc_iot_shadow_doc_pack(char *buffer, int buffer_len, const char * method,
     tc_iot_json_writer * w = &writer;
 
     tc_iot_json_writer_open(w, buffer, buffer_len);
-    tc_iot_json_writer_string(w ,"method", method);
+    tc_iot_json_writer_string(w ,"type", method);
 
     if (session_id) {
-        tc_iot_json_writer_object_begin(w ,"passthrough");
-        tc_iot_json_writer_string(w ,"sid", session_id);
-        tc_iot_json_writer_object_end(w);
+        tc_iot_json_writer_string(w ,"clientToken", session_id);
     }
 
     tc_iot_json_writer_object_begin(w ,"state");
@@ -450,21 +448,19 @@ int tc_iot_shadow_up_cmd(tc_iot_shadow_client * c, char * buffer, int buffer_len
         return TC_IOT_SHADOW_SESSION_NOT_ENOUGH;
     }
 
+    is_delete = (strcmp(method, TC_IOT_MQTT_METHOD_DELETE) == 0 );
+    if (is_delete) {
+        method = TC_IOT_MQTT_METHOD_UPDATE;
+    }
     tc_iot_json_writer_open(w, buffer, buffer_len);
-    tc_iot_json_writer_string(w ,"method", method);
+    tc_iot_json_writer_string(w ,"type", method);
 
-    tc_iot_json_writer_object_begin(w ,"passthrough");
-    tc_iot_json_writer_string(w ,"sid", p_session->sid);
-    tc_iot_json_writer_object_end(w);
+    tc_iot_json_writer_string(w ,"clientToken", p_session->sid);
+    tc_iot_json_writer_uint(w , TC_IOT_SHADOW_SEQUENCE_FIELD, c->shadow_seq);
 
     tc_iot_json_writer_object_begin(w ,"state");
-    is_delete = (strcmp(method, TC_IOT_MQTT_METHOD_DELETE) == 0 );
     if (is_delete ){
-        tc_iot_json_writer_object_begin(w ,"desired");
-        for (i = 0; i < count; i++, p_fields++) {
-            tc_iot_json_writer_raw_data(w , p_fields->name, TC_IOT_JSON_NULL);
-        }
-        tc_iot_json_writer_object_end(w);
+        tc_iot_json_writer_null(w ,"desired");
     } else {
         tc_iot_json_writer_object_begin(w ,"reported");
         for (i = 0; i < count; i++, p_fields++) {

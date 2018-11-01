@@ -7,7 +7,7 @@
 #define TC_IOT_SHADOW_JSON_TRUE   "1"
 #define TC_IOT_SHADOW_JSON_FALSE   "0"
 
-#define TC_IOT_SHADOW_SEQUENCE_FIELD  "sequence"
+#define TC_IOT_SHADOW_SEQUENCE_FIELD  "version"
 
 typedef double tc_iot_shadow_number;
 typedef int tc_iot_shadow_int;

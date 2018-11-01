@@ -1373,3 +1373,87 @@ int tc_iot_mqtt_refresh_dynamic_sign(long timestamp, long nonce, tc_iot_device_i
 
     return ret;
 }
+
+#define MAX_CONN_ID_LEN                                                (6)
+
+void get_next_conn_id(char * conn_id) {
+    int i;
+    srand((unsigned)time(0));
+    for (i = 0; i < MAX_CONN_ID_LEN - 1; i++) {
+        int flag = rand() % 3;
+        switch(flag) {
+            case 0:
+                conn_id[i] = (rand() % 26) + 'a';
+                break;
+            case 1:
+                conn_id[i] = (rand() % 26) + 'A';
+                break;
+            case 2:
+                conn_id[i] = (rand() % 10) + '0';
+                break;
+        }
+    }
+
+    conn_id[MAX_CONN_ID_LEN - 1] = '\0';
+}
+
+#define QCLOUD_IOT_DEVICE_SDK_APPID                                    "21010406"
+
+int tc_iot_mqtt_refresh_iothub_dynamic_sign(long timestamp, long nonce, tc_iot_device_info* p_device_info, long reserve) {
+    char conn_id[MAX_CONN_ID_LEN] ;
+    char * password = p_device_info->password;
+    char * product_id = p_device_info->product_id;
+    char * client_id = p_device_info->client_id;
+    char * device_secret = p_device_info->device_secret;
+    char * device_name = p_device_info->device_name;
+    char * username = p_device_info->username;
+    char raw_secret[64];
+
+    unsigned char sha256_digest[TC_IOT_SHA256_DIGEST_SIZE];
+    int ret;
+    char hex_buf[TC_IOT_SHA256_DIGEST_SIZE*2 + 1];
+    int url_ret;
+
+    int password_len = 0;
+    int password_left_len = 0;
+
+    tc_iot_hal_snprintf(p_device_info->client_id, 
+            sizeof(p_device_info->device_name), 
+            "%s%s", p_device_info->product_id, p_device_info->device_name);
+
+    tc_iot_base64_decode(device_secret, strlen(device_secret), raw_secret, sizeof(raw_secret));
+    /* tc_iot_hal_snprintf(p_device_info->username, sizeof(p_device_info->username),  */
+    /*         "%s;%s;%s;%u", p_device_info->client_id, QCLOUD_IOT_DEVICE_SDK_APPID, conn_id, timestamp); */
+    get_next_conn_id(conn_id);
+    tc_iot_hal_snprintf(p_device_info->username, sizeof(p_device_info->username), 
+            "%s;%s;%s;9223372036854775807", p_device_info->client_id, QCLOUD_IOT_DEVICE_SDK_APPID, conn_id);
+    /* tc_iot_hal_snprintf(p_device_info->username, sizeof(p_device_info->username),  */
+    /*         "%s;%s;%s;%u", p_device_info->client_id, QCLOUD_IOT_DEVICE_SDK_APPID, conn_id, timestamp); */
+
+    /* bool sha1 = false; */
+
+    /* if (sha1) { */
+    /*  */
+    /*     utils_hmac_sha1(username, strlen(username), hex_buf, raw_secret, strlen(raw_secret)); */
+    /*  */
+    /*     tc_iot_hal_snprintf(password, */
+    /*                         sizeof(p_device_info->password), */
+    /*                         "%s;hmacsha1", */
+    /*                         hex_buf */
+    /*                         #<{(| tc_iot_util_byte_to_hex((unsigned char *)sha256_digest, sizeof(sha256_digest), hex_buf, sizeof(hex_buf)) |)}># */
+    /*                         ); */
+    /* } else { */
+
+        ret = tc_iot_calc_sign( sha256_digest, sizeof(sha256_digest), raw_secret, "%s", username);
+        tc_iot_hal_snprintf(password,
+                            sizeof(p_device_info->password),
+                            "%s;hmacsha256",
+                            /* hex_buf */
+                            tc_iot_util_byte_to_hex((unsigned char *)sha256_digest, sizeof(sha256_digest), hex_buf, sizeof(hex_buf))
+                            );
+    /* } */
+    TC_IOT_LOG_TRACE("username=%s\npassword=%s\nclientid=%s", username, password, client_id);
+
+    return TC_IOT_SUCCESS;
+}
+

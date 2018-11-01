@@ -2,20 +2,20 @@
 
 
 #if defined(TC_IOT_LOG_TRACE)
-#define TC_IOT_SIGN_UTILS_TRACE(a,b) _tc_iot_sign_trace_print(a,b)
-static void _tc_iot_sign_trace_print(const char * str, int len) {
-    int i = 0;
-    if (tc_iot_get_log_level() <= TC_IOT_LOG_LEVEL_TRACE) {
-        if (len == -1) {
-            TC_IOT_LOG_TRACE_RAW("%s", str);
-        } else {
-            for (i = 0; i < len; i++) {
-                TC_IOT_LOG_TRACE_RAW("%c", str[i]);
-            }
-        }
-    }
-}
-#else
+/* #define TC_IOT_SIGN_UTILS_TRACE(a,b) _tc_iot_sign_trace_print(a,b) */
+/* static void _tc_iot_sign_trace_print(const char * str, int len) { */
+/*     int i = 0; */
+/*     if (tc_iot_get_log_level() <= TC_IOT_LOG_LEVEL_TRACE) { */
+/*         if (len == -1) { */
+/*             TC_IOT_LOG_TRACE_RAW("%s", str); */
+/*         } else { */
+/*             for (i = 0; i < len; i++) { */
+/*                 TC_IOT_LOG_TRACE_RAW("%c", str[i]); */
+/*             } */
+/*         } */
+/*     } */
+/* } */
+/* #else */
 #define TC_IOT_SIGN_UTILS_TRACE(a,b)
 #endif
 

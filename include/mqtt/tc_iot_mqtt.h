@@ -256,5 +256,6 @@ int tc_iot_mqtt_set_auto_reconnect(tc_iot_mqtt_client* client,
 int tc_iot_mqtt_event_handler(tc_iot_mqtt_client * c, int event_type, void * data, void * context);
 void tc_iot_mqtt_init_conn_data(MQTTPacket_connectData * conn_data);
 int tc_iot_mqtt_refresh_dynamic_sign(long timestamp, long nonce, tc_iot_device_info* p_device_info, long reserve);
+int tc_iot_mqtt_refresh_iothub_dynamic_sign(long timestamp, long nonce, tc_iot_device_info* p_device_info, long reserve);
 
 #endif /* end of include guard */

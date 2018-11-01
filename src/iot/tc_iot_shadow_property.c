@@ -173,18 +173,20 @@ void tc_iot_device_on_message_received(tc_iot_message_data* md) {
 
     tc_iot_mem_usage_log("json_token[TC_IOT_MAX_JSON_TOKEN_COUNT]", sizeof(json_token), sizeof(json_token[0])*ret);
 
-    field_index = tc_iot_json_find_token((char*)message->payload, json_token, ret, "method", field_buf, sizeof(field_buf));
+    field_index = tc_iot_json_find_token((char*)message->payload, json_token, ret, "type", field_buf, sizeof(field_buf));
     if (field_index <= 0 ) {
         TC_IOT_LOG_ERROR("field method not found in JSON: %s", (char*)message->payload);
         return ;
     }
 
-    if (strncmp(TC_IOT_MQTT_METHOD_CONTROL, field_buf, strlen(field_buf)) == 0) {
+    if (strncmp("delta", field_buf, strlen(field_buf)) == 0) {
         TC_IOT_LOG_TRACE("[%s] pack recevied.", field_buf);
         tc_iot_shadow_doc_parse(p_shadow_client, (char *)message->payload, json_token, ret, field_buf, sizeof(field_buf));
-    } else if (strncmp(TC_IOT_MQTT_METHOD_REPLY, field_buf, strlen(field_buf)) == 0) {
+    } else if (strncmp("get", field_buf, strlen(field_buf)) == 0) {
         TC_IOT_LOG_TRACE("[%s] pack recevied.", field_buf);
         tc_iot_shadow_doc_parse(p_shadow_client, (char *)message->payload, json_token, ret, field_buf, sizeof(field_buf));
+    } else if (strncmp("update", field_buf, strlen(field_buf)) == 0) {
+        TC_IOT_LOG_TRACE("[%s] pack recevied.", field_buf);
     } else if (strncmp(TC_IOT_MQTT_METHOD_REMOTE_CONF, field_buf, strlen(field_buf)) == 0) {
         TC_IOT_LOG_TRACE("[%s] pack recevied.", field_buf);
         tc_iot_shadow_remote_conf_parse(p_shadow_client, (char *)message->payload, json_token, ret, field_buf, sizeof(field_buf));
@@ -333,7 +335,7 @@ int tc_iot_shadow_doc_parse(tc_iot_shadow_client * p_shadow_client,
         desired_len = json_token[field_index].end - json_token[field_index].start;
         TC_IOT_LOG_TRACE("payload.state.desired found:%s", tc_iot_log_summary_string(desired_start, desired_len));
 
-        field_index = tc_iot_json_find_token(payload, json_token, token_count, TC_IOT_SHADOW_SEQUENCE_FIELD, NULL, 0);
+        field_index = tc_iot_json_find_token(payload, json_token, token_count, "payload." TC_IOT_SHADOW_SEQUENCE_FIELD, NULL, 0);
         if (field_index > 0) {
             pos = payload + json_token[field_index].start;
             seq = 0;

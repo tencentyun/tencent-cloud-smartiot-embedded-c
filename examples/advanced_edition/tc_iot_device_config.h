@@ -15,13 +15,13 @@
 
 /* 以下配置需要先在官网创建产品和设备，然后获取相关信息更新*/
 /* MQ服务地址，可以在产品“基本信息”->“mqtt链接地址”位置找到。*/
-#define TC_IOT_CONFIG_MQTT_HOST "mqtt-1doou8fjk.ap-guangzhou.mqtt.tencentcloudmq.com"
+#define TC_IOT_CONFIG_MQTT_HOST "NH6X9MPB9B.iotcloud.tencentdevices.com"
 
 /* 产品id，可以在产品“基本信息”->“产品id”位置找到*/
-#define TC_IOT_CONFIG_PRODUCT_ID "iot-9fi4gnz8"
+#define TC_IOT_CONFIG_PRODUCT_ID "NH6X9MPB9B"
 
 /* 产品id，可以在产品“基本信息”->“产品key”位置找到*/
-#define TC_IOT_CONFIG_PRODUCT_KEY "mqtt-1doou8fjk"
+#define TC_IOT_CONFIG_PRODUCT_KEY "NH6X9MPB9B"
 
 /* 设备密钥，可以在产品“设备管理”->“设备证书”->“Device Secret”位置找到*/
 #define TC_IOT_CONFIG_DEVICE_SECRET "00000000000000000000000000000000"
@@ -33,7 +33,7 @@
  * 1:动态令牌模式
  * 2:签名认证模式
  * */
-#define TC_IOT_CONFIG_AUTH_MODE   1
+#define TC_IOT_CONFIG_AUTH_MODE   3
 
 /**********************************必填项区域 end ********************************/
 
@@ -80,6 +80,11 @@
 #define TC_IOT_AUTH_FUNC   tc_iot_mqtt_refresh_dynamic_sign
 #define TC_IOT_CONFIG_DEVICE_USER_NAME ""
 #define TC_IOT_CONFIG_DEVICE_PASSWORD ""
+#elif TC_IOT_CONFIG_AUTH_MODE == 3
+/*iothub认证模式*/
+#define TC_IOT_AUTH_FUNC   tc_iot_mqtt_refresh_iothub_dynamic_sign
+#define TC_IOT_CONFIG_DEVICE_USER_NAME ""
+#define TC_IOT_CONFIG_DEVICE_PASSWORD ""
 #else
 /* 直连模式 */
 #define TC_IOT_AUTH_FUNC(a,b,c,d)   
@@ -98,13 +103,13 @@
 /* shadow下行消息topic，mq服务端的响应和下行推送，*/
 /* 都会发布到 "shadow/get/<product id>/<device name>" 这个topic*/
 /* 客户端只需要订阅这个topic即可*/
-#define TC_IOT_SHADOW_SUB_TOPIC_PREFIX "shadow/get/"
+#define TC_IOT_SHADOW_SUB_TOPIC_PREFIX "$shadow/operation/result/"
 #define TC_IOT_SHADOW_SUB_TOPIC_FMT TC_IOT_SHADOW_SUB_TOPIC_PREFIX "%s/%s"
 #define TC_IOT_SHADOW_SUB_TOPIC_DEF TC_IOT_SHADOW_SUB_TOPIC_PREFIX TC_IOT_CONFIG_PRODUCT_ID "/" TC_IOT_CONFIG_DEVICE_NAME
 
 /* shadow上行消息topic，客户端请求服务端的消息，发到到这个topic即可*/
 /* topic格式"shadow/update/<product id>/<device name>"*/
-#define TC_IOT_SHADOW_PUB_TOPIC_PREFIX "shadow/update/"
+#define TC_IOT_SHADOW_PUB_TOPIC_PREFIX "$shadow/operation/"
 #define TC_IOT_SHADOW_PUB_TOPIC_FMT TC_IOT_SHADOW_PUB_TOPIC_PREFIX "%s/%s"
 #define TC_IOT_SHADOW_PUB_TOPIC_DEF TC_IOT_SHADOW_PUB_TOPIC_PREFIX TC_IOT_CONFIG_PRODUCT_ID "/" TC_IOT_CONFIG_DEVICE_NAME
 

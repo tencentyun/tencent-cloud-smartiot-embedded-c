@@ -165,11 +165,11 @@ int main(int argc, char** argv) {
         return 0;
     }
 
-    ret = tc_iot_update_firm_info(tc_iot_get_shadow_client());
-    if (ret != TC_IOT_SUCCESS) {
-        TC_IOT_LOG_ERROR("tc_iot_update_firm_info failed, trouble shooting guide: " "%s#%d", TC_IOT_TROUBLE_SHOOTING_URL, ret);
-        return 0;
-    }
+    /* ret = tc_iot_update_firm_info(tc_iot_get_shadow_client()); */
+    /* if (ret != TC_IOT_SUCCESS) { */
+    /*     TC_IOT_LOG_ERROR("tc_iot_update_firm_info failed, trouble shooting guide: " "%s#%d", TC_IOT_TROUBLE_SHOOTING_URL, ret); */
+    /*     return 0; */
+    /* } */
 
     while (!stop) {
         tc_iot_data_template_loop(tc_iot_get_shadow_client(), 200);
