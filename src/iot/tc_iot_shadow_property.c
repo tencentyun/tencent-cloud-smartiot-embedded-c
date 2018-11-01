@@ -429,7 +429,7 @@ int tc_iot_update_firm_info(tc_iot_shadow_client * c) {
     tc_iot_shadow_property_def fields[] = {
         {"type", TC_IOT_SHADOW_TYPE_STRING, "wifi"},
         {"hw_id", TC_IOT_SHADOW_TYPE_STRING, "00-00-00-00"},
-        {"module", TC_IOT_SHADOW_TYPE_STRING, "unkown"},
+        {"module", TC_IOT_SHADOW_TYPE_STRING, "unknown"},
         {"module_ver", TC_IOT_SHADOW_TYPE_STRING, "V1.0"},
         {"firm_ver", TC_IOT_SHADOW_TYPE_STRING, "V1.0"},
         {"lat", TC_IOT_SHADOW_TYPE_RAW, "0.0"},
