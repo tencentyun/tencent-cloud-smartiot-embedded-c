@@ -184,14 +184,13 @@ static int _tc_iot_save_device_config(const char * config_name, tc_iot_device_co
     FILE * fp;
     int ret;
     char file_path[64];
-    char * name;
     char * addr;
     int len = 0;
     int i = 0;
 
     tc_iot_hal_snprintf(file_path, sizeof(file_path), "%s", config_name);
 
-    fp = fopen(name, "w+");
+    fp = fopen(file_path, "w+");
 
     if(!fp)
     {
