@@ -93,7 +93,7 @@
 // end: DEBUG use only 
 
 // API 服务域名根地址
-#define TC_IOT_CONFIG_API_HOST TC_IOT_CONFIG_REGION ".auth-device-iot.tencentcloudapi.com"
+#define TC_IOT_CONFIG_API_HOST TC_IOT_CONFIG_REGION ".token.smartiot.cloud.tencent.com"
 
 /* shadow下行消息topic，mq服务端的响应和下行推送，*/
 /* 都会发布到 "shadow/get/<product id>/<device name>" 这个topic*/

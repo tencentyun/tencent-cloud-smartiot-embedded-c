@@ -33,7 +33,7 @@
  * 1:动态令牌模式
  * 2:签名认证模式
  * */
-#define TC_IOT_CONFIG_AUTH_MODE   2
+#define TC_IOT_CONFIG_AUTH_MODE   1
 
 /**********************************必填项区域 end ********************************/
 
