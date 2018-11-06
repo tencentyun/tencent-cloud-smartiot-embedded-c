@@ -88,12 +88,12 @@ int main(int argc, char** argv) {
 
     tc_iot_log_set_busilog_device( p_device);
 
-    ret = tc_iot_http_api_query(&p_client_config->device_info);
-    if (ret != TC_IOT_SUCCESS) {
-        TC_IOT_LOG_ERROR("query config failed, trouble shooting guide: " "%s#%d",
-                         TC_IOT_TROUBLE_SHOOTING_URL, ret);
-        /* return 0; */
-    }
+    /* ret = tc_iot_http_api_query(&p_client_config->device_info); */
+    /* if (ret != TC_IOT_SUCCESS) { */
+    /*     TC_IOT_LOG_ERROR("query config failed, trouble shooting guide: " "%s#%d", */
+    /*                      TC_IOT_TROUBLE_SHOOTING_URL, ret); */
+    /*     #<{(| return 0; |)}># */
+    /* } */
 
     /* 根据 product id 和device name 定义，生成发布和订阅的 Topic 名称。 */
     tc_iot_hal_snprintf(g_tc_iot_shadow_config.sub_topic,TC_IOT_MAX_MQTT_TOPIC_LEN, TC_IOT_SHADOW_SUB_TOPIC_FMT,
