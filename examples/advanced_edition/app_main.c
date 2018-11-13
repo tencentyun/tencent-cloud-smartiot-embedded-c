@@ -155,8 +155,17 @@ int main(int argc, char** argv) {
 
     ret = tc_iot_data_template_init(tc_iot_get_shadow_client(), &g_tc_iot_shadow_config);
     if (ret != TC_IOT_SUCCESS) {
-        TC_IOT_LOG_ERROR("tc_iot_data_template_init failed, trouble shooting guide: " "%s#%d", TC_IOT_TROUBLE_SHOOTING_URL, ret);
-        return 0;
+        if (ret == TC_IOT_NET_UNKNOWN_HOST) {
+            TC_IOT_LOG_WARN("tc_iot_data_template_init failed for solve host=%s", p_device->mqtt_host);
+            tc_iot_hal_get_config(TC_IOT_DCFG_MQTT_IP, p_device->mqtt_host, sizeof(p_device->mqtt_host), NULL);
+            TC_IOT_LOG_WARN("retrying with ip=%s", p_device->mqtt_host);
+            ret = tc_iot_data_template_init(tc_iot_get_shadow_client(), &g_tc_iot_shadow_config);
+        }
+        
+        if (ret != TC_IOT_SUCCESS) {
+            TC_IOT_LOG_ERROR("tc_iot_data_template_init failed, trouble shooting guide: " "%s#%d", TC_IOT_TROUBLE_SHOOTING_URL, ret);
+            return 0;
+        }
     }
 
     ret = tc_iot_data_template_sync(tc_iot_get_shadow_client());
