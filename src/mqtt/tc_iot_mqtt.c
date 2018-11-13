@@ -1428,7 +1428,7 @@ int tc_iot_mqtt_refresh_iothub_dynamic_sign(long timestamp, long nonce, tc_iot_d
     /* tc_iot_hal_snprintf(p_device_info->username, sizeof(p_device_info->username),  */
     /*         "%s;%s;%s;9223372036854775807", p_device_info->client_id, QCLOUD_IOT_DEVICE_SDK_APPID, conn_id); */
     tc_iot_hal_snprintf(p_device_info->username, sizeof(p_device_info->username), 
-            "%s;%s;%s;%u", p_device_info->client_id, QCLOUD_IOT_DEVICE_SDK_APPID, conn_id, timestamp);
+            "%s;%s;%s;%u", p_device_info->client_id, QCLOUD_IOT_DEVICE_SDK_APPID, conn_id, (unsigned int)timestamp+300);
 
     /* bool sha1 = false; */
 
