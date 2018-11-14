@@ -1,8 +1,8 @@
-product_id=<Product ID>
-product_key=<Product Key>
+#product_id=<Product ID>
+#product_key=<Product Key>
 device_name=<Device Name>
 device_secret=<Device Secret>
-mqtt_host=<MQTT Server Host>
-mqtt_ip=<MQTT Server IP>
-http_host=<HTTP API Server Host>
-http_ip=<HTTP API Server IP>
+#mqtt_host=<MQTT Server Host>
+#mqtt_ip=<MQTT Server IP>
+#http_host=<HTTP API Server Host>
+#http_ip=<HTTP API Server IP>
