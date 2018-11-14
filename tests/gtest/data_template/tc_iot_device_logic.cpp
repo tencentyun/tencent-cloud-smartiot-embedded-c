@@ -18,7 +18,7 @@ tc_iot_shadow_client * tc_iot_get_shadow_client(void) {
 /* 设备当前状态数据 */
 tc_iot_shadow_local_data g_tc_iot_device_local_data = {
     false,
-    TC_IOT_PROP_param_enum_enum_a,
+    TC_IOT_PROP_E_param_enum_0,
     0,
     {'\0'},
 };
@@ -53,12 +53,12 @@ tc_iot_shadow_config g_tc_iot_shadow_config = {
 };
 
 
-static int _tc_iot_property_change( const char * name, const char * value) {
+static int _tc_iot_property_change( const char * property_name, const char * value) {
     tc_iot_shadow_bool param_bool;
     tc_iot_shadow_enum param_enum;
     tc_iot_shadow_number param_number;
     tc_iot_shadow_string param_string;
-    if (strcmp("param_bool", name) == 0) {
+    if (strcmp("param_bool", property_name) == 0) {
         param_bool = atoi(value);
         g_tc_iot_device_local_data.param_bool = param_bool;
         if (param_bool) {
@@ -68,17 +68,17 @@ static int _tc_iot_property_change( const char * name, const char * value) {
         }
          return TC_IOT_SUCCESS;
     }
-    if (strcmp("param_enum", name) == 0) {
+    if (strcmp("param_enum", property_name) == 0) {
         param_enum = atoi(value);
         g_tc_iot_device_local_data.param_enum = param_enum;
         switch(param_enum){
-            case TC_IOT_PROP_param_enum_enum_a:
+            case TC_IOT_PROP_E_param_enum_0:
                 TC_IOT_LOG_TRACE("do something for param_enum = enum_a");
                 break;
-            case TC_IOT_PROP_param_enum_enum_b:
+            case TC_IOT_PROP_E_param_enum_1:
                 TC_IOT_LOG_TRACE("do something for param_enum = enum_b");
                 break;
-            case TC_IOT_PROP_param_enum_enum_c:
+            case TC_IOT_PROP_E_param_enum_2:
                 TC_IOT_LOG_TRACE("do something for param_enum = enum_c");
                 break;
             default:
@@ -87,19 +87,19 @@ static int _tc_iot_property_change( const char * name, const char * value) {
         }
          return TC_IOT_SUCCESS;
     }
-    if (strcmp("param_number", name) == 0) {
+    if (strcmp("param_number", property_name) == 0) {
         param_number = atof(value);
         g_tc_iot_device_local_data.param_number = param_number;
         TC_IOT_LOG_TRACE("do something for param_number=%f", param_number);
          return TC_IOT_SUCCESS;
     }
-    if (strcmp("param_string", name) == 0) {
+    if (strcmp("param_string", property_name) == 0) {
         param_string = (char *)value;
         strcpy(g_tc_iot_device_local_data.param_string, param_string);
         TC_IOT_LOG_TRACE("do something for param_string=%s", param_string);
          return TC_IOT_SUCCESS;
     }
-    TC_IOT_LOG_WARN("unkown %s = %s", name, value);
+    TC_IOT_LOG_WARN("unkown %s = %s", property_name, value);
     return TC_IOT_FAILURE;
 
 }

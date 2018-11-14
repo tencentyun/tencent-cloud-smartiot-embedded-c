@@ -16,7 +16,7 @@ tc_iot_shadow_client * tc_iot_get_shadow_client(void) {
 /* 设备当前状态数据 */
 tc_iot_shadow_local_data g_tc_iot_device_local_data = {
     false,
-    TC_IOT_PROP_color_red,
+    TC_IOT_PROP_E_color_0,
     0,
     1,
     {'\0'},
@@ -53,13 +53,13 @@ tc_iot_shadow_config g_tc_iot_shadow_config = {
 };
 
 
-static int _tc_iot_property_change( const char * name, const char * value) {
+static int _tc_iot_property_change( const char * property_name, const char * value) {
     tc_iot_shadow_bool device_switch;
     tc_iot_shadow_enum color;
     tc_iot_shadow_number brightness;
     tc_iot_shadow_number power;
     tc_iot_shadow_string name;
-    if (strcmp("device_switch", name) == 0) {
+    if (strcmp("device_switch", property_name) == 0) {
         device_switch = atoi(value);
         g_tc_iot_device_local_data.device_switch = device_switch;
         if (device_switch) {
@@ -69,17 +69,17 @@ static int _tc_iot_property_change( const char * name, const char * value) {
         }
          return TC_IOT_SUCCESS;
     }
-    if (strcmp("color", name) == 0) {
+    if (strcmp("color", property_name) == 0) {
         color = atoi(value);
         g_tc_iot_device_local_data.color = color;
         switch(color){
-            case TC_IOT_PROP_color_red:
+            case TC_IOT_PROP_E_color_0:
                 TC_IOT_LOG_TRACE("do something for color = red");
                 break;
-            case TC_IOT_PROP_color_green:
+            case TC_IOT_PROP_E_color_1:
                 TC_IOT_LOG_TRACE("do something for color = green");
                 break;
-            case TC_IOT_PROP_color_blue:
+            case TC_IOT_PROP_E_color_2:
                 TC_IOT_LOG_TRACE("do something for color = blue");
                 break;
             default:
@@ -88,25 +88,25 @@ static int _tc_iot_property_change( const char * name, const char * value) {
         }
          return TC_IOT_SUCCESS;
     }
-    if (strcmp("brightness", name) == 0) {
+    if (strcmp("brightness", property_name) == 0) {
         brightness = atof(value);
         g_tc_iot_device_local_data.brightness = brightness;
         TC_IOT_LOG_TRACE("do something for brightness=%f", brightness);
          return TC_IOT_SUCCESS;
     }
-    if (strcmp("power", name) == 0) {
+    if (strcmp("power", property_name) == 0) {
         power = atof(value);
         g_tc_iot_device_local_data.power = power;
         TC_IOT_LOG_TRACE("do something for power=%f", power);
          return TC_IOT_SUCCESS;
     }
-    if (strcmp("name", name) == 0) {
+    if (strcmp("name", property_name) == 0) {
         name = (char *)value;
         strcpy(g_tc_iot_device_local_data.name, name);
         TC_IOT_LOG_TRACE("do something for name=%s", name);
          return TC_IOT_SUCCESS;
     }
-    TC_IOT_LOG_WARN("unkown %s = %s", name, value);
+    TC_IOT_LOG_WARN("unkown %s = %s", property_name, value);
     return TC_IOT_FAILURE;
 
 }

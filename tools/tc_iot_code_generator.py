@@ -422,11 +422,11 @@ class iot_struct:
         for field in self.fields:
             declare_code += ((indent * 1) + "{} {};\n").format(field.type_define, field.token)
 
-            sample_code += (indent * 1) + "if (strcmp(\"{}\", name) == 0) {{".format(field.id)
+            sample_code += (indent * 1) + "if (strcmp(\"{}\", property_name) == 0) {{".format(field.id)
             sample_code += field.get_sample_code_snippet(indent*2, "data")
             sample_code +=  (indent * 2) + " return TC_IOT_SUCCESS;\n"
             sample_code +=  (indent * 1) + "}\n"
-        sample_code += (indent * 1) + 'TC_IOT_LOG_WARN("unkown %s = %s", name, value);\n'
+        sample_code += (indent * 1) + 'TC_IOT_LOG_WARN("unkown %s = %s", property_name, value);\n'
         sample_code += (indent * 1) + 'return TC_IOT_FAILURE;\n'
 
         return declare_code + sample_code;
