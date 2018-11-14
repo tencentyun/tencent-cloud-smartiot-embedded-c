@@ -248,7 +248,9 @@ int tc_iot_load_device_config(const char * config_name) {
         }
         id = tc_iot_get_device_config_id_by_name(name_buf);
         if (id < 0) {
-            TC_IOT_LOG_WARN("%s unrecorgnizable for return id=%d", name_buf, id);
+            if (name_buf[0] != '#') {
+                TC_IOT_LOG_WARN("%s unrecorgnizable for return id=%d", name_buf, id);
+            }
             continue;
         }
         ret = _tc_iot_get_device_config_addr(data, id, &addr, &len);
