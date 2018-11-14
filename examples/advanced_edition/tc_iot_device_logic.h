@@ -24,9 +24,9 @@ typedef struct _tc_iot_shadow_local_data {
 /* enum macro definitions */
 
 /* enum macro definition for param_enum */
-#define TC_IOT_PROP_param_enum_enum_a 0
-#define TC_IOT_PROP_param_enum_enum_b 1
-#define TC_IOT_PROP_param_enum_enum_c 2
+#define TC_IOT_PROP_E_param_enum_0 0
+#define TC_IOT_PROP_E_param_enum_1 1
+#define TC_IOT_PROP_E_param_enum_2 2
 
 
 tc_iot_shadow_client * tc_iot_get_shadow_client(void);

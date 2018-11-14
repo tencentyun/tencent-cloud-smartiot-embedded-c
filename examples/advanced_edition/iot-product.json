@@ -6,6 +6,7 @@
         {
             "desc": "bool type param",
             "mode": "rw",
+            "id": "param_bool",
             "name": "param_bool",
             "range": [
                 true,
@@ -16,6 +17,7 @@
         {
             "desc": "enum type param",
             "mode": "rw",
+            "id": "param_enum",
             "name": "param_enum",
             "range": [
                 "enum_a",
@@ -27,6 +29,7 @@
         {
             "desc": "number type param",
             "mode": "rw",
+            "id": "param_number",
             "name": "param_number",
             "range": [
                 0,
@@ -37,6 +40,7 @@
         {
             "desc": "string type param",
             "mode": "rw",
+            "id": "param_string",
             "name": "param_string",
             "range": [
                 0,

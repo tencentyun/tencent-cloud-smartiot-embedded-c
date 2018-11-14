@@ -16,7 +16,7 @@ tc_iot_shadow_client * tc_iot_get_shadow_client(void) {
 /* 设备当前状态数据 */
 tc_iot_shadow_local_data g_tc_iot_device_local_data = {
     false,
-    TC_IOT_PROP_param_enum_enum_a,
+    TC_IOT_PROP_E_param_enum_0,
     0,
     {'\0'},
 };
@@ -70,13 +70,13 @@ static int _tc_iot_property_change( const char * name, const char * value) {
         param_enum = atoi(value);
         g_tc_iot_device_local_data.param_enum = param_enum;
         switch(param_enum){
-            case TC_IOT_PROP_param_enum_enum_a:
+            case TC_IOT_PROP_E_param_enum_0:
                 TC_IOT_LOG_TRACE("do something for param_enum = enum_a");
                 break;
-            case TC_IOT_PROP_param_enum_enum_b:
+            case TC_IOT_PROP_E_param_enum_1:
                 TC_IOT_LOG_TRACE("do something for param_enum = enum_b");
                 break;
-            case TC_IOT_PROP_param_enum_enum_c:
+            case TC_IOT_PROP_E_param_enum_2:
                 TC_IOT_LOG_TRACE("do something for param_enum = enum_c");
                 break;
             default:
