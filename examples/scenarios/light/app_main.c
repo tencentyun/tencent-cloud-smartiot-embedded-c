@@ -12,6 +12,7 @@
 #define ANSI_COLOR_RESET   "\x1b[0m"
 #define ANSI_COLOR_256_FORMAT   "\x1b[38;5;%dm"
 
+int tc_iot_log_do_check_and_upload_log();
 extern tc_iot_shadow_local_data g_tc_iot_device_local_data;
 int run_shadow(tc_iot_shadow_config * p_client_config);
 void parse_command(tc_iot_mqtt_client_config * config, int argc, char ** argv) ;

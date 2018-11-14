@@ -13,7 +13,7 @@ static const char * g_tc_iot_log_archive_name = "device.log";
 
 static tc_iot_timer _g_tc_iot_up_busilog_timer;
 
-int tc_iot_log_linux_output_handler(tc_iot_log_level_e level, const char * func, int line, const char * format, ...) {
+int tc_iot_log_linux_output_handler(int level, const char * func, int line, const char * format, ...) {
     va_list args;
     time_t timer;
     char time_str[26];
