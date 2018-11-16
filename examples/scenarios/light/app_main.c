@@ -43,7 +43,7 @@ void sig_handler(int sig) {
  *
  * @param light 灯状态数据
  */
-void operate_device(tc_iot_shadow_local_data * light) {
+void operate_device(unsigned char * changed_bits, tc_iot_shadow_local_data * light){
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
     const char * ansi_color = NULL;
