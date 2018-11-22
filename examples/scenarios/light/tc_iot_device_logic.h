@@ -26,9 +26,9 @@ typedef struct _tc_iot_shadow_local_data {
 /* enum macro definitions */
 
 /* enum macro definition for color */
-#define TC_IOT_PROP_color_red 0
-#define TC_IOT_PROP_color_green 1
-#define TC_IOT_PROP_color_blue 2
+#define TC_IOT_PROP_E_color_0 0
+#define TC_IOT_PROP_E_color_1 1
+#define TC_IOT_PROP_E_color_2 2
 
 
 tc_iot_shadow_client * tc_iot_get_shadow_client(void);

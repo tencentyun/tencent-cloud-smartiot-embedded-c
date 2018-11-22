@@ -73,21 +73,35 @@ make
 ```shell
 # 运行 advanced_mqtt 设备端应用，
 # 此种方式运行，可以有效查看日志及抓包定位问题
-# 备注：
-# -d device_xxxx 参数是指定当前连接使用的设备名
-# 如果已经在 tc_iot_device_config.h 中，为TC_IOT_CONFIG_DEVICE_NAME 指定了
-# 正确的设备名称，则命令行执行时，可以不用指定 -d device_xxx 参数。
-#
-# -s 指定Device Secret
-# 如果已经在 tc_iot_device_config.h 中，为TC_IOT_CONFIG_DEVICE_SECRET 指定了
-# 正确的Device Secret，则命令行执行时，可以不用指定 -s secret_abc 参数。
-# ./advanced_mqtt --trace -p 1883
-
-./advanced_mqtt -d device_xxxx -s secret_abc --trace -p 1883
+./advanced_mqtt --trace -p 1883
 
 # 如运行正常未见异常
 # 也可用默认模式来执行，避免日志干扰
-./advanced_mqtt -d device_xxxx
+./advanced_mqtt 
+
+```
+
+演示程序配置文件：
+```shell
+# 演示程序支持 -c device_profile.conf 参数指定设备配置文件。
+# 该文件可以定义不同的产品及设备信息，方便用户通过切换配置
+# 文件，来切换不同的产品或设备。
+# 文件模板可参见 device_profile.conf.example 。
+# 配置文件格式如下，分别对应修改产品ID、产品 Key、
+# 设备名称、设备密钥、MQ 服务器域名、MQ 服务器 IP、
+# API 接口服务器域名、API 接口服务器 IP等。
+# 不需要修改的配置项(即使用程序默认配置)，可删除或者用"#"注释掉。
+product_id=<Product ID>
+product_key=<Product Key>
+device_name=<Device Name>
+device_secret=<Device Secret>
+mqtt_host=<MQTT Server Host>
+mqtt_ip=<MQTT Server IP>
+http_host=<HTTP API Server Host>
+http_ip=<HTTP API Server IP>
+
+# 命令行示例
+./advanced_mqtt -c device_profile.conf --trace -p 1883
 
 ```
 

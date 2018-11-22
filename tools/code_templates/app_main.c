@@ -52,7 +52,6 @@ int main(int argc, char** argv) {
     tc_iot_hal_srandom(timestamp);
     long nonce = tc_iot_hal_random();
     tc_iot_device_info * p_device;
-    int log_level = TC_IOT_LOG_LEVEL_TRACE;
 
     signal(SIGINT, sig_handler);
     signal(SIGTERM, sig_handler);
@@ -80,20 +79,17 @@ int main(int argc, char** argv) {
     tc_iot_hal_get_config(TC_IOT_DCFG_LOG_SERVER_HOST, p_device->log_server_host,
                           sizeof(p_device->log_server_host), NULL);
 
-    tc_iot_set_is_up_busilog(atoi(tc_iot_hal_get_config(TC_IOT_DCFG_IS_UP_BUSILOG, NULL, 0, "0")));
-    log_level = atoi(tc_iot_hal_get_config(TC_IOT_DCFG_LOG_LEVEL, NULL, 0, "0"));
-
     tc_iot_hal_snprintf(p_device->client_id, sizeof(p_device->client_id),
                         "%s@%s",p_device->product_key,p_device->device_name);
 
     tc_iot_log_set_busilog_device( p_device);
 
-    ret = tc_iot_http_api_query(&p_client_config->device_info);
-    if (ret != TC_IOT_SUCCESS) {
-        TC_IOT_LOG_ERROR("query config failed, trouble shooting guide: " "%s#%d",
-                         TC_IOT_TROUBLE_SHOOTING_URL, ret);
-        /* return 0; */
-    }
+    /* ret = tc_iot_http_api_query(&p_client_config->device_info); */
+    /* if (ret != TC_IOT_SUCCESS) { */
+    /*     TC_IOT_LOG_ERROR("query config failed, trouble shooting guide: " "%s#%d", */
+    /*                      TC_IOT_TROUBLE_SHOOTING_URL, ret); */
+    /*     #<{(| return 0; |)}># */
+    /* } */
 
     /* 根据 product id 和device name 定义，生成发布和订阅的 Topic 名称。 */
     tc_iot_hal_snprintf(g_tc_iot_shadow_config.sub_topic,TC_IOT_MAX_MQTT_TOPIC_LEN, TC_IOT_SHADOW_SUB_TOPIC_FMT,
@@ -119,8 +115,17 @@ int main(int argc, char** argv) {
 
     ret = tc_iot_data_template_init(tc_iot_get_shadow_client(), &g_tc_iot_shadow_config);
     if (ret != TC_IOT_SUCCESS) {
-        TC_IOT_LOG_ERROR("tc_iot_data_template_init failed, trouble shooting guide: " "%s#%d", TC_IOT_TROUBLE_SHOOTING_URL, ret);
-        return 0;
+        if (ret == TC_IOT_NET_UNKNOWN_HOST) {
+            TC_IOT_LOG_WARN("tc_iot_data_template_init failed for solve host=%s", p_device->mqtt_host);
+            tc_iot_hal_get_config(TC_IOT_DCFG_MQTT_IP, p_device->mqtt_host, sizeof(p_device->mqtt_host), NULL);
+            TC_IOT_LOG_WARN("retrying with ip=%s", p_device->mqtt_host);
+            ret = tc_iot_data_template_init(tc_iot_get_shadow_client(), &g_tc_iot_shadow_config);
+        }
+        
+        if (ret != TC_IOT_SUCCESS) {
+            TC_IOT_LOG_ERROR("tc_iot_data_template_init failed, trouble shooting guide: " "%s#%d", TC_IOT_TROUBLE_SHOOTING_URL, ret);
+            return 0;
+        }
     }
 
     ret = tc_iot_data_template_sync(tc_iot_get_shadow_client());

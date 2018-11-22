@@ -1,12 +1,12 @@
 {
-    "app_id": 1251416838,
+    "app_id": 0,
     "auth_type": 1,
-    "create_time": "2018-08-07 10:21:23",
-    "data_protocol": "template",
+    "create_time": "2018-04-19 18:02:26",
     "data_template": [
         {
-            "desc": "light on or off",
+            "desc": "light switch",
             "mode": "rw",
+            "id": "device_switch",
             "name": "device_switch",
             "range": [
                 true,
@@ -15,8 +15,9 @@
             "type": "bool"
         },
         {
-            "desc": "color of light",
+            "desc": "enum type param",
             "mode": "rw",
+            "id": "color",
             "name": "color",
             "range": [
                 "red",
@@ -26,8 +27,9 @@
             "type": "enum"
         },
         {
-            "desc": "brighness of light",
+            "desc": "number type param",
             "mode": "rw",
+            "id": "brightness",
             "name": "brightness",
             "range": [
                 0,
@@ -36,8 +38,9 @@
             "type": "number"
         },
         {
-            "desc": "power usage",
+            "desc": "number type param",
             "mode": "rw",
+            "id": "power",
             "name": "power",
             "range": [
                 1,
@@ -46,8 +49,9 @@
             "type": "number"
         },
         {
-            "desc": "name or flag for the light",
+            "desc": "string type param",
             "mode": "rw",
+            "id": "name",
             "name": "name",
             "range": [
                 0,
@@ -57,13 +61,15 @@
         }
     ],
     "deleted": 0,
-    "description": "\u667a\u80fd\u706f\u6f14\u793a\u3002",
-    "domain": "mqtt-ify9tmhk.ap-guangzhou.mqtt.tencentcloudmq.com",
+    "description": "sdk app use token.",
+    "domain": "mqtt-1doou8fjk.ap-guangzhou.mqtt.tencentcloudmq.com",
     "message": "",
-    "name": "sdk-demo-light",
-    "product_id": "iot-gohk1kbq",
-    "product_key": "mqtt-ify9tmhk",
+    "name": "sdk-demo-app-token",
+    "password": "",
+    "product_id": "iot-9fi4gnz8",
+    "product_key": "mqtt-1doou8fjk",
     "region": "gz",
     "standard": 3,
-    "update_time": "2018-08-07 10:39:14"
+    "update_time": "2018-04-19 18:04:06",
+    "username": ""
 }

@@ -61,4 +61,9 @@ struct _tc_iot_timer { struct timeval end_time; } ;
 /* mbetls end */
 #endif /* ifdef ENABLE_TLS */
 
+int tc_iot_log_linux_output_handler(int level, const char * func, int line, const char * format, ...);
+#undef TC_IOT_LOG_OUTPUT
+#define TC_IOT_LOG_OUTPUT tc_iot_log_linux_output_handler
+
+
 #endif /* end of include guard */

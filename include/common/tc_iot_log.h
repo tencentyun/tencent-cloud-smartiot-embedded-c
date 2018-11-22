@@ -44,10 +44,13 @@ if (tc_iot_log_level_enabled(level)){               \
        tc_iot_hal_printf(TC_IOT_LOG_NEWLINE);                                   \
  }
 
+#endif
+
+#if !defined(TC_IOT_LOG_OUTPUT_RAW)
 #define TC_IOT_LOG_OUTPUT_RAW(level,func,line, ...)                         \
-    if (tc_iot_log_level_enabled(level)){                               \
-        tc_iot_hal_printf(__VA_ARGS__);                                 \
-    }
+if (tc_iot_log_level_enabled(level)){                               \
+    tc_iot_hal_printf(__VA_ARGS__);                                 \
+}
 
 #endif
 

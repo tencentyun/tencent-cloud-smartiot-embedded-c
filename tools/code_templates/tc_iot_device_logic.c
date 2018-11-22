@@ -43,7 +43,7 @@ tc_iot_shadow_config g_tc_iot_shadow_config = {
 };
 
 
-static int _tc_iot_property_change( const char * name, const char * value) {
+static int _tc_iot_property_change( const char * property_name, const char * value) {
 /*${data_template.generate_sample_code()}*/
 }
 

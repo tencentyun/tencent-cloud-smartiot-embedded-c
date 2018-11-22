@@ -5,77 +5,34 @@
 static int _log_level = TC_IOT_LOG_LEVEL_DEBUG;
 static int request_token = 1;
 static int show_version = 0;
+char g_tc_iot_device_config_name[64] = "device_profile.conf";
+int tc_iot_load_device_config(const char * config_name);
+int tc_iot_save_device_config(const char * config_name);
 
 static struct option long_options[] =
 {
     {"verbose",      no_argument,          &_log_level, TC_IOT_LOG_LEVEL_INFO},
     {"trace",        no_argument,          &_log_level, TC_IOT_LOG_LEVEL_TRACE},
     {"version",        no_argument,        &show_version, 1},
-    {"host",         optional_argument,    0, 'h'},
+    {"config",       optional_argument,    0, 'c'},
     {"port",         optional_argument,    0, 'p'},
-    {"product",      optional_argument,    0, 't'},
-    {"secret",       optional_argument,    0, 's'},
-    {"device",       optional_argument,    0, 'd'},
-    {"client",       optional_argument,    0, 'i'},
-    {"username",     optional_argument,    0, 'u'},
-    {"password",     optional_argument,    0, 'P'},
     {"help",         optional_argument,    0, '?'},
     {0, 0, 0, 0}
 };
 
 const char * command_help =
-"Usage: %s [-h host] [-p port] [-i client_id]\r"
-"                     [-d] [--trace]\r"
-"                     [-u username [-P password]]\r"
-"                     [{--cafile file | --capath dir} [--cert file] [--key file]\r"
+"Usage: %s [-c config] [-p port] [--trace|--verbose]\r"
 "\r"
 "       %s --help\r"
 "\r"
-" -h mqtt_host\r"
-" --host=mqtt_host\r"
-"     MQTT host to connect to. Defaults to localhost.\r"
+" -c config\r"
+" --config=config file name\r"
+"     Device config file name.\r"
 " \r"
 " -p port\r"
 " --port=port\r"
 "     network port to connect to. Defaults to 1883, or set to 8883 for tls is MQTT server supports.\r"
 "\r"
-" -i client_id\r"
-" --client=client_id\r"
-"     id to use for this client. \r"
-"\r"
-" -t product_id\r"
-" --product=product_id\r"
-"     product_id to use for this client. \r"
-"\r"
-" -d device_name\r"
-" --device=device_name\r"
-"     device_name to use for this client. \r"
-"\r"
-" -s secret\r"
-" --secret=secret\r"
-"     secret for dynamic token, it not using fixed usename and password.\r"
-"\r"
-" -u username\r"
-" --username=username\r"
-" provide a fix username, it not use dynamic token.\r"
-" \r"
-" -P password\r"
-" --password=password\r"
-"     provide a fixed password, it not use dynamic token.\r"
-"\r"
-" -a path_to_ca_crt\r"
-" --cafile=path_to_ca_certificates\r"
-" path to a file containing trusted CA certificates to enable encrypted\r"
-"            communication.\r"
-"\r"
-" -c path_to_client_crt\r"
-" --clifile=path_to_client_crt\r"
-"     client certificate for authentication, if required by server.\r"
-"\r"
-" -k path_to_client_key\r"
-" --clikey=path_to_client_key\r"
-"     client private key for authentication, if required by server.\r"
-" \r"
 " --verbose\r"
 "     don't print info and debug, trace messages.\r"
 "\r"
@@ -96,7 +53,7 @@ void parse_command(tc_iot_mqtt_client_config * config, int argc, char ** argv) {
 
     while (1)
     {
-        c = getopt_long (argc, argv, "s:h:p:t:d:i:u:P:c:a:k:", long_options, &option_index);
+        c = getopt_long (argc, argv, "c:p:?", long_options, &option_index);
         if (c == -1) {
             break;
         }
@@ -118,6 +75,12 @@ void parse_command(tc_iot_mqtt_client_config * config, int argc, char ** argv) {
                 if (optarg) {
                     sprintf(config->device_info.mqtt_host,"%s",optarg);
                     TC_IOT_LOG_INFO ("host=%s", optarg);
+                }
+                break;
+            case 'c':
+                if (optarg) {
+                    strncpy(g_tc_iot_device_config_name, optarg, sizeof(g_tc_iot_device_config_name));
+                    TC_IOT_LOG_INFO ("config=%s", optarg);
                 }
                 break;
             case 'p':
@@ -200,6 +163,7 @@ void parse_command(tc_iot_mqtt_client_config * config, int argc, char ** argv) {
         }
     }
 
+    tc_iot_load_device_config(g_tc_iot_device_config_name);
     tc_iot_set_log_level(_log_level);
 
     if (optind < argc)

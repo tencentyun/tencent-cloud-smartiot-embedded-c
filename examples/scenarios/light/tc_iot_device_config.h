@@ -15,13 +15,13 @@
 
 /* 以下配置需要先在官网创建产品和设备，然后获取相关信息更新*/
 /* MQ服务地址，可以在产品“基本信息”->“mqtt链接地址”位置找到。*/
-#define TC_IOT_CONFIG_MQTT_HOST "mqtt-ify9tmhk.ap-guangzhou.mqtt.tencentcloudmq.com"
+#define TC_IOT_CONFIG_MQTT_HOST "mqtt-1doou8fjk.ap-guangzhou.mqtt.tencentcloudmq.com"
 
 /* 产品id，可以在产品“基本信息”->“产品id”位置找到*/
-#define TC_IOT_CONFIG_PRODUCT_ID "iot-gohk1kbq"
+#define TC_IOT_CONFIG_PRODUCT_ID "iot-9fi4gnz8"
 
 /* 产品id，可以在产品“基本信息”->“产品key”位置找到*/
-#define TC_IOT_CONFIG_PRODUCT_KEY "mqtt-ify9tmhk"
+#define TC_IOT_CONFIG_PRODUCT_KEY "mqtt-1doou8fjk"
 
 /* 设备密钥，可以在产品“设备管理”->“设备证书”->“Device Secret”位置找到*/
 #define TC_IOT_CONFIG_DEVICE_SECRET "00000000000000000000000000000000"
@@ -93,7 +93,7 @@
 // end: DEBUG use only 
 
 // API 服务域名根地址
-#define TC_IOT_CONFIG_API_HOST TC_IOT_CONFIG_REGION ".auth-device-iot.tencentcloudapi.com"
+#define TC_IOT_CONFIG_API_HOST TC_IOT_CONFIG_REGION ".token.smartiot.cloud.tencent.com"
 
 /* shadow下行消息topic，mq服务端的响应和下行推送，*/
 /* 都会发布到 "shadow/get/<product id>/<device name>" 这个topic*/

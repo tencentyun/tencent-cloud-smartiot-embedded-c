@@ -152,9 +152,5 @@ int tc_iot_hal_set_config(tc_iot_device_config_id_def id,  const char* value );
  */
 const char * tc_iot_hal_get_config(tc_iot_device_config_id_def id, char* value , int len, const char * default_var);
 
-int tc_iot_log_linux_output_handler(tc_iot_log_level_e level, const char * func, int line, const char * format, ...);
-#undef TC_IOT_LOG_OUTPUT
-#define TC_IOT_LOG_OUTPUT tc_iot_log_linux_output_handler
-
 
 #endif /* end of include guard */

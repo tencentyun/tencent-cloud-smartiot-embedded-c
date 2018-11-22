@@ -60,6 +60,12 @@ int tc_iot_refresh_auth_token(long timestamp, long nonce, tc_iot_device_info* p_
     TC_IOT_LOG_TRACE("http_buffer:\n%s", http_buffer);
     ret = tc_iot_http_client_perform(http_buffer,strlen(http_buffer), sizeof(http_buffer),
                                      p_device_info->http_host, port, secured, timeout_ms);
+    if (ret == TC_IOT_NET_UNKNOWN_HOST) {
+        tc_iot_hal_get_config(TC_IOT_DCFG_HTTP_IP, temp_buf, sizeof(temp_buf), NULL);
+        TC_IOT_LOG_ERROR("host=%s dns lookup failed, try using default ip=%s.", p_device_info->http_host,temp_buf);
+        ret = tc_iot_http_client_perform(http_buffer,strlen(http_buffer), sizeof(http_buffer),
+                temp_buf, port, secured, timeout_ms);
+    }
     tc_iot_mem_usage_log("http_buffer[TC_IOT_HTTP_TOKEN_RESPONSE_LEN]", sizeof(http_buffer), strlen(http_buffer));
 
     if (ret < 0) {

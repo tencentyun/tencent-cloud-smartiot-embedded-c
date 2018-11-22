@@ -29,6 +29,58 @@ static tc_iot_device_config_data _g_tc_iot_device_config_data = {};
 
 const char * g_tc_iot_device_bin_name = "device_config.bin";
 
+tc_iot_code_map _g_tc_iot_device_config_id_map[] = {
+    {TC_IOT_DCFG_PRODUCT_ID,"product_id"},
+    {TC_IOT_DCFG_PRODUCT_KEY,"product_key"},
+    {TC_IOT_DCFG_DEVICE_NAME,"device_name"},
+    {TC_IOT_DCFG_DEVICE_SECRET,"device_secret"},
+    {TC_IOT_DCFG_MQTT_HOST,"mqtt_host"},
+    {TC_IOT_DCFG_MQTT_IP,"mqtt_ip"},
+    {TC_IOT_DCFG_HTTP_HOST,"http_host"},
+    {TC_IOT_DCFG_HTTP_IP,"http_ip"},
+    {TC_IOT_DCFG_LOG_SERVER_HOST,"log_server_host"},
+    {TC_IOT_DCFG_LOG_SERVER_IP,"log_server_ip"},
+    {TC_IOT_DCFG_REGION,"region"},
+    {TC_IOT_DCFG_TYPE,"type"},
+    {TC_IOT_DCFG_HW_ID,"hw_id"},
+    {TC_IOT_DCFG_MODULE,"module"},
+    {TC_IOT_DCFG_MODULE_VER,"module_ver"},
+    {TC_IOT_DCFG_FIRM_VER,"firm_ver"},
+    {TC_IOT_DCFG_LAT,"lat"},
+    {TC_IOT_DCFG_LON,"lon"},
+    {TC_IOT_DCFG_KEEPALIVE,"keepalive"},
+    {TC_IOT_DCFG_LOG_LEVEL,"log_level"},
+    {TC_IOT_DCFG_IS_UP_BUSILOG,"is_up_busilog"},
+};
+
+const char * tc_iot_get_device_config_name_by_id(tc_iot_device_config_id_def id) {
+    int i = 0;
+    tc_iot_code_map * map = NULL;
+
+    for (i = 0; i < TC_IOT_ARRAY_LENGTH(_g_tc_iot_device_config_id_map); ++i) {
+        map = &_g_tc_iot_device_config_id_map[i];
+        if (map->code == id) {
+            return map->str;
+        }
+    }
+
+    return "";
+}
+
+int tc_iot_get_device_config_id_by_name(const char * name) {
+    int i = 0;
+    tc_iot_code_map * map = NULL;
+
+    for (i = 0; i < TC_IOT_ARRAY_LENGTH(_g_tc_iot_device_config_id_map); ++i) {
+        map = &_g_tc_iot_device_config_id_map[i];
+        if (strcmp(map->str, name) == 0) {
+            return map->code;
+        }
+    }
+
+    return -1;
+}
+
 static int _tc_iot_get_device_config_addr(tc_iot_device_config_data * p_device_cfg, tc_iot_device_config_id_def id, char ** addr, int * len) {
 
     IF_NULL_RETURN(addr, TC_IOT_NULL_POINTER);
@@ -128,17 +180,18 @@ static int _tc_iot_get_device_config_addr(tc_iot_device_config_data * p_device_c
     return TC_IOT_SUCCESS;
 }
 
-static int _tc_iot_save_device_config(const char * name, tc_iot_device_config_data * data) {
+int tc_iot_save_device_config(const char * config_name) {
     FILE * fp;
     int ret;
     char file_path[64];
     char * addr;
     int len = 0;
     int i = 0;
+    tc_iot_device_config_data * data = &_g_tc_iot_device_config_data;
 
-    tc_iot_hal_snprintf(file_path, sizeof(file_path), "%s", name);
+    tc_iot_hal_snprintf(file_path, sizeof(file_path), "%s", config_name);
 
-    fp = fopen(name, "w+");
+    fp = fopen(file_path, "w+");
 
     if(!fp)
     {
@@ -150,7 +203,7 @@ static int _tc_iot_save_device_config(const char * name, tc_iot_device_config_da
         ret = _tc_iot_get_device_config_addr(data,i, &addr, &len);
         if (ret == TC_IOT_SUCCESS) {
             if (strlen(addr) > 0) {
-                ret = fprintf(fp, "%d,%s\n", i, addr);
+                ret = fprintf(fp, "%s,%s\n", tc_iot_get_device_config_name_by_id(i), addr);
                 if (ret <= 0) {
                     TC_IOT_LOG_ERROR("write config failed: %d,%s", i, addr);
                     break;
@@ -164,7 +217,7 @@ static int _tc_iot_save_device_config(const char * name, tc_iot_device_config_da
     return TC_IOT_SUCCESS;
 }
 
-static int _tc_iot_load_device_config(const char * name, tc_iot_device_config_data * data) {
+int tc_iot_load_device_config(const char * config_name) {
     FILE * fp;
     int ret;
     char file_path[64];
@@ -172,8 +225,10 @@ static int _tc_iot_load_device_config(const char * name, tc_iot_device_config_da
     int id = 0;
     int len;
     char * addr;
+    char name_buf[128];
+    tc_iot_device_config_data * data = &_g_tc_iot_device_config_data;
 
-    tc_iot_hal_snprintf(file_path, sizeof(file_path), "%s", name);
+    tc_iot_hal_snprintf(file_path, sizeof(file_path), "%s", config_name);
 
     fp = fopen(file_path, "r");
 
@@ -184,19 +239,28 @@ static int _tc_iot_load_device_config(const char * name, tc_iot_device_config_da
     }
 
     do {
-        ret = fscanf(fp, "%d,%s\n", &id, buffer);
+        ret = fscanf(fp, "%[^=]=%s\n", name_buf, buffer);
         if (ret < 2) {
+            if (ret != -1) {
+                TC_IOT_LOG_ERROR("ret=%d, config format invalid.", ret);
+            }
             break;
+        }
+        id = tc_iot_get_device_config_id_by_name(name_buf);
+        if (id < 0) {
+            if (name_buf[0] != '#') {
+                TC_IOT_LOG_WARN("%s unrecorgnizable for return id=%d", name_buf, id);
+            }
+            continue;
         }
         ret = _tc_iot_get_device_config_addr(data, id, &addr, &len);
         strncpy(addr, buffer, len);
-        TC_IOT_LOG_TRACE("loaded: id=%d,value=%s", id, addr);
+        TC_IOT_LOG_TRACE("loaded: name=%s,id=%d,value=%s", name_buf, id, addr);
     } while(true);
     fclose(fp);
     return TC_IOT_SUCCESS;
 }
 
-static bool _config_loaded = false;
 
 int tc_iot_hal_set_config(tc_iot_device_config_id_def id,  const char* value )
 {
@@ -207,15 +271,11 @@ int tc_iot_hal_set_config(tc_iot_device_config_id_def id,  const char* value )
 
     p_device_cfg = &_g_tc_iot_device_config_data;
 
-    if (!_config_loaded) {
-        ret = _tc_iot_load_device_config(g_tc_iot_device_bin_name, p_device_cfg);
-        _config_loaded = true;
-    }
-
     ret = _tc_iot_get_device_config_addr(p_device_cfg, id, &addr, &len);
     if (ret == TC_IOT_SUCCESS) {
         if (strcmp(addr, value) == 0) {
-            TC_IOT_LOG_TRACE("config id=%d, value=%s equals, skip save.", id, value);
+            TC_IOT_LOG_TRACE("config name=%s, id=%d, value=%s equals, skip save.",
+                             tc_iot_get_device_config_name_by_id(id), id, value);
             return TC_IOT_SUCCESS;
         } else {
             strncpy(addr, value, len);
@@ -225,8 +285,8 @@ int tc_iot_hal_set_config(tc_iot_device_config_id_def id,  const char* value )
         return TC_IOT_FAILURE;
     }
 
-    TC_IOT_LOG_TRACE("set config id=%d, value=%s success.", id, value);
-    return _tc_iot_save_device_config(g_tc_iot_device_bin_name, &_g_tc_iot_device_config_data);
+    TC_IOT_LOG_TRACE("set config name=%s, id=%d, value=%s success.", tc_iot_get_device_config_name_by_id(id), id, value);
+    return TC_IOT_SUCCESS;
 }
 
 
@@ -239,18 +299,14 @@ const char * tc_iot_hal_get_config(tc_iot_device_config_id_def id, char* value ,
 
     p_device_cfg = &_g_tc_iot_device_config_data;
 
-    if (!_config_loaded) {
-        ret = _tc_iot_load_device_config(g_tc_iot_device_bin_name, p_device_cfg);
-        _config_loaded = true;
-    }
-
     if (ret == TC_IOT_SUCCESS) {
         ret = _tc_iot_get_device_config_addr(p_device_cfg,id, &addr, &src_len);
         if (ret == TC_IOT_SUCCESS) {
             if (strlen(addr) > 0) {
                 if (value) {
                     strncpy(value, addr, len);
-                    TC_IOT_LOG_TRACE("get config id=%d, value=%s success.", id, value);
+                    TC_IOT_LOG_TRACE("get config name=%s, id=%d, value=%s success.",
+                                     tc_iot_get_device_config_name_by_id(id), id, value);
                     return value;
                 } else {
                     return addr;

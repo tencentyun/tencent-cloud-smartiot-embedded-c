@@ -560,6 +560,11 @@ int tc_iot_http_client_internal_perform(char * buffer, int buffer_used, int buff
     tc_iot_hal_timer_init(&timer);
     tc_iot_hal_timer_countdown_ms(&timer,timeout_ms);
     ret = p_network->do_connect(p_network, host, port);
+    if (ret < 0) {
+        TC_IOT_LOG_ERROR("connect failed: ret=%d", ret);
+        return ret;
+    }
+
     write_ret = p_network->do_write(p_network, (unsigned char *)buffer, buffer_used, timeout_ms);
     if (write_ret != buffer_used) {
         TC_IOT_LOG_ERROR("send packet failed: expect len=%d, write return=%d", buffer_used, write_ret);
