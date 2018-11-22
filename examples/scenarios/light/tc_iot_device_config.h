@@ -80,6 +80,11 @@
 #define TC_IOT_AUTH_FUNC   tc_iot_mqtt_refresh_dynamic_sign
 #define TC_IOT_CONFIG_DEVICE_USER_NAME ""
 #define TC_IOT_CONFIG_DEVICE_PASSWORD ""
+#elif TC_IOT_CONFIG_AUTH_MODE == 3
+/*iothub认证模式*/
+#define TC_IOT_AUTH_FUNC   tc_iot_mqtt_refresh_iothub_dynamic_sign
+#define TC_IOT_CONFIG_DEVICE_USER_NAME ""
+#define TC_IOT_CONFIG_DEVICE_PASSWORD ""
 #else
 /* 直连模式 */
 #define TC_IOT_AUTH_FUNC(a,b,c,d)   
