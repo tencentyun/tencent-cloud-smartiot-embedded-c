@@ -19,7 +19,7 @@
 #define TC_IOT_SIGN_UTILS_TRACE(a,b)
 #endif
 
-int tc_iot_calc_sign(unsigned char * output, int output_len, const char * secret, const char * format, ...) {
+int tc_iot_calc_sign(unsigned char * output, int output_len, const char * secret, int secret_len, const char * format, ...) {
     va_list ap;
     const unsigned char * pos  = (const unsigned char *)format;
     const unsigned char * prev = (const unsigned char *)format;
@@ -28,7 +28,7 @@ int tc_iot_calc_sign(unsigned char * output, int output_len, const char * secret
     const char * var_str;
 
     tc_iot_hmac_sha256_t hmac;
-    tc_iot_hmac_sha256_init(&hmac, (unsigned char *)secret, strlen(secret));
+    tc_iot_hmac_sha256_init(&hmac, (unsigned char *)secret, secret_len);
 
     TC_IOT_SIGN_UTILS_TRACE((const char *)secret, -1);
     TC_IOT_SIGN_UTILS_TRACE((const char *)"|", -1);
@@ -158,6 +158,7 @@ int tc_iot_calc_active_device_sign(char* sign_out, int max_sign_len,
     ret = tc_iot_calc_sign(
         sha256_digest, sizeof(sha256_digest),
         product_secret,
+        strlen(product_secret),
         "deviceName=%s&nonce=%u&productId=%s&timestamp=%u",
         device_name, nonce,
         product_id, timestamp);
@@ -197,6 +198,7 @@ int tc_iot_calc_auth_sign(char* sign_out, int max_sign_len, const char* secret, 
     ret = tc_iot_calc_sign(
         sha256_digest, sizeof(sha256_digest),
         secret,
+        strlen(secret),
         "clientId=%s&deviceName=%s&expire=%u&nonce=%u&productId=%s&timestamp=%u",
         client_id, device_name, expire, nonce,
         product_id, timestamp);
@@ -237,6 +239,7 @@ int tc_iot_calc_mqtt_dynamic_sign(char* sign_out, int max_sign_len,
     ret = tc_iot_calc_sign(
         sha256_digest, sizeof(sha256_digest),
         secret,
+        strlen(secret),
         "clientId=%s&deviceName=%s&nonce=%u&productId=%s&timestamp=%u",
         client_id, device_name, nonce,
         product_id, timestamp);

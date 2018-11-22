@@ -9,13 +9,14 @@
  * Base64 等文本格式。
  * @param output_len 签名结果
  * @param secret 签名密钥
+ * @param secret_len 签名密钥长度
  * @param format 签名格式字符串，类似 printf 函数，支持 %s,%d,%x,%c
  * 等格式化占位符
  * @param ... 动态参数列表，根据 format 字段的情况，动态携带对应类型入参。
  *
  * @return 
  */
-int tc_iot_calc_sign(unsigned char * output, int output_len, const char * secret, const char * format, ...) ;
+int tc_iot_calc_sign(unsigned char * output, int output_len, const char * secret, int secret_len, const char * format, ...) ;
 
 /**
  * @brief tc_iot_calc_active_device_sign 计算 HTTP 动态激活请求鉴权签名
